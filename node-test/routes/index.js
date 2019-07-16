@@ -60,6 +60,12 @@ router.get('/prdct_mst', function(req, res, next) {
     })
 })
 
+//localhost:3000/prdct_reg
+router.get('/prdct_reg', function(req, res, next) {
+  res.render('prdct_reg', {});
+  res.end();
+});
+
 //localhost:3000/category
 router.get('/category', function(req, res, next){
   var getCategoryQuery = {
