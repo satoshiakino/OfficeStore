@@ -1,0 +1,26 @@
+//商品マスタ
+create table product_mst
+( id serial PRIMARY KEY,
+  jan varchar(20),
+  product_name varchar(100) NOT NULL,
+  price int NOT NULL,
+  latest boolean NOT NULL
+  )
+
+//仕入テーブル
+CREATE TABLE arrival
+( trade_date TIMESTAMP NOT NULL,
+  id INTEGER NOT NULL,
+  trade_num INTEGER NOT NULL,
+  cost INTEGER NOT NULL,
+  PRIMARY KEY(trade_date,id) )
+
+//売上テーブル
+CREATE TABLE sales
+( trade_date TIMESTAMP NOT NULL,
+  id INTEGER NOT NULL,
+  trade_num INTEGER NOT NULL,
+  price INTEGER NOT NULL,
+  PRIMARY KEY(trade_date,id) )
+
+//
