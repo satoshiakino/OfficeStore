@@ -13,8 +13,8 @@
       <h1>AkinoStore</h1>
       <nav id="global_navi">
         <ul>
-          <li class="current"><a href="/mst_menu">マスタ登録・修正</a></li>
-          <li><a href="/arrvl_menu">仕入登録・修正</a></li>
+          <li><a href='/mst_menu'>マスタ登録・修正</a></li>
+          <li class="current"><a href="/arrvl_menu">仕入登録・修正</a></li>
           <li><a href="/sales_menu">売上登録・修正</a></li>
           <li><a href="/sales_check">売上確認</a></li>
           <li><a href='/invntry_check'>在庫確認</a></li>
@@ -22,16 +22,15 @@
       </nav>
     </header>
     <div class="wrapper">
-        <form action="/prdct_reg" method="post" class="prdct_reg-form">
+        <form action="/arrvl_reg" method="post" class="arrvl_reg-form">
             <span class="label">カテゴリコード：</span><input type="text" name="cat_cd" class="input" required><br>
             <br>
-            <span class="label">JANコード：</span><input type="text" name="jan" class="input" required><br>
+            <span class="label">prdct_id：</span><input type="text" name="jan" class="input" required><br>
             <br>
-            <span class="label">商品名</span><input type="text" name="prdct_nm" class="input" required><br>
+            <span class="label">個数</span><input type="text" name="prdct_nm" class="input" required><br>
             <br>
-            <span class="label">売価</span><input type="number" name="price" class="input" required><br>
+            <span class="label">原価</span><input type="number" name="price" class="input" required><br>
             <br>
-            <span class="label">使用</span><input type="text" name="latest" class="input" required><br>
             <br>
             <button type="submit" class="submit">登録</button>
             <br>

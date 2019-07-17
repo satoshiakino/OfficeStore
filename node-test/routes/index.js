@@ -60,11 +60,50 @@ router.get('/prdct_mst', function(req, res, next) {
     })
 })
 
+router.delete('/prdct_mst', function(req, res, next){
+  var prdct_id = req.body.prdct_id;
+  var deleteQuery = {
+    text: "DELETE FROM prdct_mst WHERE prdct_id = $1",
+    values: [prdct_id],
+  };
+  connection.query(deleteQuery)
+    .then(function(){
+      res.redirect('/prdct_mst');
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
+})
+
 //localhost:3000/prdct_reg
 router.get('/prdct_reg', function(req, res, next) {
   res.render('prdct_reg', {});
   res.end();
 });
+
+router.post('/prdct_reg', function(req, res, next) {
+  var jan = req.body.jan;
+  var cat_cd = req.body.cat_cd;
+  var prdct_nm = req.body.prdct_nm;
+  var price = req.body.price;
+  var latest = req.body.latest;
+  var registerQuery = {
+    text: 'INSERT INTO prdct_mst (cat_cd, jan, prdct_nm, price, latest) VALUES($1, $2, $3, $4, $5)',
+    values: [cat_cd, jan, prdct_nm, price, latest],
+  };
+  connection.query(registerQuery)
+    .then(function(prdct){
+      res.redirect('/prdct_reg');
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack } });
+    });
+})
 
 //localhost:3000/category
 router.get('/category', function(req, res, next){
@@ -90,6 +129,7 @@ router.post('/category', function(req, res, next){
   };
   connection.query(registerQuery)
     .then(function(rows){
+      console.log(registerQuery);
       res.redirect('/mst_menu');
       res.end();
     })
@@ -123,6 +163,42 @@ router.get('/arrvl_menu', function(req, res, next) {
   res.render('arrvl_menu', {});
   res.end();
 });
+
+//localhost:3000/arrvl_reg
+router.get('/arrvl_reg', function(req, res, next) {
+  res.render('arrvl_reg', {});
+  res.end();
+})
+
+router.post('/arrvl_reg', function(req, res, next) {
+  var cat_cd = req.body.cat_cd;
+  var prdct_id = req.body.prdct_id;
+  var trade_num = req.body.trade_num;
+  var cost = req.body.cost;
+  registerArrivalQuery = {
+    text: "INSERT INTO arrival (cat_cd, prdct_id, cost, trade_num, trade_date) VALUES($1, $2, $3, $4, now())",
+    values: [cat_cd, prdct_id, trade_num, cost],
+  }
+  connection.query(registerArrivalQuery)
+    .then(function(arrival){
+      
+    })
+})
+
+//localhost:3000/arrvl_hstry
+router.get('/arrvl_hstry', function(req, res, next) {
+  getArrivalQuery = {
+    text: "SELECT  arrvl.arrvl_id,arrvl.cat_cd,cat.cat_nm,pm.jan,pm.prdct_nm,arrvl.cost,arrvl.trade_num,arrvl.trade_date FROM arrival AS arrvl LEFT OUTER JOIN prdct_mst AS pm ON arrvl.prdct_id = pm.prdct_id LEFT OUTER JOIN category AS cat ON arrvl.cat_cd = cat.cat_cd"
+  }
+  connection.query(getArrivalQuery)
+    .then(function(arrival){
+      res.render('arrvl_hstry', {
+        title: "arrvl_hstry",
+        arrvlList: arrival
+      });
+      res.end();
+    });
+})
 
 //localhost:3000/sales_menu
 router.get('/sales_menu', function(req, res, next) {
