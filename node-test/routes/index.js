@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var moment = require('moment');
 var connection = require('../pg_connection.js');
+var setSettlement = require('./setSettlement.js');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -37,7 +38,7 @@ router.post('/', function(req, res, next){
       res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
       res.end();
     });
-})
+});
 
 //localhost:3000/mst_menu
 router.get('/mst_menu', function(req, res, next) {
@@ -57,8 +58,8 @@ router.get('/prdct_mst', function(req, res, next) {
         prdctList: prdctMst
       });
       res.end();
-    })
-})
+    });
+});
 
 router.delete('/prdct_mst', function(req, res, next){
   var prdct_id = req.body.prdct_id;
@@ -76,7 +77,7 @@ router.delete('/prdct_mst', function(req, res, next){
       res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
       res.end();
     });
-})
+});
 
 //localhost:3000/prdct_reg
 router.get('/prdct_reg', function(req, res, next) {
@@ -103,7 +104,7 @@ router.post('/prdct_reg', function(req, res, next) {
       console.log(err.error);
       res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack } });
     });
-})
+});
 
 //localhost:3000/category
 router.get('/category', function(req, res, next){
@@ -138,7 +139,7 @@ router.post('/category', function(req, res, next){
       res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
       res.end();
     });
-})
+});
 
 router.delete('/category', function(req, res, next){
   var cat_id = req.body.cat_id;
@@ -156,7 +157,7 @@ router.delete('/category', function(req, res, next){
       res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
       res.end();
     });
-})
+});
 
 //localhost:3000/arrvl_menu
 router.get('/arrvl_menu', function(req, res, next) {
@@ -168,7 +169,7 @@ router.get('/arrvl_menu', function(req, res, next) {
 router.get('/arrvl_reg', function(req, res, next) {
   res.render('arrvl_reg', {});
   res.end();
-})
+});
 
 router.post('/arrvl_reg', function(req, res, next) {
   var cat_cd = req.body.cat_cd;
@@ -178,18 +179,24 @@ router.post('/arrvl_reg', function(req, res, next) {
   registerArrivalQuery = {
     text: "INSERT INTO arrival (cat_cd, prdct_id, cost, trade_num, trade_date) VALUES($1, $2, $3, $4, now())",
     values: [cat_cd, prdct_id, trade_num, cost],
-  }
+  };
   connection.query(registerArrivalQuery)
     .then(function(arrival){
-      
+      res.redirect('/arrvl_hstry');
+      res.end();
     })
-})
+    .catch(function(err){
+      console.log(err, error);
+      res.render('err', { message: 'Error', error: { status: err.code, stack: err.stack } });
+      res.end();
+    });
+});
 
 //localhost:3000/arrvl_hstry
 router.get('/arrvl_hstry', function(req, res, next) {
   getArrivalQuery = {
     text: "SELECT  arrvl.arrvl_id,arrvl.cat_cd,cat.cat_nm,pm.jan,pm.prdct_nm,arrvl.cost,arrvl.trade_num,arrvl.trade_date FROM arrival AS arrvl LEFT OUTER JOIN prdct_mst AS pm ON arrvl.prdct_id = pm.prdct_id LEFT OUTER JOIN category AS cat ON arrvl.cat_cd = cat.cat_cd"
-  }
+  };
   connection.query(getArrivalQuery)
     .then(function(arrival){
       res.render('arrvl_hstry', {
@@ -198,12 +205,126 @@ router.get('/arrvl_hstry', function(req, res, next) {
       });
       res.end();
     });
-})
+});
+
+router.delete('/arrvl_hstry', function(req, res, next) {
+  var arrvl_id = req.body.arrvl_id;
+  var deleteQuery = {
+    text: "DELETE FROM arrival WHERE arrvl_id = $1",
+    values: [arrvl_id]
+  };
+  connection.query(deleteQuery)
+    .then(function(){
+      res.redirect('/arrvl_hstry');
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err, error);
+      res.render('err', { message: 'Error', error: { status: err.code, stack: err.stack } });
+      res.end();
+    });
+});
 
 //localhost:3000/sales_menu
 router.get('/sales_menu', function(req, res, next) {
   res.render('sales_menu', {});
   res.end();
+});
+
+//localhost:3000/sales_reg
+router.get('/sales_reg', function(req, res, next) {
+  res.render('sales_reg', {});
+  res.end();
+});
+
+router.post('/sales_reg', function(req, res, next) {
+  var cat_cd = req.body.cat_cd;
+  var prdct_id = req.body.prdct_id;
+  var trade_num = req.body.trade_num;
+  registerSalesQuery = {
+    text: "INSERT INTO sales (cat_cd, prdct_id, trade_num, trade_date) VALUES($1, $2, $3, now())",
+    values: [cat_cd, prdct_id, trade_num],
+  };
+  connection.query(registerSalesQuery)
+    .then(function(arrival){
+      res.redirect('/sales_hstry');
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err, error);
+      res.render('err', { message: 'Error', error: { status: err.code, stack: err.stack } });
+      res.end();
+    });
+});
+
+//localhost:3000/sales_hstry
+router.get('/sales_hstry', function(req, res, next) {
+  getSalesQuery = {
+    text: "SELECT sales.sales_id,sales.cat_cd,cat.cat_nm,pm.jan,pm.prdct_nm,pm.price,sales.trade_num,sales.trade_date FROM sales LEFT OUTER JOIN prdct_mst AS pm ON sales.prdct_id = pm.prdct_id LEFT OUTER JOIN category AS cat ON sales.cat_cd = cat.cat_cd"
+  };
+  connection.query(getSalesQuery)
+    .then(function(sales){
+      res.render('sales_hstry', {
+        title: "sales_hstry",
+        salesList: sales
+      });
+      res.end();
+    });
+});
+
+router.delete('/sales_hstry', function(req, res, next) {
+  var sales_id = req.body.sales_id;
+  var deleteQuery = {
+    text: "DELETE FROM sales WHERE sales_id = $1",
+    values: [sales_id],
+  };
+  connection.query(deleteQuery)
+    .then(function(){
+      res.redirect('/sales_hstry');
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err, error);
+      res.render('err', { message: 'Error', error: { status: err.code, stack: err.stack } });
+      res.end();
+    });
+});
+
+//localhostk:3000/settlement
+router.get('/settlement', function(req, res, next) {
+  res.render('settlement', {
+    title: "settlement"
+  });
+  res.end();
+});
+
+router.post('/settlement', function(req, res, next) {
+  var totalCash = req.body.ten_thousand * 10000 + req.body.five_thousand * 5000 + req.body.one_thousand * 1000 + req.body.five_hundred * 500 + req.body.one_hundred * 100 + req.body.fifty * 50 + req.body.ten * 10 + req.body.five * 5 + req.body.one * 1;
+  req.session.total_cash = totalCash;
+  res.redirect('/settlement2');
+  res.end();
+})
+
+//localhost:3000/settlement2
+router.get('/settlement2', function(req, res, next) {
+  var getCostQuery = {
+    text: "SELECT SUM(arrvl.cost * arrvl.trade_num) AS total_cost " +
+            "FROM arrival AS arrvl " +
+            "WHERE checked = false " +
+            "GROUP BY checked"
+  }
+  var total_cost;
+  connection.query(getCostQuery)
+    .then(function(cost){
+      total_cost = cost[0].total_cost
+      console.log(total_cost);
+      res.render('settlement2', {
+        title: "settlement2",
+        total_cash: req.session.total_cash,
+        total_cost: total_cost
+      });
+      //res.end();
+    })
 });
 
 //localhost:3000/sales_check
@@ -216,6 +337,6 @@ router.get('/sales_check', function(req, res, next) {
 router.get('/invntry_check', function(req, res, next) {
   res.render('invntry_check', {});
   res.end();
-})
+});
 
 module.exports = router;
