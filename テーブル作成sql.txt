@@ -1,26 +1,61 @@
 //商品マスタ
-create table product_mst
-( id serial PRIMARY KEY,
-  jan varchar(20),
-  product_name varchar(100) NOT NULL,
-  price int NOT NULL,
-  latest boolean NOT NULL
+create table prdct_mst
+( prdct_id serial PRIMARY KEY,
+  jan VARCHAR(20),
+  cat_cd VARCHAR(10),
+  prdct_nm VARCHAR(100),
+  price int,
+  latest boolean
   )
 
 //仕入テーブル
 CREATE TABLE arrival
-( trade_date TIMESTAMP NOT NULL,
-  id INTEGER NOT NULL,
-  trade_num INTEGER NOT NULL,
-  cost INTEGER NOT NULL,
-  PRIMARY KEY(trade_date,id) )
+( arrvl_id SERIAL PRIMARY KEY,
+  trade_date TIMESTAMP,
+  cat_cd VARCHAR(10),
+  prdct_id INTEGER,
+  trade_num INTEGER,
+  cost INTEGER,
+  checked boolean DEFAULT false
+  )
 
 //売上テーブル
 CREATE TABLE sales
-( trade_date TIMESTAMP NOT NULL,
-  id INTEGER NOT NULL,
-  trade_num INTEGER NOT NULL,
-  price INTEGER NOT NULL,
-  PRIMARY KEY(trade_date,id) )
+( sales_id SERIAL PRIMARY KEY,
+  cat_cd character(10) NOT NULL,
+  prdct_id INTEGER  NOT NULL,
+  trade_num INTEGER,
+  trade_date TIMESTAMP,
+  checked boolean default false
+  )
 
-//
+//カテゴリテーブル
+CREATE TABLE category
+( cat_id SERIAL PRIMARY KEY,
+  cat_cd VARCHAR(4),
+  cat_nm VARCHAR(30))
+
+//精算書テーブル
+create table settlement (
+ set_id serial primary key,
+ total_cost integer,
+ total_sales integer,
+ profit_loss integer,
+ total_calc_cash integer,
+ excess_deficiency integer,
+ total_cash integer,
+ settle_date timestamp,
+ latest boolean default true
+)
+ 
+//仕入アーカイブ
+create table arrival_archives (
+ arrvl_id integer primary key,
+ cat_cd varchar(4),
+ cat_nm varchar(30),
+ jan varchar(20),
+ prdct_nm varchar(100),
+ cost integer,
+ trade_num integer,
+ trade_date timestamp
+)

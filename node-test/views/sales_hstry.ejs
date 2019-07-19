@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compotible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="format-detection" content="telephone=no">
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <header>
+      <h1>AkinoStore</h1>
+      <nav id="global_navi">
+        <ul>
+          <li><a href="/mst_menu">マスタ登録・修正</a></li>
+          <li><a href="/arrvl_menu">仕入登録・修正</a></li>
+          <li class="current"><a href="/sales_menu">売上登録・修正</a></li>
+          <li><a href="/sales_check">売上確認</a></li>
+          <li><a href='/invntry_check'>在庫確認</a></li>
+        </ul>
+      </nav>
+    </header>
+    <div class="wrapper">
+        <ul class="main-list">
+          <% salesList.forEach(function(salesItem){ %>
+            <li class="main-list__item">
+              <a>
+                <p class="sales__sale_id"><%= salesItem.sales_id %></p>
+                <p class="sales__cat_cd"><%= salesItem.cat_cd %></p>
+                <p class="sales__cat_nm"><%= salesItem.cat_nm %></p>
+                <p class="sales__jan"><%= salesItem.jan %></p>
+                <p class="sales__prdct_nm"><%= salesItem.prdct_nm %></p>
+                <p class="sales__cost"><%= salesItem.cost %></p>
+                <p class="sales__trade_num"><%= salesItem.trade_num %></p>
+                <p class="sales__trade_date"><%= salesItem.trade_date %></p>
+              </a>
+            </li>
+          <% }); %>
+        </ul>
+    </div>
+    <form action="/sales_hstry" method="post" class="sales_hstry-form" name="delete_hstry">
+        <span class="label">id：</span>
+        <input type="number" name="sales_id" class="input" required>
+        <input type="hidden" name="_method" value="delete">
+        <br>
+        <br>
+        <button type="submit" class="submit" id="delete_hstry_button">削除</button>
+        <br>
+    </form>
+  </body>
+</html>

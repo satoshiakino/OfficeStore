@@ -195,7 +195,20 @@ router.post('/arrvl_reg', function(req, res, next) {
 //localhost:3000/arrvl_hstry
 router.get('/arrvl_hstry', function(req, res, next) {
   getArrivalQuery = {
-    text: "SELECT  arrvl.arrvl_id,arrvl.cat_cd,cat.cat_nm,pm.jan,pm.prdct_nm,arrvl.cost,arrvl.trade_num,arrvl.trade_date FROM arrival AS arrvl LEFT OUTER JOIN prdct_mst AS pm ON arrvl.prdct_id = pm.prdct_id LEFT OUTER JOIN category AS cat ON arrvl.cat_cd = cat.cat_cd"
+    text: "SELECT  arrvl.arrvl_id, " + 
+                  "arrvl.cat_cd, " + 
+                  "cat.cat_nm, " + 
+                  "pm.jan, " + 
+                  "pm.prdct_nm, " + 
+                  "arrvl.cost, " + 
+                  "arrvl.trade_num, " + 
+                  "arrvl.trade_date " + 
+            "FROM arrival AS arrvl " + 
+            "LEFT OUTER JOIN prdct_mst AS pm " + 
+            "ON arrvl.prdct_id = pm.prdct_id " + 
+            "LEFT OUTER JOIN category AS cat " + 
+            "ON arrvl.cat_cd = cat.cat_cd " + 
+            "WHERE arrvl.checked = false"
   };
   connection.query(getArrivalQuery)
     .then(function(arrival){
@@ -303,7 +316,7 @@ router.post('/settlement', function(req, res, next) {
   req.session.total_cash = totalCash;
   res.redirect('/settlement2');
   res.end();
-})
+});
 
 //localhost:3000/settlement2
 router.get('/settlement2', function(req, res, next) {
@@ -312,20 +325,95 @@ router.get('/settlement2', function(req, res, next) {
             "FROM arrival AS arrvl " +
             "WHERE checked = false " +
             "GROUP BY checked"
-  }
+  };
+  var getSalesQuery = {
+    text: "SELECT SUM(pm.price * sales.trade_num) AS total_sales " +
+            "FROM sales " +
+            "LEFT OUTER JOIN prdct_mst AS pm " +
+            "ON sales.prdct_id = pm.prdct_id " +
+            "WHERE sales.checked = false " +
+            "GROUP BY sales.checked"
+  };
+  var getLastCashQuery = {
+    text: "SELECT total_cash FROM settlement WHERE latest = true"
+  };
   var total_cost;
-  connection.query(getCostQuery)
-    .then(function(cost){
-      total_cost = cost[0].total_cost
-      console.log(total_cost);
-      res.render('settlement2', {
-        title: "settlement2",
-        total_cash: req.session.total_cash,
-        total_cost: total_cost
-      });
-      //res.end();
-    })
+  var total_sales;
+  var last_cash;
+  Promise.all([
+    connection.query(getCostQuery)
+      .then(function(cost){
+        total_cost = parseInt(cost[0].total_cost);
+      }),
+    connection.query(getSalesQuery)
+      .then(function(sales){
+        total_sales = parseInt(sales[0].total_sales);
+      }),
+    connection.query(getLastCashQuery)
+      .then(function(cash){
+        last_cash = parseInt(cash[0].total_cash);
+      })
+  ])
+  .then(function(){
+    req.session.total_cost = total_cost;
+    req.session.total_sales = total_sales;
+    req.session.profit_loss = total_sales - total_cost;
+    req.session.total_calc_cash = last_cash - total_cost + total_sales;
+    req.session.excess_deficiency = (last_cash - total_cost + total_sales) - req.session.total_cash;
+    res.render('settlement2', {
+      title: "settlement2",
+      total_cash: req.session.total_cash,
+      total_cost: total_cost,
+      total_sales: total_sales,
+      profit_loss: total_sales - total_cost,
+      total_calc_cash: last_cash - total_cost + total_sales,
+      excess_deficiency: (last_cash - total_cost + total_sales) - req.session.total_cash
+    });
+  });
 });
+
+router.post('/settlement2', function(req, res, next) {
+  var total_cost = req.session.total_cost;
+  var total_sales = req.session.total_sales;
+  var profit_loss = req.session.profit_loss;
+  var total_calc_cash = req.session.total_calc_cash;
+  var excess_deficiency = req.session.excess_deficiency;
+  var total_cash = req.session.total_cash;
+  var registerSettlementQuery = {
+    text: "INSERT INTO settlement ( " +
+          "total_cost, " +
+          "total_sales, " +
+          "profit_loss, " +
+          "total_calc_cash, " +
+          "excess_deficiency, " +
+          "total_cash, " +
+          "settle_date" +
+          ") " +
+          "VALUES ($1, $2, $3, $4, $5, $6, now())",
+    values: [ total_cost ,total_sales, profit_loss, total_calc_cash, excess_deficiency, total_cash ],
+  };
+  var updateSettlementQuery = {
+    text: "UPDATE settlement SET latest = false"
+  };
+  var updateArrivalQuery = {
+    text: "UPDATE arrival SET checked = true"
+  };
+  var updateSalesQuery = {
+    text: "UPDATE sales SET checked = true"
+  };
+  Promise.all([
+    connection.query(updateSettlementQuery)
+      .then(function(){}),
+    connection.query(updateArrivalQuery)
+      .then(function(){}),
+    connection.query(updateSalesQuery)
+      .then(function(){})
+  ])
+  .then(function(){
+    connection.query(registerSettlementQuery)
+      .then(function(){})
+  })
+})
 
 //localhost:3000/sales_check
 router.get('/sales_check', function(req, res, next) {
