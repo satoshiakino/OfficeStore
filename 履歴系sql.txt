@@ -1,0 +1,39 @@
+//édì¸óöó
+SELECT * FROM
+(SELECT * FROM arrival_archives
+UNION
+SELECT  arrvl.arrvl_id,   
+        arrvl.cat_cd,   
+        cat.cat_nm,   
+        pm.jan,   
+        pm.prdct_nm,   
+        arrvl.cost,   
+        arrvl.trade_num,   
+        arrvl.trade_date   
+FROM arrival AS arrvl   
+LEFT OUTER JOIN prdct_mst AS pm   
+ ON arrvl.prdct_id = pm.prdct_id   
+LEFT OUTER JOIN category AS cat   
+ ON arrvl.cat_cd = cat.cat_cd   
+WHERE arrvl.checked = false) AS arrival
+ORDER BY arrival.trade_date
+
+//îÑè„óöó
+SELECT * FROM 
+(SELECT * FROM sales_archives
+UNION
+SELECT sales.sales_id 
+       ,sales.cat_cd  
+       ,cat.cat_nm  
+       ,pm.jan  
+       ,pm.prdct_nm  
+       ,pm.price  
+       ,sales.trade_num  
+       ,sales.trade_date   
+FROM sales   
+LEFT OUTER JOIN prdct_mst AS pm   
+	ON sales.prdct_id = pm.prdct_id  
+LEFT OUTER JOIN category AS cat   
+	ON sales.cat_cd = cat.cat_cd
+WHERE sales.checked = false) AS sales
+ORDER BY sales.trade_date

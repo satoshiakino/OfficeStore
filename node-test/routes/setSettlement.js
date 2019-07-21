@@ -5,6 +5,5 @@ module.exports = function(req, res, next) {
     var profit_loss = req.session.profit_loss;
     var total_calc_cash = req.session.total_calc_cash;
     var excess_deficiency = req.session.excess_deficiency;
-    console.log(total_cash);
     next();
 };

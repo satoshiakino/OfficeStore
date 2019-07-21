@@ -49,7 +49,16 @@ router.get('/mst_menu', function(req, res, next) {
 //localhost:3000/prdct_mst
 router.get('/prdct_mst', function(req, res, next) {
   var getPrdctMstQuery = {
-    text: 'SELECT prdct.prdct_id, prdct.cat_cd, cat.cat_nm, prdct.jan, prdct.prdct_nm, prdct.price, prdct.latest FROM prdct_mst AS prdct LEFT OUTER JOIN category AS cat ON prdct.cat_cd = cat.cat_cd'
+    text: "SELECT prdct.prdct_id" + 
+                ",prdct.cat_cd" +
+                ",cat.cat_nm" +
+                ",prdct.jan" +
+                ",prdct.prdct_nm" +
+                ",prdct.price" +
+                ",prdct.latest " +
+          "FROM prdct_mst AS prdct " +
+          "LEFT OUTER JOIN category AS cat " + 
+            "ON prdct.cat_cd = cat.cat_cd"
   };
   connection.query(getPrdctMstQuery)
     .then(function(prdctMst){
@@ -67,16 +76,40 @@ router.delete('/prdct_mst', function(req, res, next){
     text: "DELETE FROM prdct_mst WHERE prdct_id = $1",
     values: [prdct_id],
   };
-  connection.query(deleteQuery)
-    .then(function(){
+  var selectArrivalQuery = {
+    text: "SELECT * FROM arrival WHERE checked = false AND prdct_id = $1",
+    values: [prdct_id],
+  };
+  var selectSalesQuery = {
+    text: "SELECT * FROM sales WHERE checked = false AND prdct_id = $1",
+    values: [prdct_id]
+  };
+  var arrival_use;
+  var sales_use;
+  Promise.all([
+    connection.query(selectArrivalQuery)
+      .then(function(arrival){
+        arrival_use = arrival.length;
+      }),
+    connection.query(selectSalesQuery)
+      .then(function(sales){
+        sales_use = sales.length;
+      })
+  ])
+  .then(function(){
+    if(arrival_use == 0 && sales_use == 0){
+      console.log("Delete!");
+      /*connection.query(deleteQuery)
+        .then(function(){
+          res.redirect('/prdct_mst');
+          res.end();
+        });*/
+    } else if(arrival_use != 0 || sales_use != 0){
+      res.cookie('prdct_use', 'true', {maxAge:60000, httpOnly:false});
       res.redirect('/prdct_mst');
       res.end();
-    })
-    .catch(function(err){
-      console.log(err.error);
-      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-      res.end();
-    });
+    }
+  });
 });
 
 //localhost:3000/prdct_reg
@@ -90,10 +123,9 @@ router.post('/prdct_reg', function(req, res, next) {
   var cat_cd = req.body.cat_cd;
   var prdct_nm = req.body.prdct_nm;
   var price = req.body.price;
-  var latest = req.body.latest;
   var registerQuery = {
-    text: 'INSERT INTO prdct_mst (cat_cd, jan, prdct_nm, price, latest) VALUES($1, $2, $3, $4, $5)',
-    values: [cat_cd, jan, prdct_nm, price, latest],
+    text: 'INSERT INTO prdct_mst (cat_cd, jan, prdct_nm, price) VALUES($1, $2, $3, $4)',
+    values: [cat_cd, jan, prdct_nm, price],
   };
   connection.query(registerQuery)
     .then(function(prdct){
@@ -103,6 +135,7 @@ router.post('/prdct_reg', function(req, res, next) {
     .catch(function(err){
       console.log(err.error);
       res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack } });
+      res.end();
     });
 });
 
@@ -195,20 +228,24 @@ router.post('/arrvl_reg', function(req, res, next) {
 //localhost:3000/arrvl_hstry
 router.get('/arrvl_hstry', function(req, res, next) {
   getArrivalQuery = {
-    text: "SELECT  arrvl.arrvl_id, " + 
-                  "arrvl.cat_cd, " + 
-                  "cat.cat_nm, " + 
-                  "pm.jan, " + 
-                  "pm.prdct_nm, " + 
-                  "arrvl.cost, " + 
-                  "arrvl.trade_num, " + 
-                  "arrvl.trade_date " + 
-            "FROM arrival AS arrvl " + 
-            "LEFT OUTER JOIN prdct_mst AS pm " + 
-            "ON arrvl.prdct_id = pm.prdct_id " + 
-            "LEFT OUTER JOIN category AS cat " + 
-            "ON arrvl.cat_cd = cat.cat_cd " + 
-            "WHERE arrvl.checked = false"
+    text: "SELECT * FROM " + 
+            "(SELECT * FROM arrival_archives " +
+              "UNION " +
+             "SELECT  arrvl.arrvl_id" +    
+                    ",arrvl.cat_cd" +   
+                    ",cat.cat_nm" +   
+                    ",pm.jan" + 
+                    ",pm.prdct_nm" +   
+                    ",arrvl.cost" +
+                    ",arrvl.trade_num" +  
+                    ",arrvl.trade_date " + 
+              "FROM arrival AS arrvl " +  
+              "LEFT OUTER JOIN prdct_mst AS pm " +  
+               "ON arrvl.prdct_id = pm.prdct_id " +  
+              "LEFT OUTER JOIN category AS cat " +  
+               "ON arrvl.cat_cd = cat.cat_cd " +  
+              "WHERE arrvl.checked = false) AS arrival " +
+          "ORDER BY arrival.trade_date"
   };
   connection.query(getArrivalQuery)
     .then(function(arrival){
@@ -273,7 +310,24 @@ router.post('/sales_reg', function(req, res, next) {
 //localhost:3000/sales_hstry
 router.get('/sales_hstry', function(req, res, next) {
   getSalesQuery = {
-    text: "SELECT sales.sales_id,sales.cat_cd,cat.cat_nm,pm.jan,pm.prdct_nm,pm.price,sales.trade_num,sales.trade_date FROM sales LEFT OUTER JOIN prdct_mst AS pm ON sales.prdct_id = pm.prdct_id LEFT OUTER JOIN category AS cat ON sales.cat_cd = cat.cat_cd"
+    text: "SELECT * FROM " +
+            "(SELECT * FROM sales_archives " +
+             "UNION " +
+             "SELECT sales.sales_id" + 
+                   ",sales.cat_cd" +
+                   ",cat.cat_nm" +
+                   ",pm.jan" +
+                   ",pm.prdct_nm" + 
+                   ",pm.price" +
+                   ",sales.trade_num" +
+                   ",sales.trade_date " +
+              "FROM sales " +   
+              "LEFT OUTER JOIN prdct_mst AS pm " +   
+                "ON sales.prdct_id = pm.prdct_id " +  
+              "LEFT OUTER JOIN category AS cat " +
+                "ON sales.cat_cd = cat.cat_cd " +
+              "WHERE sales.checked = false) AS sales " +
+            "ORDER BY sales.trade_date"
   };
   connection.query(getSalesQuery)
     .then(function(sales){
@@ -392,6 +446,40 @@ router.post('/settlement2', function(req, res, next) {
           "VALUES ($1, $2, $3, $4, $5, $6, now())",
     values: [ total_cost ,total_sales, profit_loss, total_calc_cash, excess_deficiency, total_cash ],
   };
+  var insertArrivalArchivesQuery = {
+    text: "INSERT INTO arrival_archives " + 
+            "SELECT  arrvl.arrvl_id," + 
+                    "arrvl.cat_cd," +  
+                    "cat.cat_nm," + 
+                    "pm.jan," + 
+                    "pm.prdct_nm," + 
+                    "arrvl.cost," + 
+                    "arrvl.trade_num," + 
+                    "arrvl.trade_date " + 
+                    "FROM arrival AS arrvl " + 
+            "LEFT OUTER JOIN prdct_mst AS pm " + 
+              "ON arrvl.prdct_id = pm.prdct_id " + 
+            "LEFT OUTER JOIN category AS cat " + 
+              "ON arrvl.cat_cd = cat.cat_cd " + 
+            "WHERE arrvl.checked = false"
+  };
+  var insertSalesArchivesQuery = {
+    text: "INSERT INTO sales_archives " + 
+            "SELECT sales.sales_id" + 
+            ",sales.cat_cd" +
+            ",cat.cat_nm" +
+            ",pm.jan" +
+            ",pm.prdct_nm" +  
+            ",pm.price" +
+            ",sales.trade_num" +  
+            ",sales.trade_date " + 
+          "FROM sales " +
+          "LEFT OUTER JOIN prdct_mst AS pm " +
+            "ON sales.prdct_id = pm.prdct_id " +  
+          "LEFT OUTER JOIN category AS cat " +
+            "ON sales.cat_cd = cat.cat_cd " +
+          "WHERE sales.checked = false"
+  };
   var updateSettlementQuery = {
     text: "UPDATE settlement SET latest = false"
   };
@@ -402,18 +490,27 @@ router.post('/settlement2', function(req, res, next) {
     text: "UPDATE sales SET checked = true"
   };
   Promise.all([
-    connection.query(updateSettlementQuery)
+    connection.query(insertArrivalArchivesQuery)
       .then(function(){}),
-    connection.query(updateArrivalQuery)
-      .then(function(){}),
-    connection.query(updateSalesQuery)
+    connection.query(insertSalesArchivesQuery)
       .then(function(){})
   ])
-  .then(function(){
-    connection.query(registerSettlementQuery)
-      .then(function(){})
-  })
-})
+  .then(Promise.all([
+      connection.query(updateSettlementQuery)
+        .then(function(){}),
+      connection.query(updateArrivalQuery)
+        .then(function(){}),
+      connection.query(updateSalesQuery)
+        .then(function(){})
+    ])
+    .then(function(){
+      connection.query(registerSettlementQuery)
+        .then(function(){
+          res.redirect('/sales_menu');
+          res.end();
+        });
+  }));
+});
 
 //localhost:3000/sales_check
 router.get('/sales_check', function(req, res, next) {

@@ -5,7 +5,7 @@ create table prdct_mst
   cat_cd VARCHAR(10),
   prdct_nm VARCHAR(100),
   price int,
-  latest boolean
+  latest boolean default true
   )
 
 //仕入テーブル
@@ -59,3 +59,15 @@ create table arrival_archives (
  trade_num integer,
  trade_date timestamp
 )
+
+//売上アーカイブ
+create table sales_archives (
+ sales_id integer primary key,
+ cat_cd varchar(4),
+ cat_name varchar(30),
+ jan varchar(20),
+ prdct_nm varchar(100),
+ price integer,
+ trade_num integer,
+ trade_date timestamp
+ )
