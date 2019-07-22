@@ -7,7 +7,6 @@
     <meta name="format-detection" content="telephone=no">
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
-    <script type="text/javascript" src="/javascript/prdct_use.js"></script>
   </head>
   <body>
     <header>
@@ -23,30 +22,38 @@
       </nav>
     </header>
     <div class="wrapper">
-        <ul class="main-list">
-          <% prdctList.forEach(function(prdctItem){ %>
-            <li class="main-list__item">
-              <a>
-                <p class="prdct_mst__prdct_id"><%= prdctItem.prdct_id %></p>
-                <p class="prdct_mst__cat_cd"><%= prdctItem.cat_cd %></p>
-                <p class="prdct_mst__cat_nm"><%= prdctItem.cat_nm %></p>
-                <p class="prdct_mst__jan"><%= prdctItem.jan %></p>
-                <p class="prdct_mst__prdct_nm"><%= prdctItem.prdct_nm %></p>
-                <p class="prdct_mst__price"><%= prdctItem.price %></p>
-                <p class="prdct_mst__latest"><%= prdctItem.latest %></p>
-              </a>
-            </li>
-          <% }); %>
-        </ul>
+      <div align="center">
+      <table rules="all">
+        <tr>
+          <th>商品ID</th>
+          <th>カテゴリコード</th>
+          <th>カテゴリ名</th>
+          <th>JAN</th>
+          <th>商品名</th>
+          <th>売価</th>
+          <th>使用</th>
+        </tr>
+        <% prdctList.forEach(function(prdctItem){ %>
+          <tr class="main-list__item">
+            <td class="prdct_mst__prdct_id"><%= prdctItem.prdct_id %></td>
+            <td class="prdct_mst__cat_cd"><%= prdctItem.cat_cd %></td>
+            <td class="prdct_mst__cat_nm"><%= prdctItem.cat_nm %></td>
+            <td class="prdct_mst__jan"><%= prdctItem.jan %></td>
+            <td class="prdct_mst__prdct_nm"><%= prdctItem.prdct_nm %></td>
+            <td class="prdct_mst__price"><%= prdctItem.price %></td>
+            <td class="prdct_mst__latest"><%= prdctItem.latest %></td>
+          </tr>
+        <% }); %>
+      </table>
+      </div>
     </div>
-    <form action="/prdct_mst" method="post" class="prdct_mst-form" name="delete_prdct">
-        <span class="label">id：</span>
-        <input type="number" name="prdct_id" class="input" required>
-        <input type="hidden" name="_method" value="delete">
-        <br>
-        <br>
-        <button type="submit" class="submit" id="delete_prdct_button">削除</button>
-        <br>
+    <form action="/prdct_mst" method="post" class="prdct_mst-form" name="delete_prdct" align="center">
+      <span class="label">id：</span>
+      <input type="number" name="prdct_id" class="input" required>
+      <br>
+      <br>
+      <button type="submit" class="submit" id="update_prdct_button">変更</button>
+      <br>
     </form>
   </body>
 </html>

@@ -10,9 +10,9 @@ function getCookieArray(){
     return arr;
 }
 var arr = getCookieArray();
-var prdct_use = arr['prdct_use'];
-console.log(prdct_use);
-if(prdct_use == 'true'){
+var prdct_id = arr['prdct_id'];
+console.log(prdct_id);
+if(prdct_use == ""){
     alert("指定されたidは未精算のデータに使用されています。\nidを削除する場合は一度精算を行ってください。");
 }
 document.cookie = "prdct_use=true; max-age=0";

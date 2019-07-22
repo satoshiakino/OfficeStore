@@ -70,52 +70,26 @@ router.get('/prdct_mst', function(req, res, next) {
     });
 });
 
-router.delete('/prdct_mst', function(req, res, next){
+router.post('/prdct_mst', function(req, res, next){
   var prdct_id = req.body.prdct_id;
-  var deleteQuery = {
-    text: "DELETE FROM prdct_mst WHERE prdct_id = $1",
-    values: [prdct_id],
-  };
-  var selectArrivalQuery = {
-    text: "SELECT * FROM arrival WHERE checked = false AND prdct_id = $1",
-    values: [prdct_id],
-  };
-  var selectSalesQuery = {
-    text: "SELECT * FROM sales WHERE checked = false AND prdct_id = $1",
-    values: [prdct_id]
-  };
-  var arrival_use;
-  var sales_use;
-  Promise.all([
-    connection.query(selectArrivalQuery)
-      .then(function(arrival){
-        arrival_use = arrival.length;
-      }),
-    connection.query(selectSalesQuery)
-      .then(function(sales){
-        sales_use = sales.length;
-      })
-  ])
-  .then(function(){
-    if(arrival_use == 0 && sales_use == 0){
-      console.log("Delete!");
-      /*connection.query(deleteQuery)
-        .then(function(){
-          res.redirect('/prdct_mst');
-          res.end();
-        });*/
-    } else if(arrival_use != 0 || sales_use != 0){
-      res.cookie('prdct_use', 'true', {maxAge:60000, httpOnly:false});
-      res.redirect('/prdct_mst');
-      res.end();
-    }
-  });
+  res.cookie('prdct_id', prdct_id, {maxAge:60000, httpOnly:false});
+  res.redirect('/prdct_update');
+  res.end();
 });
 
 //localhost:3000/prdct_reg
 router.get('/prdct_reg', function(req, res, next) {
-  res.render('prdct_reg', {});
-  res.end();
+  var selectQuery = {
+    text: 'SELECT cat_cd, cat_nm FROM category'
+  };
+  connection.query(selectQuery)
+    .then(function(category){
+      res.render('prdct_reg', {
+        title: "商品マスタ登録",
+        catList: category
+      });
+      res.end();
+    });
 });
 
 router.post('/prdct_reg', function(req, res, next) {
@@ -135,6 +109,23 @@ router.post('/prdct_reg', function(req, res, next) {
     .catch(function(err){
       console.log(err.error);
       res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack } });
+      res.end();
+    });
+});
+
+//localhost:3000/prdct_update
+router.get('/prdct_update', function(req, res, next){
+  var prdct_id = req.cookies.prdct_id;
+  var selectQuery = {
+    text: "SELECT * FROM prdct_mst WHERE prdct_id = $1",
+    values: [prdct_id]
+  };
+  connection.query(selectQuery)
+    .then(function(prdct){
+      res.render('prdct_update', {
+        title: "商品マスタ修正",
+        prdctList: prdct
+      });
       res.end();
     });
 });

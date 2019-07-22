@@ -7,6 +7,7 @@
     <meta name="format-detection" content="telephone=no">
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script type="text/javascript" src="/javascript/prdct_use.js"></script>
   </head>
   <body>
     <header>
@@ -22,25 +23,22 @@
       </nav>
     </header>
     <div class="wrapper">
-        <form action="/prdct_reg" method="post" class="prdct_reg-form">
-          <span class="label">カテゴリ：</span>
-          <select name="cat_cd" required>
-            <option value="">カテゴリを選んでください</option>
-            <% catList.forEach(function(catItem){ %>
-              <option value=<%= catItem.cat_cd %>><%= catItem.cat_nm %></option>
-            <% }); %>
-          </select>
+        <% prdctList.forEach(function(prdctItem){ %>
+        <form action="/prdct_update" method="post" class="prdct_update-form">
           <br>
+          <span class="label">カテゴリコード：</span><input type="text" name="cat_cd" class="input" value=<%= prdctItem.cat_cd %> required><br>
           <br>
-          <span class="label">JANコード：</span><input type="text" name="jan" class="input" required><br>
+          <span class="label">JANコード：</span><input type="text" name="jan" class="input" value=<%= prdctItem.jan %> required><br>
           <br>
-          <span class="label">商品名</span><input type="text" name="prdct_nm" class="input" required><br>
+          <span class="label">商品名</span><input type="text" name="prdct_nm" class="input" value=<%= prdctItem.prdct_nm %> required><br>
           <br>
-          <span class="label">売価</span><input type="number" name="price" class="input" required><br>
+          <span class="label">売価</span><input type="number" name="price" class="input" value=<%= prdctItem.price %> required><br>
           <br>
+          <span class="label">使用</span><input type="text" name="latest" class="input" value=<%= prdctItem.latest %> required><br>
           <br>
           <button type="submit" class="submit">登録</button>
           <br>
         </form>
+        <% }); %>
   </body>
 </html>

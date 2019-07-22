@@ -1,0 +1,41 @@
+router.delete('/prdct_mst', function(req, res, next){
+  var prdct_id = req.body.prdct_id;
+  var deleteQuery = {
+    text: "DELETE FROM prdct_mst WHERE prdct_id = $1",
+    values: [prdct_id],
+  };
+  var selectArrivalQuery = {
+    text: "SELECT * FROM arrival WHERE checked = false AND prdct_id = $1",
+    values: [prdct_id],
+  };
+  var selectSalesQuery = {
+    text: "SELECT * FROM sales WHERE checked = false AND prdct_id = $1",
+    values: [prdct_id]
+  };
+  var arrival_use;
+  var sales_use;
+  Promise.all([
+    connection.query(selectArrivalQuery)
+      .then(function(arrival){
+        arrival_use = arrival.length;
+      }),
+    connection.query(selectSalesQuery)
+      .then(function(sales){
+        sales_use = sales.length;
+      })
+  ])
+  .then(function(){
+    if(arrival_use == 0 && sales_use == 0){
+      console.log("Delete!");
+      /*connection.query(deleteQuery)
+        .then(function(){
+          res.redirect('/prdct_mst');
+          res.end();
+        });*/
+    } else if(arrival_use != 0 || sales_use != 0){
+      res.cookie('prdct_use', 'true', {maxAge:60000, httpOnly:false});
+      res.redirect('/prdct_mst');
+      res.end();
+    }
+  });
+});

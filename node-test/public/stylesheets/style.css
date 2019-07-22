@@ -6,7 +6,7 @@ small, strike, strong, sub, sup, tt, var,
 b, u, i, center,
 dl, dt, dd, ol, ul, li,
 fieldset, form, label, legend,
-table, caption, tbody, tfoot, thead, tr, th, td,
+table, caption, tbody, tfoot, thead,
 article, aside, canvas, details, embed,
 figure, figcaption, footer, header, hgroup,
 menu, nav, output, ruby, section, summary,
@@ -38,8 +38,15 @@ q:before, q:after {
   content: none;
 }
 table {
+  text-align: center;
   border-collapse: collapse;
   border-spacing: 0;
+}
+table th {
+  padding: 10px;
+}
+table td {
+  padding: 3px 10px;
 }
 
 /*Base*/
