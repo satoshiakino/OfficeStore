@@ -24,17 +24,22 @@
       </nav>
     </header>
     <div class="wrapper">
-      <ul class="main-list">
-        <% categoryList.forEach(function(categoryItem){ %>
-          <li class="main-list__item">
-            <a>
-              <p class="category__cat_id"><%= categoryItem.cat_id %></p>
-              <p class="category__cat_cd"><%= categoryItem.cat_cd %></p>
-              <p class="category__cat_nm"><%= categoryItem.cat_nm %></p>
-            </a>
-          </li>
-        <% }); %>
-      </ul>
+      <div align="center">
+        <table rules="all">
+          <tr>
+            <th>カテゴリID</th>
+            <th>カテゴリコード</th>
+            <th>カテゴリ名</th>
+          </tr>
+          <% categoryList.forEach(function(categoryItem){ %>
+            <tr>
+              <td class="category__cat_id"><%= categoryItem.cat_id %></td>
+              <td class="category__cat_cd"><%= categoryItem.cat_cd %></td>
+              <td class="category__cat_nm"><%= categoryItem.cat_nm %></td>
+            </tr>
+          <% }); %>
+        </table>
+      </div>
       <form action="/category" method="post" class="category-form">
         <span class="label">コード：</span><input type="text" name="cat_cd" class="input" required><br>
         <br>
