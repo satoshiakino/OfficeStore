@@ -202,7 +202,7 @@ router.post('/category', function(req, res, next){
     });
 });
 
-router.delete('/category', function(req, res, next){
+/*router.delete('/category', function(req, res, next){
   var cat_id = req.body.cat_id;
   var deleteQuery = {
     text: "DELETE FROM category WHERE cat_id = $1",
@@ -216,6 +216,23 @@ router.delete('/category', function(req, res, next){
     .catch(function(err){
       console.log(err.error);
       res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
+});*/
+
+//localhost:3000/cat_update
+router.get('/cat_update', function(req, res, next) {
+  var cat_id = req.cookies.cat_id;
+  var selectQuery = {
+    text: 'SELECT cat_cd, cat_nm category WHERE cat_id = $1',
+    values: [cat_id]
+  };
+  connection.query(selectQuery)
+    .then(function(category){
+      res.render('cat_update', {
+        title: "カテゴリ修正",
+        catList: category
+      });
       res.end();
     });
 });
