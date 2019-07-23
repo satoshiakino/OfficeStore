@@ -31,7 +31,6 @@
           <th>JAN</th>
           <th>商品名</th>
           <th>売価</th>
-          <th>使用</th>
         </tr>
         <% prdctList.forEach(function(prdctItem){ %>
           <tr class="main-list__item">
@@ -41,7 +40,6 @@
             <td class="prdct_mst__jan"><%= prdctItem.jan %></td>
             <td class="prdct_mst__prdct_nm"><%= prdctItem.prdct_nm %></td>
             <td class="prdct_mst__price"><%= prdctItem.price %></td>
-            <td class="prdct_mst__latest"><%= prdctItem.latest %></td>
           </tr>
         <% }); %>
       </table>

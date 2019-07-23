@@ -58,7 +58,8 @@ router.get('/prdct_mst', function(req, res, next) {
                 ",prdct.latest " +
           "FROM prdct_mst AS prdct " +
           "LEFT OUTER JOIN category AS cat " + 
-            "ON prdct.cat_cd = cat.cat_cd"
+            "ON prdct.cat_cd = cat.cat_cd " +
+          "WHERE prdct.latest = true"
   };
   connection.query(getPrdctMstQuery)
     .then(function(prdctMst){
@@ -128,6 +129,42 @@ router.get('/prdct_update', function(req, res, next){
       });
       res.end();
     });
+});
+
+router.post('/prdct_update', function(req, res, next) {
+  var jan = req.body.jan;
+  var cat_cd = req.body.cat_cd;
+  var prdct_nm = req.body.prdct_nm;
+  var price = req.body.price;
+  var registerQuery = {
+    text: 'INSERT INTO prdct_mst (cat_cd, jan, prdct_nm, price) VALUES($1, $2, $3, $4)',
+    values: [cat_cd, jan, prdct_nm, price],
+  };
+  var prdct_id = req.cookies.prdct_id;
+  var updateQuery = {
+    text: 'UPDATE prdct_mst SET latest = false WHERE prdct_id = $1',
+    values: [prdct_id]
+  };
+  Promise.all([
+    connection.query(updateQuery)
+      .then(function(){})
+      .catch(function(err){
+        console.log(err.error);
+        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack } });
+        res.end();
+      }),
+    connection.query(registerQuery)
+      .then(function(){})
+      .catch(function(err){
+        console.log(err.error);
+        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack } });
+        res.end();
+      })
+  ])
+  .then(function(){
+    res.redirect('/prdct_mst');
+    res.end();
+  });
 });
 
 //localhost:3000/category
