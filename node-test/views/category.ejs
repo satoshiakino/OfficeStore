@@ -42,22 +42,14 @@
       </div>
       <br>
       <br>
-      <form action="/category" method="post" class="category-form">
-        <span class="label">コード：</span><input type="text" name="cat_cd" class="input" required><br>
-        <br>
-        <span class="label">名称：</span><input type="text" name="cat_nm" class="input" required><br>
-        <br>
-        <button type="submit" class="submit">登録</button>
-        <br>
-      </form>
+      <button><a href='/cat_reg'>新規登録</a></button>
       <br>
-      <form action="/category" method="post" class="category-form" name="delete_category">
+      <form action="/category" method="post" class="category-form" name="update_category">
         <span class="label">id：</span>
         <input type="text" name="cat_id" class="input" required>
-        <input type="hidden" name="_method" value="delete">
         <br>
         <br>
-        <button type="submit" class="submit" id="delete_category_button">削除</button>
+        <button type="submit" class="submit" id="update_category_button">修正</button>
         <br>
       </form>
       <a href="/mst_menu">戻る</a>

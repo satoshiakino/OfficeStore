@@ -73,7 +73,7 @@ router.get('/prdct_mst', function(req, res, next) {
 
 router.post('/prdct_mst', function(req, res, next){
   var prdct_id = req.body.prdct_id;
-  res.cookie('prdct_id', prdct_id, {maxAge:60000, httpOnly:false});
+  res.cookie('prdct_id', prdct_id, {maxAge:600000, httpOnly:false});
   res.redirect('/prdct_update');
   res.end();
 });
@@ -81,7 +81,7 @@ router.post('/prdct_mst', function(req, res, next){
 //localhost:3000/prdct_reg
 router.get('/prdct_reg', function(req, res, next) {
   var selectQuery = {
-    text: 'SELECT cat_cd, cat_nm FROM category'
+    text: 'SELECT cat_cd, cat_nm FROM category WHERE latest = true'
   };
   connection.query(selectQuery)
     .then(function(category){
@@ -170,7 +170,7 @@ router.post('/prdct_update', function(req, res, next) {
 //localhost:3000/category
 router.get('/category', function(req, res, next){
   var getCategoryQuery = {
-      text:'SELECT * FROM category'
+      text:'SELECT * FROM category WHERE latest = true'
   };
   connection.query(getCategoryQuery)
     .then(function(category){
@@ -183,23 +183,10 @@ router.get('/category', function(req, res, next){
 });
 
 router.post('/category', function(req, res, next){
-  var cat_cd = req.body.cat_cd;
-  var cat_nm = req.body.cat_nm;
-  var registerQuery = {
-    text: "INSERT INTO category (cat_cd, cat_nm) VALUES($1, $2)",
-    values: [cat_cd, cat_nm],
-  };
-  connection.query(registerQuery)
-    .then(function(rows){
-      console.log(registerQuery);
-      res.redirect('/mst_menu');
-      res.end();
-    })
-    .catch(function(err){
-      console.log(err.error);
-      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-      res.end();
-    });
+  var cat_id = req.body.cat_id;
+  res.cookie('cat_id', cat_id, {maxAge:600000, httpOnly:false});
+  res.redirect('/cat_update');
+  res.end();
 });
 
 /*router.delete('/category', function(req, res, next){
@@ -220,11 +207,37 @@ router.post('/category', function(req, res, next){
     });
 });*/
 
+//localhost:3000/cat_reg
+router.get('/cat_reg', function(req, res, next) {
+  res.render('cat_reg');
+  res.end();
+});
+
+router.post('/cat_reg', function(req, res, next){
+  var cat_cd = req.body.cat_cd;
+  var cat_nm = req.body.cat_nm;
+  var registerQuery = {
+    text: "INSERT INTO category (cat_cd, cat_nm) VALUES($1, $2)",
+    values: [cat_cd, cat_nm],
+  };
+  connection.query(registerQuery)
+    .then(function(rows){
+      console.log(registerQuery);
+      res.redirect('/mst_menu');
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
+});
+
 //localhost:3000/cat_update
 router.get('/cat_update', function(req, res, next) {
   var cat_id = req.cookies.cat_id;
   var selectQuery = {
-    text: 'SELECT cat_cd, cat_nm category WHERE cat_id = $1',
+    text: 'SELECT cat_cd, cat_nm FROM category WHERE cat_id = $1',
     values: [cat_id]
   };
   connection.query(selectQuery)
@@ -237,6 +250,39 @@ router.get('/cat_update', function(req, res, next) {
     });
 });
 
+router.post('/cat_update', function(req, res, next){
+  var cat_cd = req.body.cat_cd;
+  var cat_nm = req.body.cat_nm;
+  var cat_id = req.cookies.cat_id;
+  var registerQuery = {
+    text: "INSERT INTO category (cat_cd, cat_nm) VALUES($1, $2)",
+    values: [cat_cd, cat_nm],
+  };
+  var updateQuery = {
+    text: 'UPDATE category SET cat_cd = $1, cat_nm = $2 WHERE cat_id = $1',
+    values: [cat_id]
+  };
+  Promise.all([
+    connection.query(registerQuery)
+      .then(function(){})
+      .catch(function(err){
+        console.log(err.error);
+        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+        res.end();
+    }),
+    connection.query(updateQuery)
+      .then(function(){})
+      .catch(function(err){
+        console.log(err.error);
+        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+        res.end();
+      }),
+  ])
+  .then(function(){
+    res.redirect('/category');
+    res.end();
+  });
+});
 //localhost:3000/arrvl_menu
 router.get('/arrvl_menu', function(req, res, next) {
   res.render('arrvl_menu', {});

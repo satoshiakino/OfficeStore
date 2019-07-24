@@ -39,3 +39,14 @@ router.delete('/prdct_mst', function(req, res, next){
     }
   });
 });
+
+
+<form action="/category" method="post" class="category-form" name="delete_category">
+        <span class="label">idF</span>
+        <input type="text" name="cat_id" class="input" required>
+        <input type="hidden" name="_method" value="delete">
+        <br>
+        <br>
+        <button type="submit" class="submit" id="delete_category_button">íœ</button>
+        <br>
+      </form>
