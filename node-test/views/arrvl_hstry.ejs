@@ -17,7 +17,7 @@
           <li class="current"><a href="/arrvl_menu">仕入登録・修正</a></li>
           <li><a href="/sales_menu">売上登録・修正</a></li>
           <li><a href="/sales_check">売上確認</a></li>
-          <li><a href='/invntry_check'>在庫確認</a></li>
+          <li><a href="/inventory">在庫確認</a></li>
         </ul>
       </nav>
     </header>
@@ -30,8 +30,8 @@
               <th>カテゴリ名</th>
               <th>JAN</th>
               <th>商品名</th>
-              <th>個数</th>
               <th>原価</th>
+              <th>個数</th>
               <th>登録日</th>
             </tr>
             <% arrvlList.forEach(function(arrvlItem){ %>
@@ -41,8 +41,8 @@
                 <td class="arrvl__cat_nm"><%= arrvlItem.cat_nm %></td>
                 <td class="arrvl__jan"><%= arrvlItem.jan %></td>
                 <td class="arrvl__prdct_nm"><%= arrvlItem.prdct_nm %></td>
-                <td class="arrvl__trade_num"><%= arrvlItem.trade_num %></td>
                 <td class="arrvl__cost"><%= arrvlItem.cost %></td>
+                <td class="arrvl__trade_num"><%= arrvlItem.trade_num %></td>
                 <td class="arrvl__trade_date"><%= arrvlItem.trade_date %></td>
               </tr>
             <% }); %>

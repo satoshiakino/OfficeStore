@@ -17,15 +17,27 @@
           <li><a href="/arrvl_menu">仕入登録・修正</a></li>
           <li class="current"><a href="/sales_menu">売上登録・修正</a></li>
           <li><a href="/sales_check">売上確認</a></li>
-          <li><a href='/invntry_check'>在庫確認</a></li>
+          <li><a href="/inventory">在庫確認</a></li>
         </ul>
       </nav>
     </header>
     <div class="wrapper">
         <form action="/sales_reg" method="post" class="sales_reg-form">
-            <span class="label">カテゴリコード：</span><input type="text" name="cat_cd" class="input" required><br>
-            <br>
-            <span class="label">prdct_id：</span><input type="number" name="prdct_id" class="input" required><br>
+          <span class="label">カテゴリ：</span>
+          <select name="cat_cd" required>
+            <option value="">カテゴリを選んでください</option>
+            <% catList.forEach(function(catItem){ %>
+              <option value=<%= catItem.cat_cd %>><%= catItem.cat_nm %></option>
+            <% }); %>
+          </select>
+          <br>
+          <span class="label">商品名：</span>
+          <select name="prdct_id" required>
+            <option value="">商品を選んでください</option>
+            <% prdctList.forEach(function(prdctItem){ %>
+              <option value=<%= prdctItem.prdct_id %>><%= prdctItem.prdct_nm %></option>
+            <% }); %>
+          </select>
             <br>
             <span class="label">個数</span><input type="text" name="trade_num" class="input" required><br>
             <br>

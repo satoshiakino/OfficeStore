@@ -278,8 +278,32 @@ router.get('/arrvl_menu', function(req, res, next) {
 
 //localhost:3000/arrvl_reg
 router.get('/arrvl_reg', function(req, res, next) {
-  res.render('arrvl_reg', {});
-  res.end();
+  var selectCategoryQuery = {
+    text: 'SELECT cat_cd, cat_nm FROM category WHERE latest = true'
+  };
+  var selectPrdctQuery = {
+    text: 'SELECT prdct_id, prdct_nm FROM prdct_mst WHERE latest = true'
+  }
+  var category;
+  var product;
+  Promise.all([
+    connection.query(selectCategoryQuery)
+      .then(function(cat){
+        category = cat
+      }),
+    connection.query(selectPrdctQuery)
+      .then(function(prdct){
+        product = prdct
+      })
+  ])
+  .then(function(){
+    res.render('arrvl_reg', {
+      title: "仕入登録",
+      catList: category,
+      prdctList: product
+    });
+    res.end();
+  });
 });
 
 router.post('/arrvl_reg', function(req, res, next) {
@@ -289,7 +313,7 @@ router.post('/arrvl_reg', function(req, res, next) {
   var cost = req.body.cost;
   registerArrivalQuery = {
     text: "INSERT INTO arrival (cat_cd, prdct_id, cost, trade_num, trade_date) VALUES($1, $2, $3, $4, now())",
-    values: [cat_cd, prdct_id, trade_num, cost],
+    values: [cat_cd, prdct_id, cost, trade_num],
   };
   connection.query(registerArrivalQuery)
     .then(function(arrival){
@@ -306,24 +330,20 @@ router.post('/arrvl_reg', function(req, res, next) {
 //localhost:3000/arrvl_hstry
 router.get('/arrvl_hstry', function(req, res, next) {
   getArrivalQuery = {
-    text: "SELECT * FROM " + 
-            "(SELECT * FROM arrival_archives " +
-              "UNION " +
-             "SELECT  arrvl.arrvl_id" +    
-                    ",arrvl.cat_cd" +   
-                    ",cat.cat_nm" +   
-                    ",pm.jan" + 
-                    ",pm.prdct_nm" +   
-                    ",arrvl.cost" +
-                    ",arrvl.trade_num" +  
-                    ",arrvl.trade_date " + 
-              "FROM arrival AS arrvl " +  
-              "LEFT OUTER JOIN prdct_mst AS pm " +  
-               "ON arrvl.prdct_id = pm.prdct_id " +  
-              "LEFT OUTER JOIN category AS cat " +  
-               "ON arrvl.cat_cd = cat.cat_cd " +  
-              "WHERE arrvl.checked = false) AS arrival " +
-          "ORDER BY arrival.trade_date"
+    text: "SELECT  arrvl.arrvl_id" +    
+                 ",arrvl.cat_cd" +   
+                 ",cat.cat_nm" +   
+                 ",pm.jan" + 
+                 ",pm.prdct_nm" +   
+                 ",arrvl.cost" +
+                 ",arrvl.trade_num" +  
+                 ",TO_CHAR(arrvl.trade_date, \'yyyy.mm.dd Dy hh24:mi:ss\') AS trade_date " + 
+          "FROM arrival AS arrvl " +  
+          "LEFT OUTER JOIN prdct_mst AS pm " +  
+          "ON arrvl.prdct_id = pm.prdct_id " +  
+          "LEFT OUTER JOIN category AS cat " +  
+          "ON arrvl.cat_cd = cat.cat_cd " +  
+          "ORDER BY arrvl.trade_date"
   };
   connection.query(getArrivalQuery)
     .then(function(arrival){
@@ -361,8 +381,32 @@ router.get('/sales_menu', function(req, res, next) {
 
 //localhost:3000/sales_reg
 router.get('/sales_reg', function(req, res, next) {
-  res.render('sales_reg', {});
-  res.end();
+  var selectCategoryQuery = {
+    text: 'SELECT cat_cd, cat_nm FROM category WHERE latest = true'
+  };
+  var selectPrdctQuery = {
+    text: 'SELECT prdct_id, prdct_nm FROM prdct_mst WHERE latest = true'
+  }
+  var category;
+  var product;
+  Promise.all([
+    connection.query(selectCategoryQuery)
+      .then(function(cat){
+        category = cat
+      }),
+    connection.query(selectPrdctQuery)
+      .then(function(prdct){
+        product = prdct
+      })
+  ])
+  .then(function(){
+    res.render('sales_reg', {
+      title: "仕入登録",
+      catList: category,
+      prdctList: product
+    });
+    res.end();
+  });
 });
 
 router.post('/sales_reg', function(req, res, next) {
@@ -395,13 +439,13 @@ router.get('/sales_hstry', function(req, res, next) {
                 ",pm.prdct_nm" + 
                 ",pm.price" +
                 ",sales.trade_num" +
-                ",sales.trade_date " +
+                ",TO_CHAR(sales.trade_date, \'yyyy.mm.dd Dy hh24:mi:ss\') AS trade_date " +
             "FROM sales " +   
             "LEFT OUTER JOIN prdct_mst AS pm " +   
              "ON sales.prdct_id = pm.prdct_id " +  
             "LEFT OUTER JOIN category AS cat " +
              "ON sales.cat_cd = cat.cat_cd " +
-            "WHERE sales.checked = false "
+            "ORDER BY sales.trade_date"
   };
   connection.query(getSalesQuery)
     .then(function(sales){
@@ -592,10 +636,25 @@ router.get('/sales_check', function(req, res, next) {
   res.end();
 });
 
-//localhost:3000/invntry_check
-router.get('/invntry_check', function(req, res, next) {
-  res.render('invntry_check', {});
+//localhost:3000/inventory
+router.get('/inventory', function(req, res, next) {
+  res.render('inventory', {});
   res.end();
 });
+
+//localhost:3000/invntry_count
+router.get('/invntry_count', function(req, res, next) {
+  var selectQuery = {
+    text: 'SELECT jan, prdct_nm FROM prdct_mst ORDER BY prdct_id'
+  }
+  connection.query(selectQuery)
+    .then(function(prdct){
+      res.render('invntry_count', {
+        title: "棚卸",
+        prdctList: prdct
+      });
+      res.end();
+    })
+})
 
 module.exports = router;
