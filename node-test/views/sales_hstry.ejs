@@ -22,22 +22,32 @@
       </nav>
     </header>
     <div class="wrapper">
-        <ul class="main-list">
+      <div align="center">
+        <table rules="all">
+          <tr>
+            <th>ID</th>
+            <th>カテゴリコード</th>
+            <th>カテゴリ名</th>
+            <th>JAN</th>
+            <th>商品名</th>
+            <th>個数</th>
+            <th>売価</th>
+            <th>登録日</th>
+          </tr>
           <% salesList.forEach(function(salesItem){ %>
-            <li class="main-list__item">
-              <a>
-                <p class="sales__sale_id"><%= salesItem.sales_id %></p>
-                <p class="sales__cat_cd"><%= salesItem.cat_cd %></p>
-                <p class="sales__cat_nm"><%= salesItem.cat_nm %></p>
-                <p class="sales__jan"><%= salesItem.jan %></p>
-                <p class="sales__prdct_nm"><%= salesItem.prdct_nm %></p>
-                <p class="sales__cost"><%= salesItem.cost %></p>
-                <p class="sales__trade_num"><%= salesItem.trade_num %></p>
-                <p class="sales__trade_date"><%= salesItem.trade_date %></p>
-              </a>
-            </li>
+            <tr class="main-list__item">
+              <td class="sales__sales_id"><%= salesItem.sales_id %></td>
+              <td class="sales__cat_cd"><%= salesItem.cat_cd %></td>
+              <td class="sales__cat_nm"><%= salesItem.cat_nm %></td>
+              <td class="sales__jan"><%= salesItem.jan %></td>
+              <td class="sales__prdct_nm"><%= salesItem.prdct_nm %></td>
+              <td class="sales__trade_num"><%= salesItem.trade_num %></td>
+              <td class="sales__price"><%= salesItem.price %></td>
+              <td class="sales__trade_date"><%= salesItem.trade_date %></td>
+            </tr>
           <% }); %>
-        </ul>
+        </table>
+      </div>
     </div>
     <form action="/sales_hstry" method="post" class="sales_hstry-form" name="delete_hstry">
         <span class="label">id：</span>

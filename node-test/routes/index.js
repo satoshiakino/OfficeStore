@@ -254,35 +254,22 @@ router.post('/cat_update', function(req, res, next){
   var cat_cd = req.body.cat_cd;
   var cat_nm = req.body.cat_nm;
   var cat_id = req.cookies.cat_id;
-  var registerQuery = {
-    text: "INSERT INTO category (cat_cd, cat_nm) VALUES($1, $2)",
-    values: [cat_cd, cat_nm],
-  };
   var updateQuery = {
-    text: 'UPDATE category SET cat_cd = $1, cat_nm = $2 WHERE cat_id = $1',
-    values: [cat_id]
+    text: 'UPDATE category SET cat_cd = $1, cat_nm = $2 WHERE cat_id = $3',
+    values: [cat_cd, cat_nm, cat_id]
   };
-  Promise.all([
-    connection.query(registerQuery)
-      .then(function(){})
-      .catch(function(err){
-        console.log(err.error);
-        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-        res.end();
-    }),
-    connection.query(updateQuery)
-      .then(function(){})
-      .catch(function(err){
-        console.log(err.error);
-        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-        res.end();
-      }),
-  ])
-  .then(function(){
-    res.redirect('/category');
-    res.end();
-  });
+  connection.query(updateQuery)
+    .then(function(){
+      res.redirect('/category');
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
 });
+
 //localhost:3000/arrvl_menu
 router.get('/arrvl_menu', function(req, res, next) {
   res.render('arrvl_menu', {});
@@ -401,24 +388,20 @@ router.post('/sales_reg', function(req, res, next) {
 //localhost:3000/sales_hstry
 router.get('/sales_hstry', function(req, res, next) {
   getSalesQuery = {
-    text: "SELECT * FROM " +
-            "(SELECT * FROM sales_archives " +
-             "UNION " +
-             "SELECT sales.sales_id" + 
-                   ",sales.cat_cd" +
-                   ",cat.cat_nm" +
-                   ",pm.jan" +
-                   ",pm.prdct_nm" + 
-                   ",pm.price" +
-                   ",sales.trade_num" +
-                   ",sales.trade_date " +
-              "FROM sales " +   
-              "LEFT OUTER JOIN prdct_mst AS pm " +   
-                "ON sales.prdct_id = pm.prdct_id " +  
-              "LEFT OUTER JOIN category AS cat " +
-                "ON sales.cat_cd = cat.cat_cd " +
-              "WHERE sales.checked = false) AS sales " +
-            "ORDER BY sales.trade_date"
+    text: "SELECT sales.sales_id" + 
+                ",sales.cat_cd" +
+                ",cat.cat_nm" +
+                ",pm.jan" +
+                ",pm.prdct_nm" + 
+                ",pm.price" +
+                ",sales.trade_num" +
+                ",sales.trade_date " +
+            "FROM sales " +   
+            "LEFT OUTER JOIN prdct_mst AS pm " +   
+             "ON sales.prdct_id = pm.prdct_id " +  
+            "LEFT OUTER JOIN category AS cat " +
+             "ON sales.cat_cd = cat.cat_cd " +
+            "WHERE sales.checked = false "
   };
   connection.query(getSalesQuery)
     .then(function(sales){
