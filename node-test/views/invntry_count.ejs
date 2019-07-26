@@ -7,6 +7,15 @@
     <meta name="format-detection" content="telephone=no">
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script>
+       var form = document.getElementById('invntry_count');
+       if(form != null){
+        console.log(form);
+        form.invntry_count.addEventListener('change', function(){
+         console.log('!!!!');
+       }, false);
+       }
+    </script>
   </head>
   <body>
     <header>
@@ -28,13 +37,17 @@
           <tr>
             <th>JAN</th>
             <th>商品名</th>
-            <th>個数</th>
+            <th>在庫数</th>
+            <th>入力数</th>
+            <th>差異</th>
           </tr>
           <% prdctList.forEach(function(prdctItem){ %>
             <tr class="main-list__item">
               <td class="prdct_mst__jan"><%= prdctItem.jan %></td>
               <td class="prdct_mst__prdct_nm"><%= prdctItem.prdct_nm %></td>
-              <td><input type="number" name="count" class="input" required></td>
+              <td class="prdct_mst__inventory"><%= prdctItem.inventory %></td>
+              <td><input type="number" name="count" class="input" id="invntry_count" required></td>
+              <td class="difference"></td>
             </tr>
           <% }); %>
         </table>

@@ -307,7 +307,7 @@ router.get('/arrvl_reg', function(req, res, next) {
     text: 'SELECT cat_cd, cat_nm FROM category WHERE latest = true'
   };
   var selectPrdctQuery = {
-    text: 'SELECT prdct_id, prdct_nm FROM prdct_mst WHERE latest = true'
+    text: 'SELECT prdct_id, prdct_nm, cat_cd FROM prdct_mst WHERE latest = true'
   };
   var category;
   var product;
@@ -755,7 +755,35 @@ router.get('/inventory', function(req, res, next) {
 //localhost:3000/invntry_count
 router.get('/invntry_count', function(req, res, next) {
   var selectQuery = {
-    text: 'SELECT jan, prdct_nm FROM prdct_mst ORDER BY prdct_id'
+    text: 'SELECT pm.prdct_id' + 
+          	    ',pm.jan' +
+          	    ',pm.prdct_nm' +
+          	    ',CASE WHEN arrival.arrvl_num IS NULL THEN 0 ELSE arrival.arrvl_num END ' + 
+          	    ' - CASE WHEN sales.sales_num IS NULL THEN 0 ELSE sales.sales_num END AS inventory' +
+          	    ',(CASE WHEN arrival.arrvl_num IS NULL THEN 0 ELSE arrival.arrvl_num END ' +
+          	    ' - CASE WHEN sales.sales_num IS NULL THEN 0 ELSE sales.sales_num END)' +
+          	    ' * pm.price * pm.cost_rate AS stock_value ' +
+          'FROM prdct_mst AS pm ' +
+          'LEFT OUTER JOIN ' +
+          '( ' +
+          'SELECT prdct_id ' +
+              ',SUM(trade_num) AS arrvl_num ' +
+              ',SUM(trade_num * cost) AS arrvl_cost ' +
+          'FROM arrival ' +
+          'GROUP BY prdct_id ' +
+          ') AS arrival ' +
+          'ON pm.prdct_id = arrival.prdct_id ' +
+          'LEFT OUTER JOIN ' +
+          '( ' +
+          'SELECT sales.prdct_id ' +
+              ',SUM(sales.trade_num) AS sales_num ' +
+              ',SUM(sales.trade_num * pm.price) AS total_sales ' +
+          'FROM sales ' +
+          'LEFT OUTER JOIN prdct_mst AS pm ' +
+          'ON sales.prdct_id = pm.prdct_id ' +
+          'GROUP BY sales.prdct_id ' +
+          ') AS sales ' +
+          'ON pm.prdct_id = sales.prdct_id'
   };
   connection.query(selectQuery)
     .then(function(prdct){

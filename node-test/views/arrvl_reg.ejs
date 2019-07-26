@@ -7,6 +7,17 @@
     <meta name="format-detection" content="telephone=no">
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script>
+      function onChangeCategory(self) {
+        document.querySelectorAll("#prdct_id_select>option").forEach(function(option) {
+          if(option.getAttribute("category") === self.value) {
+            option.style.display = 'block';
+          } else {
+            option.style.display = 'none';
+          }
+        });
+      };
+    </script>
   </head>
   <body>
     <header>
@@ -22,30 +33,30 @@
       </nav>
     </header>
     <div class="wrapper">
-        <form action="/arrvl_reg" method="post" class="arrvl_reg-form">
-          <span class="label">カテゴリ：</span>
-          <select name="cat_cd" required>
-            <option value="">カテゴリを選んでください</option>
-            <% catList.forEach(function(catItem){ %>
-              <option value=<%= catItem.cat_cd %>><%= catItem.cat_nm %></option>
-            <% }); %>
-          </select>
-          <br>
-          <span class="label">商品名：</span>
-          <select name="prdct_id" required>
-            <option value="">商品を選んでください</option>
-            <% prdctList.forEach(function(prdctItem){ %>
-              <option value=<%= prdctItem.prdct_id %>><%= prdctItem.prdct_nm %></option>
-            <% }); %>
-          </select>
-          <br>
-          <span class="label">個数</span><input type="text" name="trade_num" class="input" required><br>
-          <br>
-          <span class="label">原価</span><input type="number" name="cost" class="input" required><br>
-          <br>
-          <br>
-          <button type="submit" class="submit">登録</button>
-          <br>
-        </form>
+      <form action="/arrvl_reg" method="post" class="arrvl_reg-form">
+        <span class="label">カテゴリ：</span>
+        <select name="cat_cd" required onchange="onChangeCategory(this)">
+          <option value="">カテゴリを選んでください</option>
+          <% catList.forEach(function(catItem){ %>
+            <option value=<%= catItem.cat_cd %>><%= catItem.cat_nm %></option>
+          <% }); %>
+        </select>
+        <br>
+        <span class="label">商品名：</span>
+        <select id="prdct_id_select" name="prdct_id" required>
+          <option value="">商品を選んでください</option>
+          <% prdctList.forEach(function(prdctItem){ %>
+            <option value=<%= prdctItem.prdct_id %> category=<%= prdctItem.cat_cd %> style="display:none;"><%= prdctItem.prdct_nm %></option>
+          <% }); %>
+        </select>
+        <br>
+        <span class="label">個数</span><input type="text" name="trade_num" class="input" required><br>
+        <br>
+        <span class="label">原価</span><input type="number" name="cost" class="input" required><br>
+        <br>
+        <br>
+        <button type="submit" class="submit">登録</button>
+        <br>
+      </form>
   </body>
 </html>
