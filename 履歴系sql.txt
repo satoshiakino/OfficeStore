@@ -37,3 +37,37 @@ LEFT OUTER JOIN category AS cat
 	ON sales.cat_cd = cat.cat_cd
 WHERE sales.checked = false) AS sales
 ORDER BY sales.trade_date
+
+//’I‰µ—p
+SELECT pm.prdct_id
+	  ,pm.jan
+	  ,pm.prdct_nm
+	  ,CASE WHEN arrival.arrvl_num IS NULL THEN 0 ELSE arrival.arrvl_num END 
+	   - CASE WHEN sales.sales_num IS NULL THEN 0 ELSE sales.sales_num END AS inventory
+	  ,(CASE WHEN arrival.arrvl_num IS NULL THEN 0 ELSE arrival.arrvl_num END 
+	   - CASE WHEN sales.sales_num IS NULL THEN 0 ELSE sales.sales_num END)
+	   * CASE WHEN arrival.arrvl_cost IS NULL THEN 0 ELSE arrival.arrvl_cost END AS stock_value
+FROM prdct_mst AS pm
+LEFT OUTER JOIN
+(
+SELECT prdct_id
+	  ,SUM(trade_num) AS arrvl_num
+	  ,SUM(trade_num * cost) AS arrvl_cost
+FROM arrival
+GROUP BY prdct_id
+) AS arrival
+
+ON pm.prdct_id = arrival.prdct_id
+LEFT OUTER JOIN
+
+(
+SELECT sales.prdct_id
+	  ,SUM(sales.trade_num) AS sales_num
+	  ,SUM(sales.trade_num * pm.price) AS total_sales
+FROM sales
+LEFT OUTER JOIN prdct_mst AS pm
+ON sales.prdct_id = pm.prdct_id
+GROUP BY sales.prdct_id
+) AS sales
+
+ON pm.prdct_id = sales.prdct_id

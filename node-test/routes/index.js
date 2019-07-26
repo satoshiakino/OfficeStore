@@ -68,6 +68,11 @@ router.get('/prdct_mst', function(req, res, next) {
         prdctList: prdctMst
       });
       res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
     });
 });
 
@@ -128,6 +133,11 @@ router.get('/prdct_update', function(req, res, next){
         prdctList: prdct
       });
       res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
     });
 });
 
@@ -164,6 +174,11 @@ router.post('/prdct_update', function(req, res, next) {
   .then(function(){
     res.redirect('/prdct_mst');
     res.end();
+  })
+  .catch(function(err){
+    console.log(err.error);
+    res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+    res.end();
   });
 });
 
@@ -178,6 +193,11 @@ router.get('/category', function(req, res, next){
         title: 'カテゴリ一覧',
         categoryList: category
       });
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
       res.end();
     });
 });
@@ -247,6 +267,11 @@ router.get('/cat_update', function(req, res, next) {
         catList: category
       });
       res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
     });
 });
 
@@ -283,17 +308,27 @@ router.get('/arrvl_reg', function(req, res, next) {
   };
   var selectPrdctQuery = {
     text: 'SELECT prdct_id, prdct_nm FROM prdct_mst WHERE latest = true'
-  }
+  };
   var category;
   var product;
   Promise.all([
     connection.query(selectCategoryQuery)
       .then(function(cat){
-        category = cat
+        category = cat;
+      })
+      .catch(function(err){
+        console.log(err.error);
+        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+        res.end();
       }),
     connection.query(selectPrdctQuery)
       .then(function(prdct){
-        product = prdct
+        product = prdct;
+      })
+      .catch(function(err){
+        console.log(err.error);
+        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+        res.end();
       })
   ])
   .then(function(){
@@ -302,6 +337,11 @@ router.get('/arrvl_reg', function(req, res, next) {
       catList: category,
       prdctList: product
     });
+    res.end();
+  })
+  .catch(function(err){
+    console.log(err.error);
+    res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
     res.end();
   });
 });
@@ -352,6 +392,11 @@ router.get('/arrvl_hstry', function(req, res, next) {
         arrvlList: arrival
       });
       res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
     });
 });
 
@@ -386,17 +431,27 @@ router.get('/sales_reg', function(req, res, next) {
   };
   var selectPrdctQuery = {
     text: 'SELECT prdct_id, prdct_nm FROM prdct_mst WHERE latest = true'
-  }
+  };
   var category;
   var product;
   Promise.all([
     connection.query(selectCategoryQuery)
       .then(function(cat){
-        category = cat
+        category = cat;
+      })
+      .catch(function(err){
+        console.log(err.error);
+        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+        res.end();
       }),
     connection.query(selectPrdctQuery)
       .then(function(prdct){
-        product = prdct
+        product = prdct;
+      })
+      .catch(function(err){
+        console.log(err.error);
+        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+        res.end();
       })
   ])
   .then(function(){
@@ -405,6 +460,11 @@ router.get('/sales_reg', function(req, res, next) {
       catList: category,
       prdctList: product
     });
+    res.end();
+  })
+  .catch(function(err){
+    console.log(err.error);
+    res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
     res.end();
   });
 });
@@ -453,6 +513,11 @@ router.get('/sales_hstry', function(req, res, next) {
         title: "sales_hstry",
         salesList: sales
       });
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
       res.end();
     });
 });
@@ -516,14 +581,29 @@ router.get('/settlement2', function(req, res, next) {
     connection.query(getCostQuery)
       .then(function(cost){
         total_cost = parseInt(cost[0].total_cost);
+      })
+      .catch(function(err){
+        console.log(err.error);
+        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+        res.end();
       }),
     connection.query(getSalesQuery)
       .then(function(sales){
         total_sales = parseInt(sales[0].total_sales);
+      })
+      .catch(function(err){
+        console.log(err.error);
+        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+        res.end();
       }),
     connection.query(getLastCashQuery)
       .then(function(cash){
         last_cash = parseInt(cash[0].total_cash);
+      })
+      .catch(function(err){
+        console.log(err.error);
+        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+        res.end();
       })
   ])
   .then(function(){
@@ -609,22 +689,52 @@ router.post('/settlement2', function(req, res, next) {
   };
   Promise.all([
     connection.query(insertArrivalArchivesQuery)
-      .then(function(){}),
+      .then(function(){})
+      .catch(function(err){
+        console.log(err.error);
+        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+        res.end();
+      }),
     connection.query(insertSalesArchivesQuery)
       .then(function(){})
+      .catch(function(err){
+        console.log(err.error);
+        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+        res.end();
+      })
   ])
   .then(Promise.all([
       connection.query(updateSettlementQuery)
-        .then(function(){}),
+        .then(function(){})
+        .catch(function(err){
+          console.log(err.error);
+          res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+          res.end();
+        }),
       connection.query(updateArrivalQuery)
-        .then(function(){}),
+        .then(function(){})
+        .catch(function(err){
+          console.log(err.error);
+          res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+          res.end();
+        }),
       connection.query(updateSalesQuery)
         .then(function(){})
+        .catch(function(err){
+          console.log(err.error);
+          res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+          res.end();
+        }),
     ])
     .then(function(){
       connection.query(registerSettlementQuery)
         .then(function(){
           res.redirect('/sales_menu');
+          res.end();
+        })
+        .catch(function(err){
+          console.log(err.error);
+          res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
           res.end();
         });
   }));
@@ -646,7 +756,7 @@ router.get('/inventory', function(req, res, next) {
 router.get('/invntry_count', function(req, res, next) {
   var selectQuery = {
     text: 'SELECT jan, prdct_nm FROM prdct_mst ORDER BY prdct_id'
-  }
+  };
   connection.query(selectQuery)
     .then(function(prdct){
       res.render('invntry_count', {
@@ -655,6 +765,26 @@ router.get('/invntry_count', function(req, res, next) {
       });
       res.end();
     })
-})
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
+});
+
+router.post('/invntry_count', function(req, res, next) {
+  var prdct_num = req.body.count;
+  console.log(prdct_num);
+  res.redirect('/inventory');
+  res.end();
+});
+
+/*var cat_id = req.body.cat_id;
+  res.cookie('cat_id', cat_id, {maxAge:600000, httpOnly:false});*/
+
+//localhost:3000/invntry_count2
+router.get('/invntry_count2', function(req, res, next) {
+  
+});
 
 module.exports = router;
