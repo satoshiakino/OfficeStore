@@ -783,7 +783,8 @@ router.get('/invntry_count', function(req, res, next) {
           'ON sales.prdct_id = pm.prdct_id ' +
           'GROUP BY sales.prdct_id ' +
           ') AS sales ' +
-          'ON pm.prdct_id = sales.prdct_id'
+          'ON pm.prdct_id = sales.prdct_id ' +
+          'ORDER BY pm.prdct_id'
   };
   connection.query(selectQuery)
     .then(function(prdct){
@@ -801,9 +802,96 @@ router.get('/invntry_count', function(req, res, next) {
 });
 
 router.post('/invntry_count', function(req, res, next) {
-  var prdct_num = req.body.count;
-  console.log(prdct_num);
-  res.redirect('/inventory');
+  var insertInventoryCountQuery = {
+    text: 'INSERT INTO inventory_count (prdct_id, invntry_num, count_date) ' +
+          'SELECT pm.prdct_id ' +   
+                ',CASE WHEN arrival.arrvl_num IS NULL THEN 0 ELSE arrival.arrvl_num END ' +
+                ' - CASE WHEN sales.sales_num IS NULL THEN 0 ELSE sales.sales_num END AS invntry_num ' + 
+                ',now() AS count_date ' +  
+            'FROM prdct_mst AS pm ' +
+            'LEFT OUTER JOIN ' +
+            '( ' +
+            'SELECT prdct_id ' + 
+                ',SUM(trade_num) AS arrvl_num ' +
+                ',SUM(trade_num * cost) AS arrvl_cost ' + 
+            'FROM arrival ' +
+              'WHERE count = false ' +
+              'GROUP BY prdct_id '+
+              ') AS arrival ' +
+              'ON pm.prdct_id = arrival.prdct_id ' + 
+            'LEFT OUTER JOIN ' +
+            '( ' +
+              'SELECT sales.prdct_id ' + 
+                  ',SUM(sales.trade_num) AS sales_num ' +
+                  ',SUM(sales.trade_num * pm.price) AS total_sales ' + 
+                'FROM sales ' +
+                'LEFT OUTER JOIN prdct_mst AS pm ' + 
+                'ON sales.prdct_id = pm.prdct_id ' +
+                'WHERE sales.count = false ' +
+                'GROUP BY sales.prdct_id ' +
+                ') AS sales ' +
+                'ON pm.prdct_id = sales.prdct_id'
+  };
+  var selectCountIdQuery = {
+    text: 'SELECT invntry_id FROM inventory_count WHERE count_num IS NULL ORDER BY invntry_id LIMIT 1'
+  };
+  var insertArrivalQuery = {
+    text: 'INSERT INTO arrival (cat_cd, prdct_id, trade_num, cost, trade_date, checked, count) ' +
+          'SELECT pm.cat_cd ' +
+                ',ic.prdct_id ' +
+                ',ic.count_num - ic.invntry_num AS dif ' +
+                ',pm.price * pm.cost_rate AS cost ' +
+                ',ic.count_date ' +
+                ',true AS checked ' +
+                ',true AS count ' +
+              'FROM inventory_count AS ic ' +
+              'LEFT OUTER JOIN prdct_mst AS pm ' +
+              'ON ic.prdct_id = pm.prdct_id ' +
+              'WHERE count_date = ' +
+              '(select count_date from inventory_count order by count_date desc limit 1) ' +
+              'AND ic.count_num - ic.invntry_num != 0'
+  };
+  var updateArrivalQuery = {
+    text: 'UPDATE arrival SET count = true'
+  };
+  var updateSalesQuery = {
+    text: 'UPDATE sales SET count = true'
+  };
+  var count_num = req.body.count;
+  connection.query(insertInventoryCountQuery)
+    .then(function(){
+      console.log("1だろ");
+      connection.query(selectCountIdQuery)
+        .then(function(count_id){
+          console.log("2でおねがいします");
+          console.log(count_id[0].invntry_id);
+          var invntry_id = count_id[0].invntry_id;
+          for(var i=0; i<=count_num.length; i++){
+            var count = count_num[i];
+            var updateInventoryCountQuery = {
+              text: 'UPDATE inventory_count SET count_num = $1 WHERE invntry_id = $2',
+              values: [count, invntry_id]
+            };
+            connection.query(updateInventoryCountQuery)
+              .then(function(){});
+            invntry_id++;
+          }
+          connection.query(insertArrivalQuery)
+            .then(function(){
+              console.log("3だといいな");
+              connection.query(updateArrivalQuery)
+                .then(function(){
+                  console.log("4もしくは5");
+                });
+              connection.query(updateSalesQuery)
+                .then(function(){
+                  console.log("4もしくは5");
+                });
+            });
+        });
+    });
+  /**/
+  res.redirect('/invntry_count');
   res.end();
 });
 

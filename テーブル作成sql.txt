@@ -16,7 +16,8 @@ CREATE TABLE arrival
   prdct_id INTEGER,
   trade_num INTEGER,
   cost INTEGER,
-  checked boolean DEFAULT false
+  checked boolean DEFAULT false,
+  count boolean default false
   )
 
 //売上テーブル
@@ -26,7 +27,8 @@ CREATE TABLE sales
   prdct_id INTEGER  NOT NULL,
   trade_num INTEGER,
   trade_date TIMESTAMP,
-  checked boolean default false
+  checked boolean default false,
+  count boolean default false
   )
 
 //カテゴリテーブル
@@ -71,3 +73,12 @@ create table sales_archives (
  trade_num integer,
  trade_date timestamp
  )
+
+//棚卸結果テーブル
+create table inventory_count (
+ invntry_id serial primary key,
+ prdct_id integer,
+ invntry_num integer,
+ count_num integer,
+ count_date timestamp
+)

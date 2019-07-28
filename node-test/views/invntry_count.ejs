@@ -8,13 +8,18 @@
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
     <script>
-       var form = document.getElementById('invntry_count');
-       if(form != null){
-        console.log(form);
-        form.invntry_count.addEventListener('change', function(){
-         console.log('!!!!');
-       }, false);
-       }
+      function onChangeCount(){
+        var count = document.getElementsByName('count');
+        var inventory = document.getElementsByName('inventory');
+        for(var i=0; i<count.length; i++){
+          var target = document.getElementsByName('dif');
+          if(count[i].value == ""){
+            target[i].innerText = "";
+          } else if(count[i].value) {
+            target[i].innerText = parseInt(count[i].value) - parseInt(inventory[i].innerHTML);
+          };
+        };
+      };
     </script>
   </head>
   <body>
@@ -32,7 +37,7 @@
     </header>
     <div class="wrapper">
     </div>
-    <form action="/invntry_count" method="post" class="invntry_count-form" name="prdct_count" align="center">
+    <form action="/invntry_count" method="post" class="invntry_count-form" name="invntry_count" align="center">
         <table rules="all">
           <tr>
             <th>JAN</th>
@@ -45,9 +50,9 @@
             <tr class="main-list__item">
               <td class="prdct_mst__jan"><%= prdctItem.jan %></td>
               <td class="prdct_mst__prdct_nm"><%= prdctItem.prdct_nm %></td>
-              <td class="prdct_mst__inventory"><%= prdctItem.inventory %></td>
-              <td><input type="number" name="count" class="input" id="invntry_count" required></td>
-              <td class="difference"></td>
+              <td class="prdct_mst__inventory" name="inventory"><%= prdctItem.inventory %></td>
+              <td><input type="number" name="count" class="input" onchange="onChangeCount()" required></td>
+              <td class="difference" name="dif"></td>
             </tr>
           <% }); %>
         </table>
