@@ -80,5 +80,6 @@ create table inventory_count (
  prdct_id integer,
  invntry_num integer,
  count_num integer,
- count_date timestamp
+ count_date timestamp,
+ result_no integer
 )

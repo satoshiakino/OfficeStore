@@ -804,41 +804,6 @@ router.get('/invntry_count', function(req, res, next) {
 router.post('/invntry_count', function(req, res, next) {
   var count_num = req.body.count;
   var prdct_id = req.body.prdct_id;
-  var insertInventoryCountQuery = {
-    text: 'INSERT INTO inventory_count (prdct_id, invntry_num, count_num, count_date) ' +
-          'SELECT pm.prdct_id ' +   
-                ',CASE WHEN arrival.arrvl_num IS NULL THEN 0 ELSE arrival.arrvl_num END ' +
-                ' - CASE WHEN sales.sales_num IS NULL THEN 0 ELSE sales.sales_num END AS invntry_num ' +
-                ',$1 AS count_num ' + 
-                ',now() AS count_date ' +  
-            'FROM prdct_mst AS pm ' +
-            'LEFT OUTER JOIN ' +
-            '( ' +
-            'SELECT prdct_id ' + 
-                ',SUM(trade_num) AS arrvl_num ' +
-                ',SUM(trade_num * cost) AS arrvl_cost ' + 
-            'FROM arrival ' +
-              'WHERE count = false ' +
-              'GROUP BY prdct_id '+
-              ') AS arrival ' +
-              'ON pm.prdct_id = arrival.prdct_id ' + 
-            'LEFT OUTER JOIN ' +
-            '( ' +
-              'SELECT sales.prdct_id ' + 
-                  ',SUM(sales.trade_num) AS sales_num ' +
-                  ',SUM(sales.trade_num * pm.price) AS total_sales ' + 
-                'FROM sales ' +
-                'LEFT OUTER JOIN prdct_mst AS pm ' + 
-                'ON sales.prdct_id = pm.prdct_id ' +
-                'WHERE sales.count = false ' +
-                'GROUP BY sales.prdct_id ' +
-                ') AS sales ' +
-                'ON pm.prdct_id = sales.prdct_id ' +
-            'WHERE pm.prdct_id = $2'
-  };
-  var selectCountIdQuery = {
-    text: 'SELECT invntry_id FROM inventory_count WHERE count_num IS NULL ORDER BY invntry_id LIMIT 1'
-  };
   var insertArrivalQuery = {
     text: 'INSERT INTO arrival (cat_cd, prdct_id, trade_num, cost, trade_date, checked, count) ' +
           'SELECT pm.cat_cd ' +
@@ -851,8 +816,8 @@ router.post('/invntry_count', function(req, res, next) {
               'FROM inventory_count AS ic ' +
               'LEFT OUTER JOIN prdct_mst AS pm ' +
               'ON ic.prdct_id = pm.prdct_id ' +
-              'WHERE count_date = ' +
-              '(select count_date from inventory_count order by count_date desc limit 1) ' +
+              'WHERE ic.result_no = ' +
+              '(SELECT result_no FROM inventory_count ORDER BY count_date desc limit 1) ' +
               'AND ic.count_num - ic.invntry_num != 0'
   };
   var updateArrivalQuery = {
@@ -861,13 +826,70 @@ router.post('/invntry_count', function(req, res, next) {
   var updateSalesQuery = {
     text: 'UPDATE sales SET count = true'
   };
-  
-  console.log(prdct_id);
-  console.log(count_num);
-  prdct_id.forEach(function(prdct, i){
-
-  })
-  connection.query(insertInventoryCountQuery)
+  var selectResultNoQuery = {
+    text: 'SELECT MAX(result_no) FROM inventory_count'
+  };
+  connection.query(selectResultNoQuery)
+    .then(function(result_no) {
+      console.log("1やで");
+      var result = (result_no[0].max === null)?0:result_no[0].max;
+      var p = Promise.resolve();
+      prdct_id.forEach(function(prdct, i){
+        console.log("2-:" + i);
+        var insertInventoryCountQuery = {
+          text: 'INSERT INTO inventory_count (prdct_id, invntry_num, count_num, count_date, result_no) ' +
+                'SELECT pm.prdct_id ' +   
+                      ',CASE WHEN arrival.arrvl_num IS NULL THEN 0 ELSE arrival.arrvl_num END ' +
+                      ' - CASE WHEN sales.sales_num IS NULL THEN 0 ELSE sales.sales_num END AS invntry_num ' +
+                      ',$1 AS count_num ' + 
+                      ',now() AS count_date ' + 
+                      ',CASE WHEN $2 = 0 THEN 1 ' + 
+                        'ELSE $2 + 1 END AS result_no ' + 
+                  'FROM prdct_mst AS pm ' +
+                  'LEFT OUTER JOIN ' +
+                  '( ' +
+                  'SELECT prdct_id ' + 
+                      ',SUM(trade_num) AS arrvl_num ' +
+                      ',SUM(trade_num * cost) AS arrvl_cost ' + 
+                  'FROM arrival ' +
+                    'WHERE count = false ' +
+                    'GROUP BY prdct_id '+
+                    ') AS arrival ' +
+                    'ON pm.prdct_id = arrival.prdct_id ' + 
+                  'LEFT OUTER JOIN ' +
+                  '( ' +
+                    'SELECT sales.prdct_id ' + 
+                        ',SUM(sales.trade_num) AS sales_num ' +
+                        ',SUM(sales.trade_num * pm.price) AS total_sales ' + 
+                      'FROM sales ' +
+                      'LEFT OUTER JOIN prdct_mst AS pm ' + 
+                      'ON sales.prdct_id = pm.prdct_id ' +
+                      'WHERE sales.count = false ' +
+                      'GROUP BY sales.prdct_id ' +
+                      ') AS sales ' +
+                      'ON pm.prdct_id = sales.prdct_id ' +
+                  'WHERE pm.prdct_id = $3',
+          values: [count_num[i], result, prdct]  
+        };
+        p = p.then(function() {
+          return connection.query(insertInventoryCountQuery);
+        });
+      });
+      return p;
+    }).then(function() {
+      console.log("3や");
+      return connection.query(insertArrivalQuery);
+    }).then(function() {
+      console.log("4!");
+      return connection.query(updateArrivalQuery);
+    }).then(function() {
+      console.log("5であってほしい");
+      return connection.query(updateSalesQuery);
+    }).then(function() {
+      console.log("終わりやで");
+      res.redirect('/invntry_count');
+      res.end();
+    });
   /*connection.query(insertInventoryCountQuery).then(function(){
     console.log("1です");
     return connection.query(selectCountIdQuery);
