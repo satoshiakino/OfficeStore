@@ -802,11 +802,14 @@ router.get('/invntry_count', function(req, res, next) {
 });
 
 router.post('/invntry_count', function(req, res, next) {
+  var count_num = req.body.count;
+  var prdct_id = req.body.prdct_id;
   var insertInventoryCountQuery = {
-    text: 'INSERT INTO inventory_count (prdct_id, invntry_num, count_date) ' +
+    text: 'INSERT INTO inventory_count (prdct_id, invntry_num, count_num, count_date) ' +
           'SELECT pm.prdct_id ' +   
                 ',CASE WHEN arrival.arrvl_num IS NULL THEN 0 ELSE arrival.arrvl_num END ' +
-                ' - CASE WHEN sales.sales_num IS NULL THEN 0 ELSE sales.sales_num END AS invntry_num ' + 
+                ' - CASE WHEN sales.sales_num IS NULL THEN 0 ELSE sales.sales_num END AS invntry_num ' +
+                ',$1 AS count_num ' + 
                 ',now() AS count_date ' +  
             'FROM prdct_mst AS pm ' +
             'LEFT OUTER JOIN ' +
@@ -830,7 +833,8 @@ router.post('/invntry_count', function(req, res, next) {
                 'WHERE sales.count = false ' +
                 'GROUP BY sales.prdct_id ' +
                 ') AS sales ' +
-                'ON pm.prdct_id = sales.prdct_id'
+                'ON pm.prdct_id = sales.prdct_id ' +
+            'WHERE pm.prdct_id = $2'
   };
   var selectCountIdQuery = {
     text: 'SELECT invntry_id FROM inventory_count WHERE count_num IS NULL ORDER BY invntry_id LIMIT 1'
@@ -857,13 +861,78 @@ router.post('/invntry_count', function(req, res, next) {
   var updateSalesQuery = {
     text: 'UPDATE sales SET count = true'
   };
-  var count_num = req.body.count;
+  
+  console.log(prdct_id);
+  console.log(count_num);
+  prdct_id.forEach(function(prdct, i){
+
+  })
   connection.query(insertInventoryCountQuery)
+  /*connection.query(insertInventoryCountQuery).then(function(){
+    console.log("1です");
+    return connection.query(selectCountIdQuery);
+  }).then(function(results){
+    console.log("2です");
+    console.log(results);
+    let invntry_id = results[0].invntry_id;
+    let p = Promise.resolve();
+    count_num.forEach(function(count, i) {
+      console.log("3-1:" + count);
+      var updateInventoryCountQuery = {
+        text: 'UPDATE inventory_count SET count_num = $1 WHERE invntry_id = $2',
+        values: [count, invntry_id + i]
+      };
+      p = p.then(function() {
+        console.log("3-2:" + count);
+        return connection.query(updateInventoryCountQuery);
+      });
+    });
+    return p;
+  }).then(function() {
+      console.log("4");
+      return true;
+  }).then(function(){
+    console.log("5");
+    res.redirect('/invntry_count');
+    res.end();
+  });*/
+});
+  /*  console.log(count_id[0].invntry_id);
+    var invntry_id = count_id[0].invntry_id;
+    for(var i=0; i<=count_num.length; i++){
+      var count = count_num[i];
+      var updateInventoryCountQuery = {
+        text: 'UPDATE inventory_count SET count_num = $1 WHERE invntry_id = $2',
+        values: [count, invntry_id]
+      };
+      connection.query(updateInventoryCountQuery)
+        .then(function(){});
+      invntry_id++;
+    }
+    connection.query(insertArrivalQuery)
+      .then(function(){
+        console.log("3だといいな");
+        connection.query(updateArrivalQuery)
+          .then(function(){
+            console.log("4もしくは5");
+          });
+        connection.query(updateSalesQuery)
+          .then(function(){
+            console.log("4もしくは5");
+          });
+      });
+  });
+});
+res.redirect('/invntry_count');
+res.end();
+});*/
+
+  /*connection.query(insertInventoryCountQuery)
     .then(function(){
-      console.log("1だろ");
+      console.log("1です");
       connection.query(selectCountIdQuery)
         .then(function(count_id){
-          console.log("2でおねがいします");
+          console.log("2です");
           console.log(count_id[0].invntry_id);
           var invntry_id = count_id[0].invntry_id;
           for(var i=0; i<=count_num.length; i++){
@@ -890,10 +959,10 @@ router.post('/invntry_count', function(req, res, next) {
             });
         });
     });
-  /**/
+
   res.redirect('/invntry_count');
   res.end();
-});
+});*/
 
 /*var cat_id = req.body.cat_id;
   res.cookie('cat_id', cat_id, {maxAge:600000, httpOnly:false});*/

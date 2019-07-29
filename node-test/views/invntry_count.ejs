@@ -51,7 +51,10 @@
               <td class="prdct_mst__jan"><%= prdctItem.jan %></td>
               <td class="prdct_mst__prdct_nm"><%= prdctItem.prdct_nm %></td>
               <td class="prdct_mst__inventory" name="inventory"><%= prdctItem.inventory %></td>
-              <td><input type="number" name="count" class="input" onchange="onChangeCount()" required></td>
+              <td>
+                <input type="number" name="count" class="input" value=0 onchange="onChangeCount()" required>
+                <input type="hidden" name="prdct_id" value=<%= prdctItem.prdct_id %>>
+              </td>
               <td class="difference" name="dif"></td>
             </tr>
           <% }); %>
