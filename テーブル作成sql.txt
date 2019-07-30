@@ -5,6 +5,7 @@ create table prdct_mst
   cat_cd VARCHAR(10),
   prdct_nm VARCHAR(100),
   price int,
+  cost_rate DOUBLE PRECISION,
   latest boolean default true
   )
 

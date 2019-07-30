@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compotible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="format-detection" content="telephone=no">
-    <title>invntry_check</title>
+    <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
   </head>
   <body>
@@ -21,14 +21,24 @@
         </ul>
       </nav>
     </header>
-    <div align="center">
-      <table class="menu">
-        <tr>
-          <th><a href='/invntry_count_result'>在庫状況確認</a></th>
-          <td></td>
-          <th><a href='/invntry_count'>棚卸</a></th>
-        </tr>
-      </table>
+    <div class="wrapper">
+      <div align="center">
+        <table rules="all">
+          <tr>
+            <th>実施日</th>
+            <th>カテゴリ名</th>
+            <th>在庫金額</th>
+          </tr>
+          <% resultList.forEach(function(resultItem){ %>
+            <tr class="main-list__item">
+              <td class="inventory_count__count_date"><%= resultItem.count_date %></td>
+              <td class="inventory_count__cat_nm"><%= resultItem.cat_nm %></td>
+              <td class="inventory_count__stock_value"><%= resultItem.stock_value %></td>
+            </tr>
+          <% }); %>
+        </table>
+      </div>
+      <button align="center"><a href="/invntry_count_result">商品別結果</a></button>
     </div>
   </body>
 </html>

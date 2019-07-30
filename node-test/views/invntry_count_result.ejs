@@ -22,26 +22,31 @@
       </nav>
     </header>
     <div class="wrapper">
-    </div>
-    <form action="/invntry_count" method="post" class="invntry_count-form" name="prdct_count" align="center">
+      <div align="center">
         <table rules="all">
           <tr>
-            <th>JAN</th>
+            <th>実施日</th>
+            <th>カテゴリ名</th>
             <th>商品名</th>
             <th>在庫数</th>
-            <th>登録数</th>
+            <th>在庫実数</th>
             <th>差異</th>
+            <th>在庫金額</th>
           </tr>
-          <% prdctList.forEach(function(prdctItem){ %>
+          <% resultList.forEach(function(resultItem){ %>
             <tr class="main-list__item">
-              <td class="prdct_mst__jan"><%= prdctItem.jan %></td>
-              <td class="prdct_mst__prdct_nm"><%= prdctItem.prdct_nm %></td>
-              <td><input type="number" name="count" class="input" required></td>
+              <td class="inventory_count__count_date"><%= resultItem.count_date %></td>
+              <td class="inventory_count__cat_nm"><%= resultItem.cat_nm %></td>
+              <td class="inventory_count__prdct_nm"><%= resultItem.prdct_nm %></td>
+              <td class="inventory_count__invntry_num"><%= resultItem.invntry_num %></td>
+              <td class="inventory_count__count_num"><%= resultItem.count_num %></td>
+              <td class="inventory_count__dif"><%= resultItem.dif %></td>
+              <td class="inventory_count__stock_value"><%= resultItem.stock_value %></td>
             </tr>
           <% }); %>
         </table>
-        <br>
-        <button type="submit" class="submit">登録</button>
-    </form>
+      </div>
+      <button align="center"><a href="/invntry_count_result2">カテゴリ別結果</a></button>
+    </div>
   </body>
 </html>

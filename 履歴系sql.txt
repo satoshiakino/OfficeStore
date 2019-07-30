@@ -71,3 +71,58 @@ GROUP BY sales.prdct_id
 ) AS sales
 
 ON pm.prdct_id = sales.prdct_id
+
+//è§ïiï íIâµåãâ 
+SELECT ic.result_no
+	  ,pm.cat_cd
+	  ,cat.cat_nm
+	  ,ic.prdct_id
+	  ,pm.prdct_nm
+	  ,ic.invntry_num
+	  ,ic.count_num
+	  ,ic.count_num - ic.invntry_num AS dif
+	  ,(ic.count_num - ic.invntry_num) 
+	  	* pm.price * pm.cost_rate AS stock_value
+	  ,TO_CHAR(ic.count_date, 'YYYY/MM/DD') AS count_date
+	FROM inventory_count AS ic
+	LEFT OUTER JOIN prdct_mst AS pm
+		ON ic.prdct_id = pm.prdct_id
+	LEFT OUTER JOIN category AS cat
+		ON pm.cat_cd = cat.cat_cd
+	ORDER BY ic.count_date
+
+//ÉJÉeÉSÉäï íIâµåãâ 
+SELECT ic.result_no
+	  ,pm.cat_cd
+	  ,cat.cat_nm
+	  ,SUM((ic.count_num - ic.invntry_num) 
+	  	* pm.price * pm.cost_rate) AS stock_value
+	  ,TO_CHAR(ic.count_date, 'YYYY/MM/DD') AS count_date
+	FROM inventory_count AS ic
+	LEFT OUTER JOIN prdct_mst AS pm
+		ON ic.prdct_id = pm.prdct_id
+	LEFT OUTER JOIN category AS cat
+		ON pm.cat_cd = cat.cat_cd
+	GROUP BY ic.result_no, pm.cat_cd, cat.cat_nm, TO_CHAR(ic.count_date, 'YYYY/MM/DD')
+	ORDER BY pm.cat_cd
+
+//ì˙ï îÑè„
+SELECT TO_CHAR(sales.trade_date, 'yyyy/mm/dd') AS trade_date
+                ,SUM(pm.price * sales.trade_num) AS d_sales
+            FROM sales     
+            LEFT OUTER JOIN prdct_mst AS pm     
+             ON sales.prdct_id = pm.prdct_id 
+			GROUP BY TO_CHAR(sales.trade_date, 'yyyy/mm/dd')
+            ORDER BY TO_CHAR(sales.trade_date, 'yyyy/mm/dd')
+
+//èTï îÑè„
+
+
+//åéï îÑè„
+SELECT TO_CHAR(sales.trade_date, 'yyyy/mm') AS trade_date
+                ,SUM(pm.price * sales.trade_num) AS d_sales
+            FROM sales     
+            LEFT OUTER JOIN prdct_mst AS pm     
+             ON sales.prdct_id = pm.prdct_id 
+			GROUP BY TO_CHAR(sales.trade_date, 'yyyy/mm')
+            ORDER BY TO_CHAR(sales.trade_date, 'yyyy/mm')

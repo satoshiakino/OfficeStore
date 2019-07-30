@@ -989,9 +989,62 @@ res.end();
 /*var cat_id = req.body.cat_id;
   res.cookie('cat_id', cat_id, {maxAge:600000, httpOnly:false});*/
 
-//localhost:3000/invntry_count2
-router.get('/invntry_count2', function(req, res, next) {
-  
+//localhost:3000/invntry_count_result
+router.get('/invntry_count_result', function(req, res, next) {
+  var selectInventoryCountQuery = {
+    text: 'SELECT ic.result_no ' +
+	              ',pm.cat_cd ' + 
+	              ',cat.cat_nm ' + 
+	              ',ic.prdct_id ' + 
+	              ',pm.prdct_nm ' +
+	              ',ic.invntry_num ' +
+	              ',ic.count_num ' +
+	              ',ic.count_num - ic.invntry_num AS dif ' +
+	              ',TRUNC((ic.count_num - ic.invntry_num) ' +
+                  '* pm.price * pm.cost_rate) AS stock_value ' +
+                ',TO_CHAR(ic.count_date, \'YYYY/MM/DD\') AS count_date ' + 
+	            'FROM inventory_count AS ic ' +
+	            'LEFT OUTER JOIN prdct_mst AS pm ' +
+	              'ON ic.prdct_id = pm.prdct_id ' +
+	            'LEFT OUTER JOIN category AS cat ' +
+                'ON pm.cat_cd = cat.cat_cd ' +
+              'ORDER BY ic.prdct_id'
+  };
+  connection.query(selectInventoryCountQuery)
+    .then(function(result) {
+      res.render('invntry_count_result', {
+        title: "棚卸結果確認",
+        resultList: result
+      });
+      res.end();
+    });
+});
+
+//localhost:3000/invntry_count_result2
+router.get('/invntry_count_result2', function(req, res, next) {
+  var selectInventoryCountQuery = {
+    text: 'SELECT ic.result_no ' +
+	              ',pm.cat_cd ' +
+	              ',cat.cat_nm ' +
+	              ',TRUNC(SUM((ic.count_num - ic.invntry_num) ' + 
+	                '* pm.price * pm.cost_rate)) AS stock_value ' +
+	              ',TO_CHAR(ic.count_date, \'YYYY/MM/DD\') AS count_date ' +
+	          'FROM inventory_count AS ic ' +
+	          'LEFT OUTER JOIN prdct_mst AS pm ' +
+	            'ON ic.prdct_id = pm.prdct_id ' +
+	          'LEFT OUTER JOIN category AS cat ' +
+	            'ON pm.cat_cd = cat.cat_cd ' +
+	          'GROUP BY ic.result_no, pm.cat_cd, cat.cat_nm, TO_CHAR(ic.count_date, \'YYYY/MM/DD\') ' +
+	          'ORDER BY pm.cat_cd'
+  };
+  connection.query(selectInventoryCountQuery)
+    .then(function(result){
+      res.render('invntry_count_result2', {
+        title: "カテゴリ別棚卸結果" ,
+        resultList: result
+      });
+      res.end();
+    });
 });
 
 module.exports = router;
