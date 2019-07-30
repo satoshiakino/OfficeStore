@@ -107,22 +107,34 @@ SELECT ic.result_no
 	ORDER BY pm.cat_cd
 
 //ì˙ï îÑè„
-SELECT TO_CHAR(sales.trade_date, 'yyyy/mm/dd') AS trade_date
+SELECT CAST(sales.trade_date AS DATE) AS trade_day
                 ,SUM(pm.price * sales.trade_num) AS d_sales
             FROM sales     
             LEFT OUTER JOIN prdct_mst AS pm     
              ON sales.prdct_id = pm.prdct_id 
-			GROUP BY TO_CHAR(sales.trade_date, 'yyyy/mm/dd')
-            ORDER BY TO_CHAR(sales.trade_date, 'yyyy/mm/dd')
+	    GROUP BY trade_day
+            ORDER BY trade_day
 
 //èTï îÑè„
-
+SELECT s1.trade_day - s1.day_of_the_week AS trade_week
+	  ,SUM(sale_data) AS sales_week
+	FROM
+	(
+SELECT CAST(sales.trade_date AS DATE) AS trade_day
+                ,pm.price * sales.trade_num AS sale_data
+				,CAST(extract(dow FROM sales.trade_date) AS INT ) AS day_of_the_week
+            FROM sales     
+            LEFT OUTER JOIN prdct_mst AS pm     
+             ON sales.prdct_id = pm.prdct_id 
+    ) AS s1
+	GROUP BY trade_week
+	ORDER BY trade_week
 
 //åéï îÑè„
-SELECT TO_CHAR(sales.trade_date, 'yyyy/mm') AS trade_date
+SELECT TO_CHAR(sales.trade_date, 'yyyy/mm') AS trade_month
                 ,SUM(pm.price * sales.trade_num) AS d_sales
             FROM sales     
             LEFT OUTER JOIN prdct_mst AS pm     
              ON sales.prdct_id = pm.prdct_id 
-			GROUP BY TO_CHAR(sales.trade_date, 'yyyy/mm')
-            ORDER BY TO_CHAR(sales.trade_date, 'yyyy/mm')
+			GROUP BY trade_month
+            ORDER BY trade_mont

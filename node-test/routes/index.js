@@ -1034,7 +1034,7 @@ router.get('/invntry_count_result2', function(req, res, next) {
 	            'ON ic.prdct_id = pm.prdct_id ' +
 	          'LEFT OUTER JOIN category AS cat ' +
 	            'ON pm.cat_cd = cat.cat_cd ' +
-	          'GROUP BY ic.result_no, pm.cat_cd, cat.cat_nm, TO_CHAR(ic.count_date, \'YYYY/MM/DD\') ' +
+	          'GROUP BY ic.result_no, pm.cat_cd, cat.cat_nm, count_date) ' +
 	          'ORDER BY pm.cat_cd'
   };
   connection.query(selectInventoryCountQuery)
