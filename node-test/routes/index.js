@@ -1138,4 +1138,37 @@ router.get('/sales_year', function(req, res, next) {
     });
 });
 
+router.get('/sales_trend', function(req, res, next) {
+  var selectSalesQuery = {
+    text: 'SELECT s1.prdct_id AS prdct_id ' +
+	              ',s1.prdct_nm AS prdct_nm ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-07-01\' THEN s1.trade_num ELSE 0 END) AS shonichi ' +
+	          'FROM ' +
+	          '( ' +
+	          	'SELECT sales.prdct_id ' +
+                 		  ',pm.prdct_nm ' + 
+                 		  ',sales.trade_num ' +  
+                 		  ',CAST(sales.trade_date AS DATE) AS trade_date ' +
+	          	'FROM sales ' + 
+	          	'LEFT OUTER JOIN prdct_mst AS pm ' + 
+	          	  'ON sales.prdct_id = pm.prdct_id ' +
+	          ') AS s1 ' +
+	          'GROUP BY s1.prdct_id,s1.prdct_nm ' +
+	          'ORDER BY s1.prdct_id'
+  };
+  connection.query(selectSalesQuery)
+    .then(function(result) {
+      res.render('sales_trend', {
+        title: "商品販売動向",
+        resultList: result
+      });
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
+});
+
 module.exports = router;
