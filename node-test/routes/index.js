@@ -1028,19 +1028,110 @@ router.get('/invntry_count_result2', function(req, res, next) {
 	              ',cat.cat_nm ' +
 	              ',TRUNC(SUM((ic.count_num - ic.invntry_num) ' + 
 	                '* pm.price * pm.cost_rate)) AS stock_value ' +
-	              ',TO_CHAR(ic.count_date, \'YYYY/MM/DD\') AS count_date ' +
+	              ',TO_CHAR(ic.count_date, \'YYYY/MM/DD\') AS count_date1 ' +
 	          'FROM inventory_count AS ic ' +
 	          'LEFT OUTER JOIN prdct_mst AS pm ' +
 	            'ON ic.prdct_id = pm.prdct_id ' +
 	          'LEFT OUTER JOIN category AS cat ' +
 	            'ON pm.cat_cd = cat.cat_cd ' +
-	          'GROUP BY ic.result_no, pm.cat_cd, cat.cat_nm, count_date) ' +
+	          'GROUP BY ic.result_no, pm.cat_cd, cat.cat_nm, count_date1 ' +
 	          'ORDER BY pm.cat_cd'
   };
   connection.query(selectInventoryCountQuery)
     .then(function(result){
       res.render('invntry_count_result2', {
         title: "カテゴリ別棚卸結果" ,
+        resultList: result
+      });
+      res.end();
+    });
+});
+
+router.get('/sales_day', function(req, res, next) {
+  var selectSalesQuery = {
+    text: 'SELECT TO_CHAR(sales.trade_date, \'yyyy/mm/dd\') AS trade_day ' +
+                ',SUM(pm.price * sales.trade_num) AS sales_day ' +
+            'FROM sales ' +    
+            'LEFT OUTER JOIN prdct_mst AS pm ' +
+              'ON sales.prdct_id = pm.prdct_id ' +
+            'WHERE EXTRACT(YEAR FROM sales.trade_date) = EXTRACT(YEAR FROM now()) ' +
+              'AND EXTRACT(MONTH FROM sales.trade_date) = EXTRACT(MONTH FROM now()) ' +
+            'GROUP BY trade_day ' +
+            'ORDER BY trade_day'
+  };
+  connection.query(selectSalesQuery)
+    .then(function(result) {
+      res.render('sales_day', {
+        title: "日別売上",
+        resultList: result
+      });
+      res.end();
+    });
+});
+
+router.get('/sales_week', function(req, res, next) {
+  var selectSalesQuery = {
+    text: 'SELECT TO_CHAR(s1.trade_day - s1.day_of_the_week, \'yyyy/mm/dd\') AS trade_week ' +
+	              ',SUM(sale_data) AS sales_week ' +
+	          'FROM ' +
+	          '( ' +
+	            'SELECT CAST(sales.trade_date AS DATE) AS trade_day ' +
+                    ',pm.price * sales.trade_num AS sale_data ' +
+	                  ',CAST(extract(dow FROM sales.trade_date) AS INT ) AS day_of_the_week ' +
+	              'FROM sales ' + 
+	              'LEFT OUTER JOIN prdct_mst AS pm ' + 
+	                'ON sales.prdct_id = pm.prdct_id ' +
+            ') AS s1 ' +
+	          'WHERE EXTRACT(YEAR FROM s1.trade_day) = EXTRACT(YEAR FROM now()) ' +
+	            'AND EXTRACT(MONTH FROM s1.trade_day) = EXTRACT(MONTH FROM now()) ' +
+	          'GROUP BY trade_week ' +
+	          'ORDER BY trade_week'
+  };
+  connection.query(selectSalesQuery)
+    .then(function(result) {
+      res.render('sales_week', {
+        title: "週別売上",
+        resultList: result
+      });
+      res.end();
+    });
+});
+
+router.get('/sales_month', function(req, res, next) {
+  var selectSalesQuery = {
+    text: 'SELECT TO_CHAR(sales.trade_date, \'yyyy/mm\') AS trade_month ' +
+                ',SUM(pm.price * sales.trade_num) AS sales_month ' +
+            'FROM sales ' +
+            'LEFT OUTER JOIN prdct_mst AS pm ' + 
+              'ON sales.prdct_id = pm.prdct_id ' +
+            'WHERE EXTRACT(YEAR FROM sales.trade_date) = EXTRACT(YEAR FROM now()) ' +
+            'GROUP BY trade_month ' +
+            'ORDER BY trade_month'
+  };
+  connection.query(selectSalesQuery)
+    .then(function(result) {
+      res.render('sales_month', {
+        title: "月別売上",
+        resultList: result
+      });
+      res.end();
+    });
+});
+
+router.get('/sales_year', function(req, res, next) {
+  var selectSalesQuery = {
+    text: 'SELECT TO_CHAR(sales.trade_date, \'yyyy\') AS trade_year ' +
+                ',SUM(pm.price * sales.trade_num) AS sales_year ' +
+            'FROM sales ' +
+            'LEFT OUTER JOIN prdct_mst AS pm ' + 
+              'ON sales.prdct_id = pm.prdct_id ' +
+            'GROUP BY trade_year ' +
+            'ORDER BY trade_year'
+  };
+  connection.query(selectSalesQuery)
+    .then(function(result) {
+      res.render('sales_year', {
+        title: "年別売上",
         resultList: result
       });
       res.end();

@@ -108,33 +108,38 @@ SELECT ic.result_no
 
 //ì˙ï îÑè„
 SELECT CAST(sales.trade_date AS DATE) AS trade_day
-                ,SUM(pm.price * sales.trade_num) AS d_sales
-            FROM sales     
-            LEFT OUTER JOIN prdct_mst AS pm     
-             ON sales.prdct_id = pm.prdct_id 
-	    GROUP BY trade_day
-            ORDER BY trade_day
+      ,SUM(pm.price * sales.trade_num) AS sales_day
+	FROM sales     
+	LEFT OUTER JOIN prdct_mst AS pm     
+		ON sales.prdct_id = pm.prdct_id 
+	WHERE EXTRACT(YEAR FROM sales.trade_date) = EXTRACT(YEAR FROM now())
+	AND EXTRACT(MONTH FROM sales.trade_date) = EXTRACT(MONTH FROM now())
+	GROUP BY trade_day
+	ORDER BY trade_day
 
 //èTï îÑè„
-SELECT s1.trade_day - s1.day_of_the_week AS trade_week
+SELECT TO_CHAR(s1.trade_day - s1.day_of_the_week, 'yyyy/mm/dd') AS trade_week
 	  ,SUM(sale_data) AS sales_week
 	FROM
 	(
-SELECT CAST(sales.trade_date AS DATE) AS trade_day
-                ,pm.price * sales.trade_num AS sale_data
-				,CAST(extract(dow FROM sales.trade_date) AS INT ) AS day_of_the_week
-            FROM sales     
-            LEFT OUTER JOIN prdct_mst AS pm     
-             ON sales.prdct_id = pm.prdct_id 
+		SELECT CAST(sales.trade_date AS DATE) AS trade_day
+              ,pm.price * sales.trade_num AS sale_data
+			  ,CAST(extract(dow FROM sales.trade_date) AS INT ) AS day_of_the_week
+			FROM sales     
+			LEFT OUTER JOIN prdct_mst AS pm     
+				ON sales.prdct_id = pm.prdct_id 
     ) AS s1
+	WHERE EXTRACT(YEAR FROM s1.trade_day) = EXTRACT(YEAR FROM now())
+		AND EXTRACT(MONTH FROM s1.trade_day) = EXTRACT(MONTH FROM now())
 	GROUP BY trade_week
 	ORDER BY trade_week
 
 //åéï îÑè„
 SELECT TO_CHAR(sales.trade_date, 'yyyy/mm') AS trade_month
-                ,SUM(pm.price * sales.trade_num) AS d_sales
+                ,SUM(pm.price * sales.trade_num) AS sales_month
             FROM sales     
             LEFT OUTER JOIN prdct_mst AS pm     
              ON sales.prdct_id = pm.prdct_id 
+			 WHERE EXTRACT(YEAR FROM sales.trade_date) = EXTRACT(YEAR FROM now())
 			GROUP BY trade_month
-            ORDER BY trade_mont
+            ORDER BY trade_month
