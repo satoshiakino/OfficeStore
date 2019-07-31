@@ -23,10 +23,10 @@
     </header>
     <div class="wrapper">
       <div align="center">
-          <button><a href="/sales_trend_category">カテゴリ別販売動向</a></button>
+        <button><a href="/sales_trend">商品別販売動向</a></button>
       <table rules="all">
         <tr>
-          <th>商品名</th>
+          <th>カテゴリ名</th>
           <th>8/1</th>
           <th>8/2</th>
           <th>8/3</th>
@@ -61,7 +61,7 @@
         </tr>
         <% salesList.forEach(function(salesItem){ %>
           <tr class="main-list__item">
-            <td class="sales_trend__prdct_nm"><%= salesItem.prdct_nm %></td>
+            <td class="sales_trend__cat_nm"><%= salesItem.cat_nm %></td>
             <td class="sales_trend__date"><%= salesItem._8月1日 %></td>
             <td class="sales_trend__date"><%= salesItem._8月2日 %></td>
             <td class="sales_trend__date"><%= salesItem._8月3日 %></td>

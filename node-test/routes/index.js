@@ -55,6 +55,7 @@ router.get('/prdct_mst', function(req, res, next) {
                 ",prdct.jan" +
                 ",prdct.prdct_nm" +
                 ",prdct.price" +
+                ",prdct.cost_rate " +
                 ",prdct.latest " +
           "FROM prdct_mst AS prdct " +
           "LEFT OUTER JOIN category AS cat " + 
@@ -1142,7 +1143,37 @@ router.get('/sales_trend', function(req, res, next) {
   var selectSalesQuery = {
     text: 'SELECT s1.prdct_id AS prdct_id ' +
 	              ',s1.prdct_nm AS prdct_nm ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-07-01\' THEN s1.trade_num ELSE 0 END) AS shonichi ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-01\' THEN s1.trade_num ELSE 0 END) AS \"_8月1日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-02\' THEN s1.trade_num ELSE 0 END) AS \"_8月2日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-03\' THEN s1.trade_num ELSE 0 END) AS \"_8月3日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-04\' THEN s1.trade_num ELSE 0 END) AS \"_8月4日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-05\' THEN s1.trade_num ELSE 0 END) AS \"_8月5日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-06\' THEN s1.trade_num ELSE 0 END) AS \"_8月6日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-07\' THEN s1.trade_num ELSE 0 END) AS \"_8月7日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-08\' THEN s1.trade_num ELSE 0 END) AS \"_8月8日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-09\' THEN s1.trade_num ELSE 0 END) AS \"_8月9日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-10\' THEN s1.trade_num ELSE 0 END) AS \"_8月10日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-11\' THEN s1.trade_num ELSE 0 END) AS \"_8月11日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-12\' THEN s1.trade_num ELSE 0 END) AS \"_8月12日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-13\' THEN s1.trade_num ELSE 0 END) AS \"_8月13日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-14\' THEN s1.trade_num ELSE 0 END) AS \"_8月14日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-15\' THEN s1.trade_num ELSE 0 END) AS \"_8月15日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-16\' THEN s1.trade_num ELSE 0 END) AS \"_8月16日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-17\' THEN s1.trade_num ELSE 0 END) AS \"_8月17日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-18\' THEN s1.trade_num ELSE 0 END) AS \"_8月18日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-19\' THEN s1.trade_num ELSE 0 END) AS \"_8月19日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-20\' THEN s1.trade_num ELSE 0 END) AS \"_8月20日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-21\' THEN s1.trade_num ELSE 0 END) AS \"_8月21日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-22\' THEN s1.trade_num ELSE 0 END) AS \"_8月22日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-23\' THEN s1.trade_num ELSE 0 END) AS \"_8月23日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-24\' THEN s1.trade_num ELSE 0 END) AS \"_8月24日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-25\' THEN s1.trade_num ELSE 0 END) AS \"_8月25日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-26\' THEN s1.trade_num ELSE 0 END) AS \"_8月26日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-27\' THEN s1.trade_num ELSE 0 END) AS \"_8月27日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-28\' THEN s1.trade_num ELSE 0 END) AS \"_8月28日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-29\' THEN s1.trade_num ELSE 0 END) AS \"_8月29日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-30\' THEN s1.trade_num ELSE 0 END) AS \"_8月30日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-31\' THEN s1.trade_num ELSE 0 END) AS \"_8月31日\" ' +
 	          'FROM ' +
 	          '( ' +
 	          	'SELECT sales.prdct_id ' +
@@ -1160,7 +1191,7 @@ router.get('/sales_trend', function(req, res, next) {
     .then(function(result) {
       res.render('sales_trend', {
         title: "商品販売動向",
-        resultList: result
+        salesList: result
       });
       res.end();
     })
@@ -1171,4 +1202,71 @@ router.get('/sales_trend', function(req, res, next) {
     });
 });
 
-module.exports = router;
+router.get('/sales_trend_category', function(req, res, next) {
+  var selectSalesQuery = {
+    text: 'SELECT s1.cat_cd AS cat_cd ' +
+	              ',s1.cat_nm AS cat_nm ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-01\' THEN s1.trade_num ELSE 0 END) AS \"_8月1日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-02\' THEN s1.trade_num ELSE 0 END) AS \"_8月2日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-03\' THEN s1.trade_num ELSE 0 END) AS \"_8月3日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-04\' THEN s1.trade_num ELSE 0 END) AS \"_8月4日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-05\' THEN s1.trade_num ELSE 0 END) AS \"_8月5日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-06\' THEN s1.trade_num ELSE 0 END) AS \"_8月6日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-07\' THEN s1.trade_num ELSE 0 END) AS \"_8月7日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-08\' THEN s1.trade_num ELSE 0 END) AS \"_8月8日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-09\' THEN s1.trade_num ELSE 0 END) AS \"_8月9日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-10\' THEN s1.trade_num ELSE 0 END) AS \"_8月10日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-11\' THEN s1.trade_num ELSE 0 END) AS \"_8月11日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-12\' THEN s1.trade_num ELSE 0 END) AS \"_8月12日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-13\' THEN s1.trade_num ELSE 0 END) AS \"_8月13日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-14\' THEN s1.trade_num ELSE 0 END) AS \"_8月14日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-15\' THEN s1.trade_num ELSE 0 END) AS \"_8月15日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-16\' THEN s1.trade_num ELSE 0 END) AS \"_8月16日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-17\' THEN s1.trade_num ELSE 0 END) AS \"_8月17日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-18\' THEN s1.trade_num ELSE 0 END) AS \"_8月18日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-19\' THEN s1.trade_num ELSE 0 END) AS \"_8月19日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-20\' THEN s1.trade_num ELSE 0 END) AS \"_8月20日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-21\' THEN s1.trade_num ELSE 0 END) AS \"_8月21日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-22\' THEN s1.trade_num ELSE 0 END) AS \"_8月22日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-23\' THEN s1.trade_num ELSE 0 END) AS \"_8月23日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-24\' THEN s1.trade_num ELSE 0 END) AS \"_8月24日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-25\' THEN s1.trade_num ELSE 0 END) AS \"_8月25日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-26\' THEN s1.trade_num ELSE 0 END) AS \"_8月26日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-27\' THEN s1.trade_num ELSE 0 END) AS \"_8月27日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-28\' THEN s1.trade_num ELSE 0 END) AS \"_8月28日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-29\' THEN s1.trade_num ELSE 0 END) AS \"_8月29日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-30\' THEN s1.trade_num ELSE 0 END) AS \"_8月30日\" ' +
+	              ',SUM(CASE s1.trade_date WHEN \'2019-08-31\' THEN s1.trade_num ELSE 0 END) AS \"_8月31日\" ' +
+	          'FROM ' +
+	          '( ' +
+              'SELECT cat.cat_cd ' +
+                    ',cat.cat_nm ' +
+                    ',sales.prdct_id ' +
+                 		',pm.prdct_nm ' + 
+                 		',sales.trade_num ' +  
+                 		',CAST(sales.trade_date AS DATE) AS trade_date ' +
+	          	'FROM sales ' + 
+	          	'LEFT OUTER JOIN prdct_mst AS pm ' + 
+                'ON sales.prdct_id = pm.prdct_id ' +
+              'LEFT OUTER JOIN category AS cat ' +
+                'ON sales.cat_cd = cat.cat_cd ' +
+	          ') AS s1 ' +
+	          'GROUP BY s1.cat_cd,s1.cat_nm ' +
+	          'ORDER BY s1.cat_cd'
+  };
+  connection.query(selectSalesQuery)
+    .then(function(result) {
+      res.render('sales_trend_category', {
+        title: "カテゴリ別販売動向",
+        salesList: result
+      });
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
+});
+
+module.exports = router;  
