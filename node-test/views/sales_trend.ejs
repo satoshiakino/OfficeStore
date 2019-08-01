@@ -23,7 +23,11 @@
     </header>
     <div class="wrapper">
       <div align="center">
-          <button><a href="/sales_trend_category">カテゴリ別販売動向</a></button>
+        <form action='/sales_trend' method='post' class='sales_trend-form'>
+          <input type="hidden" name="month" value="">
+        </form>
+        <button><a href="/sales_trend_category">カテゴリ別販売動向</a></button>
+        <button><a href="/sales_trend_prdct_monthly">月別商品販売動向</a></button>
       <table rules="all">
         <tr>
           <th>商品名</th>
