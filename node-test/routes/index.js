@@ -1048,6 +1048,7 @@ router.get('/invntry_count_result2', function(req, res, next) {
     });
 });
 
+//localhost:3000/sales_day
 router.get('/sales_day', function(req, res, next) {
   var selectSalesQuery = {
     text: 'SELECT TO_CHAR(sales.trade_date, \'yyyy/mm/dd\') AS trade_day ' +
@@ -1070,6 +1071,7 @@ router.get('/sales_day', function(req, res, next) {
     });
 });
 
+//localhost:3000/sales_week
 router.get('/sales_week', function(req, res, next) {
   var selectSalesQuery = {
     text: 'SELECT TO_CHAR(s1.trade_day - s1.day_of_the_week, \'yyyy/mm/dd\') AS trade_week ' +
@@ -1098,6 +1100,7 @@ router.get('/sales_week', function(req, res, next) {
     });
 });
 
+//localhost:3000/sales_month
 router.get('/sales_month', function(req, res, next) {
   var selectSalesQuery = {
     text: 'SELECT TO_CHAR(sales.trade_date, \'yyyy/mm\') AS trade_month ' +
@@ -1119,6 +1122,7 @@ router.get('/sales_month', function(req, res, next) {
     });
 });
 
+//localhost3000/sales_year
 router.get('/sales_year', function(req, res, next) {
   var selectSalesQuery = {
     text: 'SELECT TO_CHAR(sales.trade_date, \'yyyy\') AS trade_year ' +
@@ -1139,6 +1143,8 @@ router.get('/sales_year', function(req, res, next) {
     });
 });
 
+
+//日別商品販売動向
 router.get('/sales_trend', function(req, res, next) {
   var dt = new Date();
   var year = dt.getFullYear();
@@ -1146,6 +1152,10 @@ router.get('/sales_trend', function(req, res, next) {
   var date = new Date(year, month, 0);
   var last_day = date.getDate();
   var select_date = "";
+  if(req.cookie.month != "undefined"){
+    month += req.cookie.month;
+  }
+  res.clearCookie(month);
   for(var i=1; i<=last_day; i++){
     select_date += ',SUM(CASE s1.trade_date WHEN \'2019-' + month + '-' + i  + '\' THEN s1.trade_num ELSE 0 END) AS \"_' + month + '月' + i + '日\" '
   }
@@ -1166,53 +1176,6 @@ router.get('/sales_trend', function(req, res, next) {
 	          'GROUP BY s1.prdct_id,s1.prdct_nm ' +
 	          'ORDER BY s1.prdct_id'
   };
-  /*var selectSalesQuery = {
-    text: 'SELECT s1.prdct_id AS prdct_id ' +
-	              ',s1.prdct_nm AS prdct_nm ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-01\' THEN s1.trade_num ELSE 0 END) AS \"_8月1日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-02\' THEN s1.trade_num ELSE 0 END) AS \"_8月2日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-03\' THEN s1.trade_num ELSE 0 END) AS \"_8月3日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-04\' THEN s1.trade_num ELSE 0 END) AS \"_8月4日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-05\' THEN s1.trade_num ELSE 0 END) AS \"_8月5日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-06\' THEN s1.trade_num ELSE 0 END) AS \"_8月6日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-07\' THEN s1.trade_num ELSE 0 END) AS \"_8月7日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-08\' THEN s1.trade_num ELSE 0 END) AS \"_8月8日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-09\' THEN s1.trade_num ELSE 0 END) AS \"_8月9日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-10\' THEN s1.trade_num ELSE 0 END) AS \"_8月10日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-11\' THEN s1.trade_num ELSE 0 END) AS \"_8月11日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-12\' THEN s1.trade_num ELSE 0 END) AS \"_8月12日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-13\' THEN s1.trade_num ELSE 0 END) AS \"_8月13日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-14\' THEN s1.trade_num ELSE 0 END) AS \"_8月14日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-15\' THEN s1.trade_num ELSE 0 END) AS \"_8月15日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-16\' THEN s1.trade_num ELSE 0 END) AS \"_8月16日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-17\' THEN s1.trade_num ELSE 0 END) AS \"_8月17日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-18\' THEN s1.trade_num ELSE 0 END) AS \"_8月18日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-19\' THEN s1.trade_num ELSE 0 END) AS \"_8月19日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-20\' THEN s1.trade_num ELSE 0 END) AS \"_8月20日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-21\' THEN s1.trade_num ELSE 0 END) AS \"_8月21日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-22\' THEN s1.trade_num ELSE 0 END) AS \"_8月22日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-23\' THEN s1.trade_num ELSE 0 END) AS \"_8月23日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-24\' THEN s1.trade_num ELSE 0 END) AS \"_8月24日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-25\' THEN s1.trade_num ELSE 0 END) AS \"_8月25日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-26\' THEN s1.trade_num ELSE 0 END) AS \"_8月26日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-27\' THEN s1.trade_num ELSE 0 END) AS \"_8月27日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-28\' THEN s1.trade_num ELSE 0 END) AS \"_8月28日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-29\' THEN s1.trade_num ELSE 0 END) AS \"_8月29日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-30\' THEN s1.trade_num ELSE 0 END) AS \"_8月30日\" ' +
-	              ',SUM(CASE s1.trade_date WHEN \'2019-08-31\' THEN s1.trade_num ELSE 0 END) AS \"_8月31日\" ' +
-	          'FROM ' +
-	          '( ' +
-	          	'SELECT sales.prdct_id ' +
-                 		  ',pm.prdct_nm ' + 
-                 		  ',sales.trade_num ' +  
-                 		  ',CAST(sales.trade_date AS DATE) AS trade_date ' +
-	          	'FROM sales ' + 
-	          	'LEFT OUTER JOIN prdct_mst AS pm ' + 
-	          	  'ON sales.prdct_id = pm.prdct_id ' +
-	          ') AS s1 ' +
-	          'GROUP BY s1.prdct_id,s1.prdct_nm ' +
-	          'ORDER BY s1.prdct_id'
-  };*/
   connection.query(selectSalesQuery)
     .then(function(result) {
       res.render('sales_trend', {
@@ -1228,6 +1191,59 @@ router.get('/sales_trend', function(req, res, next) {
     });
 });
 
+router.post('/sales_trend', function(req, res, next) {
+  var m = req.body.month;
+  res.cookie("month", m, {maxAge: 60000, httpOnly: false} );
+  res.redirect('/sales_check');
+  res.end();
+});
+
+//日別商品販売動向他月
+router.get('sales_trend2', function(req, res, next) {
+  var dt = new Date();
+  var year = dt.getFullYear();
+  var month = dt.getMonth() + 1;
+  var date = new Date(year, month, 0);
+  var last_day = date.getDate();
+  var select_date = "";
+  month += req.cookie.month;
+  res.clearCookie(month);
+  for(var i=1; i<=last_day; i++){
+    select_date += ',SUM(CASE s1.trade_date WHEN \'2019-' + month + '-' + i  + '\' THEN s1.trade_num ELSE 0 END) AS \"_' + month + '月' + i + '日\" '
+  }
+  var selectSalesQuery = {
+    text: 'SELECT s1.prdct_id AS prdct_id ' +
+	              ',s1.prdct_nm AS prdct_nm ' +
+	              select_date +
+	          'FROM ' +
+	          '( ' +
+	          	'SELECT sales.prdct_id ' +
+                 		  ',pm.prdct_nm ' + 
+                 		  ',sales.trade_num ' +  
+                 		  ',CAST(sales.trade_date AS DATE) AS trade_date ' +
+	          	'FROM sales ' + 
+	          	'LEFT OUTER JOIN prdct_mst AS pm ' + 
+	          	  'ON sales.prdct_id = pm.prdct_id ' +
+	          ') AS s1 ' +
+	          'GROUP BY s1.prdct_id,s1.prdct_nm ' +
+	          'ORDER BY s1.prdct_id'
+  };
+  connection.query(selectSalesQuery)
+    .then(function(result) {
+      res.render('sales_trend2', {
+        title: "商品販売動向",
+        salesList: result
+      });
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
+})
+
+//月ごとの商品販売動向
 router.get('/sales_trend_prdct_monthly', function(req, res, next) {
   var select_date = "";
   for(var i=1; i<=12; i++){
@@ -1250,34 +1266,6 @@ router.get('/sales_trend_prdct_monthly', function(req, res, next) {
             'GROUP BY s1.prdct_id,s1.prdct_nm ' + 
             'ORDER BY s1.prdct_id'
   };
-  /*var selectSalesQuery = {
-    text: 'SELECT s1.prdct_id AS prdct_id ' +  
-	              ',s1.prdct_nm AS prdct_nm ' +
-	              ',SUM(CASE DATE_TRUNC(\'MONTH\', s1.trade_date) WHEN \'2019-04-01\' THEN s1.trade_num ELSE 0 END) AS \"_4月\" ' +
-	              ',SUM(CASE DATE_TRUNC(\'MONTH\', s1.trade_date) WHEN \'2019-05-01\' THEN s1.trade_num ELSE 0 END) AS \"_5月\" ' +
-	              ',SUM(CASE DATE_TRUNC(\'MONTH\', s1.trade_date) WHEN \'2019-06-01\' THEN s1.trade_num ELSE 0 END) AS \"_6月\" ' +
-	              ',SUM(CASE DATE_TRUNC(\'MONTH\', s1.trade_date) WHEN \'2019-07-01\' THEN s1.trade_num ELSE 0 END) AS \"_7月\" ' +
-	              ',SUM(CASE DATE_TRUNC(\'MONTH\', s1.trade_date) WHEN \'2019-08-01\' THEN s1.trade_num ELSE 0 END) AS \"_8月\" ' +
-	              ',SUM(CASE DATE_TRUNC(\'MONTH\', s1.trade_date) WHEN \'2019-09-01\' THEN s1.trade_num ELSE 0 END) AS \"_9月\" ' +
-	              ',SUM(CASE DATE_TRUNC(\'MONTH\', s1.trade_date) WHEN \'2019-10-01\' THEN s1.trade_num ELSE 0 END) AS \"_10月\" ' + 
-	              ',SUM(CASE DATE_TRUNC(\'MONTH\', s1.trade_date) WHEN \'2019-11-01\' THEN s1.trade_num ELSE 0 END) AS \"_11月\" ' +
-	              ',SUM(CASE DATE_TRUNC(\'MONTH\', s1.trade_date) WHEN \'2019-12-01\' THEN s1.trade_num ELSE 0 END) AS \"_12月\" ' +
-	              ',SUM(CASE DATE_TRUNC(\'MONTH\', s1.trade_date) WHEN \'2019-01-01\' THEN s1.trade_num ELSE 0 END) AS \"_1月\" ' +
-	              ',SUM(CASE DATE_TRUNC(\'MONTH\', s1.trade_date) WHEN \'2019-02-01\' THEN s1.trade_num ELSE 0 END) AS \"_2月\" ' +
-	              ',SUM(CASE DATE_TRUNC(\'MONTH\', s1.trade_date) WHEN \'2019-03-01\' THEN s1.trade_num ELSE 0 END) AS \"_3月\" ' +
-            'FROM ' +
-            '( ' +
-              'SELECT sales.prdct_id ' + 
-                    ',pm.prdct_nm ' +
-                    ',sales.trade_num ' + 
-                    ',trade_date ' +
-                'FROM sales ' +
-                'LEFT OUTER JOIN prdct_mst AS pm ' + 
-                  'ON sales.prdct_id = pm.prdct_id ' +
-            ') AS s1 ' +
-            'GROUP BY s1.prdct_id,s1.prdct_nm ' + 
-            'ORDER BY s1.prdct_id'
-  };*/
   connection.query(selectSalesQuery)
     .then(function(result) {
       res.render('sales_trend_prdct_monthly', {
