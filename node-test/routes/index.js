@@ -1145,19 +1145,19 @@ router.get('/sales_year', function(req, res, next) {
 
 
 //日別商品販売動向
-router.get('/sales_trend', function(req, res, next) {
-  var dt = new Date();
+router.get('/sales_trend_prdct_daily', function(req, res, next) {
+  var dt = new Date(req.query.month);
+  if (isNaN(dt)) {
+    dt = new Date();
+  }
   var year = dt.getFullYear();
   var month = dt.getMonth() + 1;
   var date = new Date(year, month, 0);
   var last_day = date.getDate();
   var select_date = "";
-  if(req.cookie.month != "undefined"){
-    month += req.cookie.month;
-  }
-  res.clearCookie(month);
+  var moment_date = moment(dt);
   for(var i=1; i<=last_day; i++){
-    select_date += ',SUM(CASE s1.trade_date WHEN \'2019-' + month + '-' + i  + '\' THEN s1.trade_num ELSE 0 END) AS \"_' + month + '月' + i + '日\" '
+    select_date += ',SUM(CASE s1.trade_date WHEN \'' + moment_date.format('YYYY-MM') + '-' + i  + '\' THEN s1.trade_num ELSE 0 END) AS "_' + month + '/' + i + '" '
   }
   var selectSalesQuery = {
     text: 'SELECT s1.prdct_id AS prdct_id ' +
@@ -1176,11 +1176,24 @@ router.get('/sales_trend', function(req, res, next) {
 	          'GROUP BY s1.prdct_id,s1.prdct_nm ' +
 	          'ORDER BY s1.prdct_id'
   };
+  next_month = moment(dt);
+  next_month.add(1, 'M');
+  last_month = moment(dt);
+  last_month.add(-1, 'M');  
   connection.query(selectSalesQuery)
     .then(function(result) {
-      res.render('sales_trend', {
+      var date_list = []
+      Object.keys(result[0]).forEach(function(key){
+        if (key[0] === '_') {
+          date_list.push(key);
+        }
+      });
+      res.render('sales_trend_prdct_daily', {
         title: "商品販売動向",
-        salesList: result
+        lastMonth: last_month.format('YYYY-MM'),
+        nextMonth: next_month.format('YYYY-MM'),
+        salesList: result,
+        dateList: date_list
       });
       res.end();
     })
@@ -1191,63 +1204,21 @@ router.get('/sales_trend', function(req, res, next) {
     });
 });
 
-router.post('/sales_trend', function(req, res, next) {
-  var m = req.body.month;
-  res.cookie("month", m, {maxAge: 60000, httpOnly: false} );
-  res.redirect('/sales_check');
-  res.end();
-});
-
-//日別商品販売動向他月
-router.get('sales_trend2', function(req, res, next) {
-  var dt = new Date();
-  var year = dt.getFullYear();
-  var month = dt.getMonth() + 1;
-  var date = new Date(year, month, 0);
-  var last_day = date.getDate();
-  var select_date = "";
-  month += req.cookie.month;
-  res.clearCookie(month);
-  for(var i=1; i<=last_day; i++){
-    select_date += ',SUM(CASE s1.trade_date WHEN \'2019-' + month + '-' + i  + '\' THEN s1.trade_num ELSE 0 END) AS \"_' + month + '月' + i + '日\" '
-  }
-  var selectSalesQuery = {
-    text: 'SELECT s1.prdct_id AS prdct_id ' +
-	              ',s1.prdct_nm AS prdct_nm ' +
-	              select_date +
-	          'FROM ' +
-	          '( ' +
-	          	'SELECT sales.prdct_id ' +
-                 		  ',pm.prdct_nm ' + 
-                 		  ',sales.trade_num ' +  
-                 		  ',CAST(sales.trade_date AS DATE) AS trade_date ' +
-	          	'FROM sales ' + 
-	          	'LEFT OUTER JOIN prdct_mst AS pm ' + 
-	          	  'ON sales.prdct_id = pm.prdct_id ' +
-	          ') AS s1 ' +
-	          'GROUP BY s1.prdct_id,s1.prdct_nm ' +
-	          'ORDER BY s1.prdct_id'
-  };
-  connection.query(selectSalesQuery)
-    .then(function(result) {
-      res.render('sales_trend2', {
-        title: "商品販売動向",
-        salesList: result
-      });
-      res.end();
-    })
-    .catch(function(err){
-      console.log(err.error);
-      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-      res.end();
-    });
-})
 
 //月ごとの商品販売動向
 router.get('/sales_trend_prdct_monthly', function(req, res, next) {
+  var dt = new Date(req.query.year);
+  if (isNaN(dt)) {
+    dt = new Date();
+  }
+  var year = dt.getFullYear();
+  next_year = moment(dt);
+  next_year.add(1, 'Y');
+  last_year = moment(dt);
+  last_year.add(-1, 'Y');
   var select_date = "";
   for(var i=1; i<=12; i++){
-    select_date += ',SUM(CASE DATE_TRUNC(\'MONTH\', s1.trade_date) WHEN \'2019-' + i +'-01\' THEN s1.trade_num ELSE 0 END) AS \"_' + i + '月\" ';
+    select_date += ',SUM(CASE DATE_TRUNC(\'MONTH\', s1.trade_date) WHEN \'' + year + '-' + i +'-01\' THEN s1.trade_num ELSE 0 END) AS "_' + i + '月" ';
   }
   var selectSalesQuery = {
     text: 'SELECT s1.prdct_id AS prdct_id ' +  
@@ -1268,8 +1239,17 @@ router.get('/sales_trend_prdct_monthly', function(req, res, next) {
   };
   connection.query(selectSalesQuery)
     .then(function(result) {
+      var date_list = []
+      Object.keys(result[0]).forEach(function(key){
+        if (key[0] === '_') {
+          date_list.push(key);
+        }
+      });
       res.render('sales_trend_prdct_monthly', {
         title: "月別商品販売動向",
+        lastYear: last_year.format('YYYY-MM'),
+        nextYear: next_year.format('YYYY-MM'),
+        dateList: date_list,
         salesList: result
       });
       res.end();

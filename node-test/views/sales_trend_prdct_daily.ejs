@@ -7,6 +7,9 @@
     <meta name="format-detection" content="telephone=no">
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script>
+
+    </script>
   </head>
   <body>
     <header>
@@ -23,18 +26,18 @@
     </header>
     <div class="wrapper">
       <div align="center">
-          <form action='/sales_trend_prdct_monthly' method='get' class='sales_trend-form'>
-            <button type="submit" class="submit">
-                <input type="hidden" name="year" value=<%= lastYear %>>前年
-            </button>
-          </form>
-          <form action='/sales_trend_prdct_monthly' method='get' class='sales_trend-form'>
-            <button type="submit" class="submit">
-                <input type="hidden" name="year" value=<%= nextYear %>>次年
-            </button>
-          </form>
-          <!--<button><a href="/sales_trend_category">カテゴリ別販売動向</a></button>-->
-          <button><a href="/sales_trend_prdct_daily">日別商品販売動向</a></button>
+        <form action='/sales_trend_prdct_daily' method='get' class='sales_trend-form'>
+          <button type="submit" class="submit">
+              <input type="hidden" name="month" value=<%= lastMonth %>>前月
+          </button>
+        </form>
+        <form action='/sales_trend_prdct_daily' method='get' class='sales_trend-form'>
+          <button type="submit" class="submit">
+              <input type="hidden" name="month" value=<%= nextMonth %>>次月
+          </button>
+        </form>
+        <!--<button><a href="/sales_trend_category">カテゴリ別販売動向</a></button>-->
+        <button><a href="/sales_trend_prdct_monthly">月別商品販売動向</a></button>
       <table rules="all">
         <tr>
           <th>商品名</th>
