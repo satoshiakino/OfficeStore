@@ -103,10 +103,12 @@ router.post('/prdct_reg', function(req, res, next) {
   var jan = req.body.jan;
   var cat_cd = req.body.cat_cd;
   var prdct_nm = req.body.prdct_nm;
+  var cost = req.body.cost;
   var price = req.body.price;
+  var cost_rate = cost / price;
   var registerQuery = {
-    text: 'INSERT INTO prdct_mst (cat_cd, jan, prdct_nm, price) VALUES($1, $2, $3, $4)',
-    values: [cat_cd, jan, prdct_nm, price],
+    text: 'INSERT INTO prdct_mst (cat_cd, jan, prdct_nm, cost, price, cost_rate) VALUES($1, $2, $3, $4, $5, $6)',
+    values: [cat_cd, jan, prdct_nm, cost, price, cost_rate],
   };
   connection.query(registerQuery)
     .then(function(prdct){
@@ -351,10 +353,9 @@ router.post('/arrvl_reg', function(req, res, next) {
   var cat_cd = req.body.cat_cd;
   var prdct_id = req.body.prdct_id;
   var trade_num = req.body.trade_num;
-  var cost = req.body.cost;
   registerArrivalQuery = {
-    text: "INSERT INTO arrival (cat_cd, prdct_id, cost, trade_num, trade_date) VALUES($1, $2, $3, $4, now())",
-    values: [cat_cd, prdct_id, cost, trade_num],
+    text: "INSERT INTO arrival (cat_cd, prdct_id, trade_num, trade_date) VALUES($1, $2, $3, now())",
+    values: [cat_cd, prdct_id, trade_num],
   };
   connection.query(registerArrivalQuery)
     .then(function(arrival){
@@ -376,7 +377,7 @@ router.get('/arrvl_hstry', function(req, res, next) {
                  ",cat.cat_nm" +   
                  ",pm.jan" + 
                  ",pm.prdct_nm" +   
-                 ",arrvl.cost" +
+                 ",pm.cost" +
                  ",arrvl.trade_num" +  
                  ",TO_CHAR(arrvl.trade_date, \'yyyy.mm.dd Dy hh24:mi:ss\') AS trade_date " + 
           "FROM arrival AS arrvl " +  
@@ -559,8 +560,10 @@ router.post('/settlement', function(req, res, next) {
 //localhost:3000/settlement2
 router.get('/settlement2', function(req, res, next) {
   var getCostQuery = {
-    text: "SELECT SUM(arrvl.cost * arrvl.trade_num) AS total_cost " +
+    text: "SELECT SUM(pm.cost * arrvl.trade_num) AS total_cost " +
             "FROM arrival AS arrvl " +
+            "LEFT OUTER JOIN prdct_mst AS pm " +
+            "ON arrival.prdct_id = pm.prdct_id " +
             "WHERE checked = false " +
             "GROUP BY checked"
   };
@@ -652,7 +655,7 @@ router.post('/settlement2', function(req, res, next) {
                     "cat.cat_nm," + 
                     "pm.jan," + 
                     "pm.prdct_nm," + 
-                    "arrvl.cost," + 
+                    "pm.cost," + 
                     "arrvl.trade_num," + 
                     "arrvl.trade_date " + 
                     "FROM arrival AS arrvl " + 
@@ -1157,7 +1160,7 @@ router.get('/sales_trend_prdct_daily', function(req, res, next) {
   var select_date = "";
   var moment_date = moment(dt);
   for(var i=1; i<=last_day; i++){
-    select_date += ',SUM(CASE s1.trade_date WHEN \'' + moment_date.format('YYYY-MM') + '-' + i  + '\' THEN s1.trade_num ELSE 0 END) AS "_' + month + '/' + i + '" '
+    select_date += ',SUM(CASE s1.trade_date WHEN \'' + moment_date.format('YYYY-MM') + '-' + i  + '\' THEN s1.trade_num ELSE 0 END) AS "_' + month + '/' + i + '" ';
   }
   var selectSalesQuery = {
     text: 'SELECT s1.prdct_id AS prdct_id ' +
@@ -1182,7 +1185,7 @@ router.get('/sales_trend_prdct_daily', function(req, res, next) {
   last_month.add(-1, 'M');  
   connection.query(selectSalesQuery)
     .then(function(result) {
-      var date_list = []
+      var date_list = [];
       Object.keys(result[0]).forEach(function(key){
         if (key[0] === '_') {
           date_list.push(key);
@@ -1274,7 +1277,7 @@ router.get('/sales_trend_category_daily', function(req, res, next) {
   var select_date = "";
   var moment_date = moment(dt);
   for(var i=1; i<=last_day; i++){
-    select_date += ',SUM(CASE s1.trade_date WHEN \'' + moment_date.format('YYYY-MM') + '-' + i  + '\' THEN s1.trade_num ELSE 0 END) AS "_' + month + '/' + i + '" '
+    select_date += ',SUM(CASE s1.trade_date WHEN \'' + moment_date.format('YYYY-MM') + '-' + i  + '\' THEN s1.trade_num ELSE 0 END) AS "_' + month + '/' + i + '" ';
   }
   var selectSalesQuery = {
     text: 'SELECT s1.cat_cd AS cat_cd ' +

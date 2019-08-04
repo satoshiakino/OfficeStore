@@ -4,6 +4,7 @@ create table prdct_mst
   jan VARCHAR(20),
   cat_cd VARCHAR(10),
   prdct_nm VARCHAR(100),
+  cost integer,
   price int,
   cost_rate DOUBLE PRECISION,
   latest boolean default true
@@ -16,7 +17,6 @@ CREATE TABLE arrival
   cat_cd VARCHAR(10),
   prdct_id INTEGER,
   trade_num INTEGER,
-  cost INTEGER,
   checked boolean DEFAULT false,
   count boolean default false
   )
