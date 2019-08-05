@@ -544,14 +544,16 @@ router.delete('/sales_hstry', function(req, res, next) {
 //localhostk:3000/settlement
 router.get('/settlement', function(req, res, next) {
   res.render('settlement', {
-    title: "settlement"
+    title: "現金入力"
   });
   res.end();
 });
 
 router.post('/settlement', function(req, res, next) {
   var totalCash = req.body.ten_thousand * 10000 + req.body.five_thousand * 5000 + req.body.one_thousand * 1000 + req.body.five_hundred * 500 + req.body.one_hundred * 100 + req.body.fifty * 50 + req.body.ten * 10 + req.body.five * 5 + req.body.one * 1;
-  req.session.total_cash = totalCash;
+  //req.session.total_cash = totalCash;
+  var total_cash = totalCash;
+  res.cookie('total_cash', total_cash);
   res.redirect('/settlement2');
   res.end();
 });
@@ -562,7 +564,7 @@ router.get('/settlement2', function(req, res, next) {
     text: "SELECT SUM(pm.cost * arrvl.trade_num) AS total_cost " +
             "FROM arrival AS arrvl " +
             "LEFT OUTER JOIN prdct_mst AS pm " +
-            "ON arrival.prdct_id = pm.prdct_id " +
+            "ON arrvl.prdct_id = pm.prdct_id " +
             "WHERE checked = false " +
             "GROUP BY checked"
   };
@@ -584,56 +586,59 @@ router.get('/settlement2', function(req, res, next) {
     connection.query(getCostQuery)
       .then(function(cost){
         total_cost = parseInt(cost[0].total_cost);
-      })
-      .catch(function(err){
-        console.log(err.error);
-        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-        res.end();
       }),
     connection.query(getSalesQuery)
       .then(function(sales){
         total_sales = parseInt(sales[0].total_sales);
-      })
-      .catch(function(err){
-        console.log(err.error);
-        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-        res.end();
       }),
     connection.query(getLastCashQuery)
       .then(function(cash){
         last_cash = parseInt(cash[0].total_cash);
       })
-      .catch(function(err){
-        console.log(err.error);
-        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-        res.end();
-      })
   ])
   .then(function(){
-    req.session.total_cost = total_cost;
+    res.cookie('total_cost', total_cost);
+    res.cookie('total_sales', total_sales);
+    res.cookie('profit_loss', total_sales - total_cost);
+    res.cookie('total_calc_cash', last_cash - total_cost + total_sales);
+    res.cookie('excess_deficiency', (last_cash - total_cost + total_sales) - parseInt(req.cookies.total_cash, 10));
+    /*req.session.total_cost = total_cost;
     req.session.total_sales = total_sales;
     req.session.profit_loss = total_sales - total_cost;
     req.session.total_calc_cash = last_cash - total_cost + total_sales;
-    req.session.excess_deficiency = (last_cash - total_cost + total_sales) - req.session.total_cash;
+    req.session.excess_deficiency = (last_cash - total_cost + total_sales) - req.session.total_cash;*/
     res.render('settlement2', {
       title: "settlement2",
-      total_cash: req.session.total_cash,
+      total_cash: parseInt(req.cookies.total_cash, 10),
+      //total_cash: req.session.total_cash,
       total_cost: total_cost,
       total_sales: total_sales,
       profit_loss: total_sales - total_cost,
       total_calc_cash: last_cash - total_cost + total_sales,
-      excess_deficiency: (last_cash - total_cost + total_sales) - req.session.total_cash
+      excess_deficiency: (last_cash - total_cost + total_sales) - parseInt(req.cookies.total_cash, 10)
     });
+    res.end();
+  })
+  .catch(function(err){
+    console.log(err.error);
+    res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+    res.end();
   });
 });
 
 router.post('/settlement2', function(req, res, next) {
-  var total_cost = req.session.total_cost;
+  var total_cost = parseInt(req.cookies.total_cost, 10);
+  var total_sales = parseInt(req.cookies.total_sales, 10);
+  var profit_loss = parseInt(req.cookies.profit_loss, 10);
+  var total_calc_cash = parseInt(req.cookies.total_calc_cash, 10);
+  var excess_deficiency = parseInt(req.cookies.excess_deficiency, 10);
+  var total_cash = parseInt(req.cookies.total_cash, 10);
+  /*var total_cost = req.session.total_cost;
   var total_sales = req.session.total_sales;
   var profit_loss = req.session.profit_loss;
   var total_calc_cash = req.session.total_calc_cash;
   var excess_deficiency = req.session.excess_deficiency;
-  var total_cash = req.session.total_cash;
+  var total_cash = req.session.total_cash;*/
   var registerSettlementQuery = {
     text: "INSERT INTO settlement ( " +
           "total_cost, " +
@@ -647,40 +652,6 @@ router.post('/settlement2', function(req, res, next) {
           "VALUES ($1, $2, $3, $4, $5, $6, now())",
     values: [ total_cost ,total_sales, profit_loss, total_calc_cash, excess_deficiency, total_cash ],
   };
-  var insertArrivalArchivesQuery = {
-    text: "INSERT INTO arrival_archives " + 
-            "SELECT  arrvl.arrvl_id," + 
-                    "arrvl.cat_cd," +  
-                    "cat.cat_nm," + 
-                    "pm.jan," + 
-                    "pm.prdct_nm," + 
-                    "pm.cost," + 
-                    "arrvl.trade_num," + 
-                    "arrvl.trade_date " + 
-                    "FROM arrival AS arrvl " + 
-            "LEFT OUTER JOIN prdct_mst AS pm " + 
-              "ON arrvl.prdct_id = pm.prdct_id " + 
-            "LEFT OUTER JOIN category AS cat " + 
-              "ON arrvl.cat_cd = cat.cat_cd " + 
-            "WHERE arrvl.checked = false"
-  };
-  var insertSalesArchivesQuery = {
-    text: "INSERT INTO sales_archives " + 
-            "SELECT sales.sales_id" + 
-            ",sales.cat_cd" +
-            ",cat.cat_nm" +
-            ",pm.jan" +
-            ",pm.prdct_nm" +  
-            ",pm.price" +
-            ",sales.trade_num" +  
-            ",sales.trade_date " + 
-          "FROM sales " +
-          "LEFT OUTER JOIN prdct_mst AS pm " +
-            "ON sales.prdct_id = pm.prdct_id " +  
-          "LEFT OUTER JOIN category AS cat " +
-            "ON sales.cat_cd = cat.cat_cd " +
-          "WHERE sales.checked = false"
-  };
   var updateSettlementQuery = {
     text: "UPDATE settlement SET latest = false"
   };
@@ -691,56 +662,31 @@ router.post('/settlement2', function(req, res, next) {
     text: "UPDATE sales SET checked = true"
   };
   Promise.all([
-    connection.query(insertArrivalArchivesQuery)
-      .then(function(){})
-      .catch(function(err){
-        console.log(err.error);
-        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-        res.end();
-      }),
-    connection.query(insertSalesArchivesQuery)
-      .then(function(){})
-      .catch(function(err){
-        console.log(err.error);
-        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-        res.end();
-      })
-  ])
-  .then(Promise.all([
       connection.query(updateSettlementQuery)
-        .then(function(){})
-        .catch(function(err){
-          console.log(err.error);
-          res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-          res.end();
-        }),
+        .then(function(){}),
       connection.query(updateArrivalQuery)
-        .then(function(){})
-        .catch(function(err){
-          console.log(err.error);
-          res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-          res.end();
-        }),
+        .then(function(){}),
       connection.query(updateSalesQuery)
-        .then(function(){})
-        .catch(function(err){
-          console.log(err.error);
-          res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-          res.end();
-        }),
-    ])
-    .then(function(){
-      connection.query(registerSettlementQuery)
-        .then(function(){
-          res.redirect('/sales_menu');
-          res.end();
-        })
-        .catch(function(err){
-          console.log(err.error);
-          res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-          res.end();
-        });
-  }));
+        .then(function(){}),
+  ])
+  .then(function(){
+    connection.query(registerSettlementQuery)
+      .then(function(){
+        res.clearCookie('total_cash');
+        res.clearCookie('total_cost');
+        res.clearCookie('total_sales');
+        res.clearCookie('profit_loss');
+        res.clearCookie('total_calc_cash');
+        res.clearCookie('excess_deficiency');
+        res.redirect('/sales_menu');
+        res.end();
+      });
+  })
+  .catch(function(err){
+    console.log(err.error);
+    res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+    res.end();
+  });
 });
 
 //localhost:3000/sales_check
