@@ -26,29 +26,29 @@
     </header>
     <div class="wrapper">
       <div align="center">
-        <form action='/sales_trend_prdct_daily' method='get' class='sales_trend-form'>
+        <form action='/sales_trend_category_weekly' method='get' class='sales_trend-form'>
           <button type="submit" class="submit">
               <input type="hidden" name="month" value=<%= lastMonth %>>前月
           </button>
         </form>
-        <form action='/sales_trend_prdct_daily' method='get' class='sales_trend-form'>
+        <form action='/sales_trend_category_weekly' method='get' class='sales_trend-form'>
           <button type="submit" class="submit">
               <input type="hidden" name="month" value=<%= nextMonth %>>次月
           </button>
         </form>
         <!--<button><a href="/sales_trend_category">カテゴリ別販売動向</a></button>-->
-        <button><a href="/sales_trend_prdct_weekly">週別商品販売動向</a></button>
-        <button><a href="/sales_trend_prdct_monthly">月別商品販売動向</a></button>
+        <button><a href="/sales_trend_category_daily">日別カテゴリ販売動向</a></button>
+        <button><a href="/sales_trend_category_monthly">月別カテゴリ販売動向</a></button>
       <table rules="all">
         <tr>
-          <th>商品名</th>
+          <th>カテゴリ名</th>
           <% dateList.forEach(function(dt){ %>
             <th><%= dt.replace('_', '') %></th>
           <% }); %>
         </tr>
         <% salesList.forEach(function(salesItem){ %>
           <tr class="main-list__item">
-            <td class="sales_trend__prdct_nm"><%= salesItem.prdct_nm %></td>
+            <td class="sales_trend__cat_nm"><%= salesItem.cat_nm %></td>
             <% dateList.forEach(function(dt){ %>
               <td class="sales_trend__date"><%= salesItem[dt] %></td>
             <% }); %>

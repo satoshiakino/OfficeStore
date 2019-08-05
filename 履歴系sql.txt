@@ -275,6 +275,41 @@ SELECT s1.cat_cd AS cat_cd
 	          GROUP BY s1.cat_cd,s1.cat_nm  
 	          ORDER BY s1.cat_cd
 
+//カテゴリ別販売動向（週別）
+SELECT sw.cat_cd
+	  ,sw.cat_nm
+	  ,SUM(CASE sw.trade_week WHEN '2019/08/04' THEN sw.sales_week ELSE 0 END) AS "_8月4日"
+	  ,SUM(CASE sw.trade_week WHEN '2019/08/11' THEN sw.sales_week ELSE 0 END) AS "_8月11日"
+	  ,SUM(CASE sw.trade_week WHEN '2019/08/18' THEN sw.sales_week ELSE 0 END) AS "_8月18日"
+	  ,SUM(CASE sw.trade_week WHEN '2019/08/25' THEN sw.sales_week ELSE 0 END) AS "_8月25日"
+	FROM (
+SELECT TO_CHAR(s1.trade_day - s1.day_of_the_week, 'yyyy/mm/dd') AS trade_week
+	  ,s1.cat_cd
+	  ,s1.cat_nm
+	  ,SUM(s1.trade_num) AS sales_week
+	FROM
+	(
+		SELECT CAST(sales.trade_date AS DATE) AS trade_day
+		      ,pm.cat_cd
+			  ,cat.cat_nm
+              ,SUM(CASE WHEN sales.trade_num IS NULL THEN 0 ELSE sales.trade_num END) AS trade_num
+			  ,CAST(extract(dow FROM sales.trade_date) AS INT ) AS day_of_the_week
+			FROM prdct_mst AS pm     
+			LEFT OUTER JOIN sales
+				ON pm.prdct_id = sales.prdct_id 
+			LEFT OUTER JOIN category AS cat
+				ON pm.cat_cd = cat.cat_cd
+			GROUP BY trade_day, pm.cat_cd, cat.cat_nm, day_of_the_week
+			ORDER BY trade_day
+    ) AS s1
+	WHERE EXTRACT(YEAR FROM s1.trade_day) = EXTRACT(YEAR FROM now())
+		AND EXTRACT(MONTH FROM s1.trade_day) = EXTRACT(MONTH FROM now())
+	GROUP BY trade_week, s1.cat_cd, s1.cat_nm
+	ORDER BY trade_week
+	) AS sw
+	GROUP BY sw.cat_cd, sw.cat_nm
+	ORDER BY sw.cat_cd
+
 //カテゴリ別販売動向（月別）
 SELECT s1.cat_cd AS cat_cd  
       ,s1.cat_nm AS cat_nm  

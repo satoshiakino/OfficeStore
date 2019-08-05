@@ -363,8 +363,7 @@ router.post('/arrvl_reg', function(req, res, next) {
       res.end();
     })
     .catch(function(err){
-      console.log(err, error);
-      res.render('err', { message: 'Error', error: { status: err.code, stack: err.stack } });
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack } });
       res.end();
     });
 });
@@ -480,13 +479,13 @@ router.post('/sales_reg', function(req, res, next) {
     values: [cat_cd, prdct_id, trade_num],
   };
   connection.query(registerSalesQuery)
-    .then(function(arrival){
+    .then(function(){
       res.redirect('/sales_hstry');
       res.end();
     })
     .catch(function(err){
-      console.log(err, error);
-      res.render('err', { message: 'Error', error: { status: err.code, stack: err.stack } });
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack } });
       res.end();
     });
 });
@@ -1207,6 +1206,80 @@ router.get('/sales_trend_prdct_daily', function(req, res, next) {
     });
 });
 
+//localhost:3000/sales_trend_prdct_weekly
+router.get('/sales_trend_prdct_weekly', function(req, res, next) {
+  var dt = new Date(req.query.month);
+  if (isNaN(dt)) {
+    dt = new Date();
+  }
+  var year = dt.getFullYear();
+  var month = dt.getMonth() + 1;
+  var date = new Date(year, month, 0);
+  var last_day = date.getDate();
+  var select_date = "";
+  var moment_date = moment(dt);
+  var first_date = new Date(year, dt.getMonth(), 1);
+  var day_of_week = (first_date.getDay() == 0)?0:(7 -first_date.getDay());
+  var first_sunday = new Date(year, dt.getMonth(), 1 + day_of_week);
+  var fs = first_sunday.getDate();
+  for(var i=fs; i<=last_day; i+=7){
+    select_date += ',SUM(CASE sw.trade_week WHEN \'' + moment_date.format('YYYY/MM') + '/' + i  + '\' THEN sw.sales_week ELSE 0 END) AS "_' + month + '/' + i + '" ';
+  }
+  var selectSalesQuery = {
+    text: 'SELECT sw.prdct_id ' +
+                 ',sw.prdct_nm ' +
+                 select_date +
+            	'FROM ( ' +
+            'SELECT TO_CHAR(s1.trade_day - s1.day_of_the_week, \'yyyy/mm/dd\') AS trade_week ' +
+            	  ',s1.prdct_id ' +
+            	  ',s1.prdct_nm ' +
+            	  ',SUM(s1.trade_num) AS sales_week ' +
+            	'FROM ' +
+            	'( ' +
+            		'SELECT CAST(sales.trade_date AS DATE) AS trade_day ' +
+            		       ',pm.prdct_id ' +
+            			     ',pm.prdct_nm ' +
+                       ',SUM(CASE WHEN sales.trade_num IS NULL THEN 0 ELSE sales.trade_num END) AS trade_num ' +
+            			     ',CAST(extract(dow FROM sales.trade_date) AS INT ) AS day_of_the_week ' +
+            			'FROM prdct_mst AS pm ' +
+            			'LEFT OUTER JOIN sales ' +
+            			  'ON pm.prdct_id = sales.prdct_id ' +
+            			'GROUP BY trade_day, pm.prdct_id, pm.prdct_nm, day_of_the_week ' +
+            			'ORDER BY trade_day ' +
+                ') AS s1 ' +
+            	'GROUP BY trade_week, s1.prdct_id, s1.prdct_nm ' +
+            	'ORDER BY trade_week ' +
+            	') AS sw ' +
+            	'GROUP BY sw.prdct_id, sw.prdct_nm ' +
+            	'ORDER BY sw.prdct_id'
+  };
+  next_month = moment(dt);
+  next_month.add(1, 'M');
+  last_month = moment(dt);
+  last_month.add(-1, 'M');  
+  connection.query(selectSalesQuery)
+    .then(function(result) {
+      var date_list = [];
+      Object.keys(result[0]).forEach(function(key){
+        if (key[0] === '_') {
+          date_list.push(key);
+        }
+      });
+      res.render('sales_trend_prdct_weekly', {
+        title: "週別商品販売動向",
+        lastMonth: last_month.format('YYYY-MM'),
+        nextMonth: next_month.format('YYYY-MM'),
+        salesList: result,
+        dateList: date_list
+      });
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
+});
 
 //月ごとの商品販売動向
 router.get('/sales_trend_prdct_monthly', function(req, res, next) {
@@ -1328,6 +1401,83 @@ router.get('/sales_trend_category_daily', function(req, res, next) {
     });
 });
 
+//localhost:3000/sales_trend_category_weekly
+router.get('/sales_trend_category_weekly', function(req, res, next) {
+  var dt = new Date(req.query.month);
+  if (isNaN(dt)) {
+    dt = new Date();
+  }
+  var year = dt.getFullYear();
+  var month = dt.getMonth() + 1;
+  var date = new Date(year, month, 0);
+  var last_day = date.getDate();
+  var select_date = "";
+  var moment_date = moment(dt);
+  var first_date = new Date(year, dt.getMonth(), 1);
+  var day_of_week = (first_date.getDay() == 0)?0:(7 -first_date.getDay());
+  var first_sunday = new Date(year, dt.getMonth(), 1 + day_of_week);
+  var fs = first_sunday.getDate();
+  for(var i=fs; i<=last_day; i+=7){
+    select_date += ',SUM(CASE sw.trade_week WHEN \'' + moment_date.format('YYYY/MM') + '/' + i  + '\' THEN sw.sales_week ELSE 0 END) AS "_' + month + '/' + i + '" ';
+  }
+  var selectSalesQuery = {
+    text: 'SELECT sw.cat_cd ' +
+                 ',sw.cat_nm ' +
+                 select_date +
+            	'FROM ( ' +
+            'SELECT TO_CHAR(s1.trade_day - s1.day_of_the_week, \'yyyy/mm/dd\') AS trade_week ' +
+            	  ',s1.cat_cd ' +
+            	  ',s1.cat_nm ' +
+            	  ',SUM(s1.trade_num) AS sales_week ' +
+            	'FROM ' +
+            	'( ' +
+            		'SELECT CAST(sales.trade_date AS DATE) AS trade_day ' +
+            		       ',pm.cat_cd ' +
+            			     ',cat.cat_nm ' +
+                       ',SUM(CASE WHEN sales.trade_num IS NULL THEN 0 ELSE sales.trade_num END) AS trade_num ' +
+            			     ',CAST(extract(dow FROM sales.trade_date) AS INT ) AS day_of_the_week ' +
+            			'FROM prdct_mst AS pm ' +
+            			'LEFT OUTER JOIN sales ' +
+                    'ON pm.prdct_id = sales.prdct_id ' +
+                  'LEFT OUTER JOIN category AS cat ' +
+                    'ON pm.cat_cd = cat.cat_cd ' +
+            			'GROUP BY trade_day, pm.cat_cd, cat.cat_nm, day_of_the_week ' +
+            			'ORDER BY trade_day ' +
+                ') AS s1 ' +
+            	'GROUP BY trade_week, s1.cat_cd, s1.cat_nm ' +
+            	'ORDER BY trade_week ' +
+            	') AS sw ' +
+            	'GROUP BY sw.cat_cd, sw.cat_nm ' +
+            	'ORDER BY sw.cat_cd'
+  };
+  next_month = moment(dt);
+  next_month.add(1, 'M');
+  last_month = moment(dt);
+  last_month.add(-1, 'M');  
+  connection.query(selectSalesQuery)
+    .then(function(result) {
+      var date_list = [];
+      Object.keys(result[0]).forEach(function(key){
+        if (key[0] === '_') {
+          date_list.push(key);
+        }
+      });
+      res.render('sales_trend_category_weekly', {
+        title: "週別カテゴリ販売動向",
+        lastMonth: last_month.format('YYYY-MM'),
+        nextMonth: next_month.format('YYYY-MM'),
+        salesList: result,
+        dateList: date_list
+      });
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
+});
+
 //localhost:3000/sales_trend_category_monthly
 router.get('/sales_trend_category_monthly', function(req, res, next) {
   var dt = new Date(req.query.year);
@@ -1372,6 +1522,62 @@ router.get('/sales_trend_category_monthly', function(req, res, next) {
         title: "月別カテゴリ販売動向",
         lastYear: last_year.format('YYYY-MM'),
         nextYear: next_year.format('YYYY-MM'),
+        dateList: date_list,
+        salesList: result
+      });
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
+});
+
+//localhost:3000/sales_trend_category_yearly
+router.get('/sales_trend_category_yearly', function(req, res, next) {
+  var dt = new Date(req.query.year);
+  if (isNaN(dt)) {
+    dt = new Date();
+  }
+  var year = dt.getFullYear();
+  next_10year = moment(dt);
+  next_10year.add(10, 'Y');
+  last_10year = moment(dt);
+  last_10year.add(-10, 'Y');
+  var select_date = "";
+  for(var i=year - 10; i<=year; i++){
+    select_date += ',SUM(CASE DATE_TRUNC(\'YEAR\', s1.trade_date) WHEN \'' + i + '-01-01\' THEN s1.trade_num ELSE 0 END) AS "_' + i + '年" ';
+  }
+  var selectSalesQuery = {
+    text: 'SELECT s1.cat_cd AS cat_cd ' +  
+	              ',s1.cat_nm AS cat_nm ' +
+	              select_date +
+            'FROM ' +
+            '( ' +
+              'SELECT sales.cat_cd ' + 
+                    ',cat.cat_nm ' +
+                    ',sales.trade_num ' + 
+                    ',trade_date ' +
+                'FROM sales ' +
+                'LEFT OUTER JOIN category AS cat ' +
+                  'ON sales.cat_cd = cat.cat_cd ' +
+            ') AS s1 ' +
+            'GROUP BY s1.cat_cd,s1.cat_nm ' + 
+            'ORDER BY s1.cat_cd'
+  };
+  connection.query(selectSalesQuery)
+    .then(function(result) {
+      var date_list = [];
+      Object.keys(result[0]).forEach(function(key){
+        if (key[0] === '_') {
+          date_list.push(key);
+        }
+      });
+      res.render('sales_trend_category_yearly', {
+        title: "年別カテゴリ販売動向",
+        last10Year: last_10year.format('YYYY'),
+        next10Year: next_10year.format('YYYY'),
         dateList: date_list,
         salesList: result
       });
