@@ -601,7 +601,7 @@ router.get('/settlement2', function(req, res, next) {
     res.cookie('total_sales', total_sales);
     res.cookie('profit_loss', total_sales - total_cost);
     res.cookie('total_calc_cash', last_cash - total_cost + total_sales);
-    res.cookie('excess_deficiency', (last_cash - total_cost + total_sales) - parseInt(req.cookies.total_cash, 10));
+    res.cookie('excess_deficiency', parseInt(req.cookies.total_cash, 10) - (last_cash - total_cost + total_sales));
     /*req.session.total_cost = total_cost;
     req.session.total_sales = total_sales;
     req.session.profit_loss = total_sales - total_cost;
@@ -615,7 +615,7 @@ router.get('/settlement2', function(req, res, next) {
       total_sales: total_sales,
       profit_loss: total_sales - total_cost,
       total_calc_cash: last_cash - total_cost + total_sales,
-      excess_deficiency: (last_cash - total_cost + total_sales) - parseInt(req.cookies.total_cash, 10)
+      excess_deficiency: parseInt(req.cookies.total_cash, 10) - (last_cash - total_cost + total_sales)
     });
     res.end();
   })
@@ -687,6 +687,28 @@ router.post('/settlement2', function(req, res, next) {
     res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
     res.end();
   });
+});
+
+//localhost:3000/settlement_hstry
+router.get('/settlement_hstry', function(req, res, next) {
+  var selectSettlementQuery = {
+    text: 'SELECT TO_CHAR(settle_date, \'YYYY/MM/DD\') AS settle_date ' +
+	              ',total_cost ' +
+	              ',total_sales ' +
+	              ',profit_loss ' +
+	              ',total_calc_cash ' +
+	              ',excess_deficiency ' +
+	              ',total_cash ' +
+	          'FROM settlement'
+  };
+  connection.query(selectSettlementQuery)
+    .then(function(result) {
+      res.render('settlement_hstry', {
+        title: "精算履歴",
+        resultList: result
+      });
+      res.end();
+    });
 });
 
 //localhost:3000/sales_check
