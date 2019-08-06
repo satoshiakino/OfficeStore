@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compotible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="format-detection" content="telephone=no">
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script>
+
+    </script>
+  </head>
+  <body>
+    <header>
+      <h1>AkinoStore</h1>
+      <nav id="global_navi">
+        <ul>
+          <li><a href="/mst_menu">マスタ登録・修正</a></li>
+          <li><a href="/arrvl_menu">仕入登録・修正</a></li>
+          <li><a href="/sales_menu">売上登録・修正</a></li>
+          <li class="current"><a href="/sales_check">売上確認</a></li>
+          <li><a href="/inventory">在庫確認</a></li>
+        </ul>
+      </nav>
+    </header>
+    <div class="wrapper">
+      <div align="center">
+        <form action='/sales_trend_prdct_daily' method='get' class='sales_trend-form'>
+          <button type="submit" class="submit">
+              <input type="hidden" name="month" value=<%= lastMonth %>>前月
+          </button>
+        </form>
+        <form action='/sales_trend_prdct_daily' method='get' class='sales_trend-form'>
+          <button type="submit" class="submit">
+              <input type="hidden" name="month" value=<%= nextMonth %>>次月
+          </button>
+        </form>
+        <!--<button><a href="/sales_trend_category">カテゴリ別販売動向</a></button>-->
+        <button><a href="/sales_trend_prdct_weekly">週別商品販売動向</a></button>
+        <button><a href="/sales_trend_prdct_monthly">月別商品販売動向</a></button>
+      <table rules="all">
+        <tr>
+          <th>商品名</th>
+          <% dateList.forEach(function(dt){ %>
+            <th><%= dt.replace('_', '') %></th>
+          <% }); %>
+        </tr>
+        <% salesList.forEach(function(salesItem){ %>
+          <tr class="main-list__item">
+            <td class="sales_trend__prdct_nm"><%= salesItem.prdct_nm %></td>
+            <% dateList.forEach(function(dt){ %>
+              <td class="sales_trend__date"><%= salesItem[dt] %></td>
+            <% }); %>
+          </tr>
+        <% }); %>
+      </table>
+      </div>
+    </div>
+  </body>
+</html>

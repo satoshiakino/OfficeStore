@@ -55,6 +55,7 @@ router.get('/prdct_mst', function(req, res, next) {
                 ",prdct.jan" +
                 ",prdct.prdct_nm" +
                 ",prdct.price" +
+                ",prdct.cost_rate " +
                 ",prdct.latest " +
           "FROM prdct_mst AS prdct " +
           "LEFT OUTER JOIN category AS cat " + 
@@ -102,10 +103,12 @@ router.post('/prdct_reg', function(req, res, next) {
   var jan = req.body.jan;
   var cat_cd = req.body.cat_cd;
   var prdct_nm = req.body.prdct_nm;
+  var cost = req.body.cost;
   var price = req.body.price;
+  var cost_rate = cost / price;
   var registerQuery = {
-    text: 'INSERT INTO prdct_mst (cat_cd, jan, prdct_nm, price) VALUES($1, $2, $3, $4)',
-    values: [cat_cd, jan, prdct_nm, price],
+    text: 'INSERT INTO prdct_mst (cat_cd, jan, prdct_nm, cost, price, cost_rate) VALUES($1, $2, $3, $4, $5, $6)',
+    values: [cat_cd, jan, prdct_nm, cost, price, cost_rate],
   };
   connection.query(registerQuery)
     .then(function(prdct){
@@ -350,10 +353,9 @@ router.post('/arrvl_reg', function(req, res, next) {
   var cat_cd = req.body.cat_cd;
   var prdct_id = req.body.prdct_id;
   var trade_num = req.body.trade_num;
-  var cost = req.body.cost;
   registerArrivalQuery = {
-    text: "INSERT INTO arrival (cat_cd, prdct_id, cost, trade_num, trade_date) VALUES($1, $2, $3, $4, now())",
-    values: [cat_cd, prdct_id, cost, trade_num],
+    text: "INSERT INTO arrival (cat_cd, prdct_id, trade_num, trade_date) VALUES($1, $2, $3, now())",
+    values: [cat_cd, prdct_id, trade_num],
   };
   connection.query(registerArrivalQuery)
     .then(function(arrival){
@@ -361,8 +363,7 @@ router.post('/arrvl_reg', function(req, res, next) {
       res.end();
     })
     .catch(function(err){
-      console.log(err, error);
-      res.render('err', { message: 'Error', error: { status: err.code, stack: err.stack } });
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack } });
       res.end();
     });
 });
@@ -375,7 +376,7 @@ router.get('/arrvl_hstry', function(req, res, next) {
                  ",cat.cat_nm" +   
                  ",pm.jan" + 
                  ",pm.prdct_nm" +   
-                 ",arrvl.cost" +
+                 ",pm.cost" +
                  ",arrvl.trade_num" +  
                  ",TO_CHAR(arrvl.trade_date, \'yyyy.mm.dd Dy hh24:mi:ss\') AS trade_date " + 
           "FROM arrival AS arrvl " +  
@@ -478,13 +479,13 @@ router.post('/sales_reg', function(req, res, next) {
     values: [cat_cd, prdct_id, trade_num],
   };
   connection.query(registerSalesQuery)
-    .then(function(arrival){
+    .then(function(){
       res.redirect('/sales_hstry');
       res.end();
     })
     .catch(function(err){
-      console.log(err, error);
-      res.render('err', { message: 'Error', error: { status: err.code, stack: err.stack } });
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack } });
       res.end();
     });
 });
@@ -543,14 +544,16 @@ router.delete('/sales_hstry', function(req, res, next) {
 //localhostk:3000/settlement
 router.get('/settlement', function(req, res, next) {
   res.render('settlement', {
-    title: "settlement"
+    title: "現金入力"
   });
   res.end();
 });
 
 router.post('/settlement', function(req, res, next) {
   var totalCash = req.body.ten_thousand * 10000 + req.body.five_thousand * 5000 + req.body.one_thousand * 1000 + req.body.five_hundred * 500 + req.body.one_hundred * 100 + req.body.fifty * 50 + req.body.ten * 10 + req.body.five * 5 + req.body.one * 1;
-  req.session.total_cash = totalCash;
+  //req.session.total_cash = totalCash;
+  var total_cash = totalCash;
+  res.cookie('total_cash', total_cash);
   res.redirect('/settlement2');
   res.end();
 });
@@ -558,8 +561,10 @@ router.post('/settlement', function(req, res, next) {
 //localhost:3000/settlement2
 router.get('/settlement2', function(req, res, next) {
   var getCostQuery = {
-    text: "SELECT SUM(arrvl.cost * arrvl.trade_num) AS total_cost " +
+    text: "SELECT SUM(pm.cost * arrvl.trade_num) AS total_cost " +
             "FROM arrival AS arrvl " +
+            "LEFT OUTER JOIN prdct_mst AS pm " +
+            "ON arrvl.prdct_id = pm.prdct_id " +
             "WHERE checked = false " +
             "GROUP BY checked"
   };
@@ -581,56 +586,59 @@ router.get('/settlement2', function(req, res, next) {
     connection.query(getCostQuery)
       .then(function(cost){
         total_cost = parseInt(cost[0].total_cost);
-      })
-      .catch(function(err){
-        console.log(err.error);
-        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-        res.end();
       }),
     connection.query(getSalesQuery)
       .then(function(sales){
         total_sales = parseInt(sales[0].total_sales);
-      })
-      .catch(function(err){
-        console.log(err.error);
-        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-        res.end();
       }),
     connection.query(getLastCashQuery)
       .then(function(cash){
         last_cash = parseInt(cash[0].total_cash);
       })
-      .catch(function(err){
-        console.log(err.error);
-        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-        res.end();
-      })
   ])
   .then(function(){
-    req.session.total_cost = total_cost;
+    res.cookie('total_cost', total_cost);
+    res.cookie('total_sales', total_sales);
+    res.cookie('profit_loss', total_sales - total_cost);
+    res.cookie('total_calc_cash', last_cash - total_cost + total_sales);
+    res.cookie('excess_deficiency', (last_cash - total_cost + total_sales) - parseInt(req.cookies.total_cash, 10));
+    /*req.session.total_cost = total_cost;
     req.session.total_sales = total_sales;
     req.session.profit_loss = total_sales - total_cost;
     req.session.total_calc_cash = last_cash - total_cost + total_sales;
-    req.session.excess_deficiency = (last_cash - total_cost + total_sales) - req.session.total_cash;
+    req.session.excess_deficiency = (last_cash - total_cost + total_sales) - req.session.total_cash;*/
     res.render('settlement2', {
       title: "settlement2",
-      total_cash: req.session.total_cash,
+      total_cash: parseInt(req.cookies.total_cash, 10),
+      //total_cash: req.session.total_cash,
       total_cost: total_cost,
       total_sales: total_sales,
       profit_loss: total_sales - total_cost,
       total_calc_cash: last_cash - total_cost + total_sales,
-      excess_deficiency: (last_cash - total_cost + total_sales) - req.session.total_cash
+      excess_deficiency: (last_cash - total_cost + total_sales) - parseInt(req.cookies.total_cash, 10)
     });
+    res.end();
+  })
+  .catch(function(err){
+    console.log(err.error);
+    res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+    res.end();
   });
 });
 
 router.post('/settlement2', function(req, res, next) {
-  var total_cost = req.session.total_cost;
+  var total_cost = parseInt(req.cookies.total_cost, 10);
+  var total_sales = parseInt(req.cookies.total_sales, 10);
+  var profit_loss = parseInt(req.cookies.profit_loss, 10);
+  var total_calc_cash = parseInt(req.cookies.total_calc_cash, 10);
+  var excess_deficiency = parseInt(req.cookies.excess_deficiency, 10);
+  var total_cash = parseInt(req.cookies.total_cash, 10);
+  /*var total_cost = req.session.total_cost;
   var total_sales = req.session.total_sales;
   var profit_loss = req.session.profit_loss;
   var total_calc_cash = req.session.total_calc_cash;
   var excess_deficiency = req.session.excess_deficiency;
-  var total_cash = req.session.total_cash;
+  var total_cash = req.session.total_cash;*/
   var registerSettlementQuery = {
     text: "INSERT INTO settlement ( " +
           "total_cost, " +
@@ -644,40 +652,6 @@ router.post('/settlement2', function(req, res, next) {
           "VALUES ($1, $2, $3, $4, $5, $6, now())",
     values: [ total_cost ,total_sales, profit_loss, total_calc_cash, excess_deficiency, total_cash ],
   };
-  var insertArrivalArchivesQuery = {
-    text: "INSERT INTO arrival_archives " + 
-            "SELECT  arrvl.arrvl_id," + 
-                    "arrvl.cat_cd," +  
-                    "cat.cat_nm," + 
-                    "pm.jan," + 
-                    "pm.prdct_nm," + 
-                    "arrvl.cost," + 
-                    "arrvl.trade_num," + 
-                    "arrvl.trade_date " + 
-                    "FROM arrival AS arrvl " + 
-            "LEFT OUTER JOIN prdct_mst AS pm " + 
-              "ON arrvl.prdct_id = pm.prdct_id " + 
-            "LEFT OUTER JOIN category AS cat " + 
-              "ON arrvl.cat_cd = cat.cat_cd " + 
-            "WHERE arrvl.checked = false"
-  };
-  var insertSalesArchivesQuery = {
-    text: "INSERT INTO sales_archives " + 
-            "SELECT sales.sales_id" + 
-            ",sales.cat_cd" +
-            ",cat.cat_nm" +
-            ",pm.jan" +
-            ",pm.prdct_nm" +  
-            ",pm.price" +
-            ",sales.trade_num" +  
-            ",sales.trade_date " + 
-          "FROM sales " +
-          "LEFT OUTER JOIN prdct_mst AS pm " +
-            "ON sales.prdct_id = pm.prdct_id " +  
-          "LEFT OUTER JOIN category AS cat " +
-            "ON sales.cat_cd = cat.cat_cd " +
-          "WHERE sales.checked = false"
-  };
   var updateSettlementQuery = {
     text: "UPDATE settlement SET latest = false"
   };
@@ -688,56 +662,31 @@ router.post('/settlement2', function(req, res, next) {
     text: "UPDATE sales SET checked = true"
   };
   Promise.all([
-    connection.query(insertArrivalArchivesQuery)
-      .then(function(){})
-      .catch(function(err){
-        console.log(err.error);
-        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-        res.end();
-      }),
-    connection.query(insertSalesArchivesQuery)
-      .then(function(){})
-      .catch(function(err){
-        console.log(err.error);
-        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-        res.end();
-      })
-  ])
-  .then(Promise.all([
       connection.query(updateSettlementQuery)
-        .then(function(){})
-        .catch(function(err){
-          console.log(err.error);
-          res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-          res.end();
-        }),
+        .then(function(){}),
       connection.query(updateArrivalQuery)
-        .then(function(){})
-        .catch(function(err){
-          console.log(err.error);
-          res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-          res.end();
-        }),
+        .then(function(){}),
       connection.query(updateSalesQuery)
-        .then(function(){})
-        .catch(function(err){
-          console.log(err.error);
-          res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-          res.end();
-        }),
-    ])
-    .then(function(){
-      connection.query(registerSettlementQuery)
-        .then(function(){
-          res.redirect('/sales_menu');
-          res.end();
-        })
-        .catch(function(err){
-          console.log(err.error);
-          res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-          res.end();
-        });
-  }));
+        .then(function(){}),
+  ])
+  .then(function(){
+    connection.query(registerSettlementQuery)
+      .then(function(){
+        res.clearCookie('total_cash');
+        res.clearCookie('total_cost');
+        res.clearCookie('total_sales');
+        res.clearCookie('profit_loss');
+        res.clearCookie('total_calc_cash');
+        res.clearCookie('excess_deficiency');
+        res.redirect('/sales_menu');
+        res.end();
+      });
+  })
+  .catch(function(err){
+    console.log(err.error);
+    res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+    res.end();
+  });
 });
 
 //localhost:3000/sales_check
@@ -1047,6 +996,7 @@ router.get('/invntry_count_result2', function(req, res, next) {
     });
 });
 
+//localhost:3000/sales_day
 router.get('/sales_day', function(req, res, next) {
   var selectSalesQuery = {
     text: 'SELECT TO_CHAR(sales.trade_date, \'yyyy/mm/dd\') AS trade_day ' +
@@ -1069,6 +1019,7 @@ router.get('/sales_day', function(req, res, next) {
     });
 });
 
+//localhost:3000/sales_week
 router.get('/sales_week', function(req, res, next) {
   var selectSalesQuery = {
     text: 'SELECT TO_CHAR(s1.trade_day - s1.day_of_the_week, \'yyyy/mm/dd\') AS trade_week ' +
@@ -1097,6 +1048,7 @@ router.get('/sales_week', function(req, res, next) {
     });
 });
 
+//localhost:3000/sales_month
 router.get('/sales_month', function(req, res, next) {
   var selectSalesQuery = {
     text: 'SELECT TO_CHAR(sales.trade_date, \'yyyy/mm\') AS trade_month ' +
@@ -1118,6 +1070,7 @@ router.get('/sales_month', function(req, res, next) {
     });
 });
 
+//localhost3000/sales_year
 router.get('/sales_year', function(req, res, next) {
   var selectSalesQuery = {
     text: 'SELECT TO_CHAR(sales.trade_date, \'yyyy\') AS trade_year ' +
@@ -1138,4 +1091,449 @@ router.get('/sales_year', function(req, res, next) {
     });
 });
 
-module.exports = router;
+
+//localhost:3000/sales_trend_prdct_daily
+router.get('/sales_trend_prdct_daily', function(req, res, next) {
+  var dt = new Date(req.query.month);
+  if (isNaN(dt)) {
+    dt = new Date();
+  }
+  var year = dt.getFullYear();
+  var month = dt.getMonth() + 1;
+  var date = new Date(year, month, 0);
+  var last_day = date.getDate();
+  var select_date = "";
+  var moment_date = moment(dt);
+  for(var i=1; i<=last_day; i++){
+    select_date += ',SUM(CASE s1.trade_date WHEN \'' + moment_date.format('YYYY-MM') + '-' + i  + '\' THEN s1.trade_num ELSE 0 END) AS "_' + month + '/' + i + '" ';
+  }
+  var selectSalesQuery = {
+    text: 'SELECT s1.prdct_id AS prdct_id ' +
+	              ',s1.prdct_nm AS prdct_nm ' +
+	              select_date +
+	          'FROM ' +
+	          '( ' +
+	          	'SELECT sales.prdct_id ' +
+                 		  ',pm.prdct_nm ' + 
+                 		  ',sales.trade_num ' +  
+                 		  ',CAST(sales.trade_date AS DATE) AS trade_date ' +
+	          	'FROM sales ' + 
+	          	'LEFT OUTER JOIN prdct_mst AS pm ' + 
+	          	  'ON sales.prdct_id = pm.prdct_id ' +
+	          ') AS s1 ' +
+	          'GROUP BY s1.prdct_id,s1.prdct_nm ' +
+	          'ORDER BY s1.prdct_id'
+  };
+  next_month = moment(dt);
+  next_month.add(1, 'M');
+  last_month = moment(dt);
+  last_month.add(-1, 'M');  
+  connection.query(selectSalesQuery)
+    .then(function(result) {
+      var date_list = [];
+      Object.keys(result[0]).forEach(function(key){
+        if (key[0] === '_') {
+          date_list.push(key);
+        }
+      });
+      res.render('sales_trend_prdct_daily', {
+        title: "商品販売動向",
+        lastMonth: last_month.format('YYYY-MM'),
+        nextMonth: next_month.format('YYYY-MM'),
+        salesList: result,
+        dateList: date_list
+      });
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
+});
+
+//localhost:3000/sales_trend_prdct_weekly
+router.get('/sales_trend_prdct_weekly', function(req, res, next) {
+  var dt = new Date(req.query.month);
+  if (isNaN(dt)) {
+    dt = new Date();
+  }
+  var year = dt.getFullYear();
+  var month = dt.getMonth() + 1;
+  var date = new Date(year, month, 0);
+  var last_day = date.getDate();
+  var select_date = "";
+  var moment_date = moment(dt);
+  var first_date = new Date(year, dt.getMonth(), 1);
+  var day_of_week = (first_date.getDay() == 0)?0:(7 -first_date.getDay());
+  var first_sunday = new Date(year, dt.getMonth(), 1 + day_of_week);
+  var fs = first_sunday.getDate();
+  for(var i=fs; i<=last_day; i+=7){
+    select_date += ',SUM(CASE sw.trade_week WHEN \'' + moment_date.format('YYYY/MM') + '/' + i  + '\' THEN sw.sales_week ELSE 0 END) AS "_' + month + '/' + i + '" ';
+  }
+  var selectSalesQuery = {
+    text: 'SELECT sw.prdct_id ' +
+                 ',sw.prdct_nm ' +
+                 select_date +
+            	'FROM ( ' +
+            'SELECT TO_CHAR(s1.trade_day - s1.day_of_the_week, \'yyyy/mm/dd\') AS trade_week ' +
+            	  ',s1.prdct_id ' +
+            	  ',s1.prdct_nm ' +
+            	  ',SUM(s1.trade_num) AS sales_week ' +
+            	'FROM ' +
+            	'( ' +
+            		'SELECT CAST(sales.trade_date AS DATE) AS trade_day ' +
+            		       ',pm.prdct_id ' +
+            			     ',pm.prdct_nm ' +
+                       ',SUM(CASE WHEN sales.trade_num IS NULL THEN 0 ELSE sales.trade_num END) AS trade_num ' +
+            			     ',CAST(extract(dow FROM sales.trade_date) AS INT ) AS day_of_the_week ' +
+            			'FROM prdct_mst AS pm ' +
+            			'LEFT OUTER JOIN sales ' +
+            			  'ON pm.prdct_id = sales.prdct_id ' +
+            			'GROUP BY trade_day, pm.prdct_id, pm.prdct_nm, day_of_the_week ' +
+            			'ORDER BY trade_day ' +
+                ') AS s1 ' +
+            	'GROUP BY trade_week, s1.prdct_id, s1.prdct_nm ' +
+            	'ORDER BY trade_week ' +
+            	') AS sw ' +
+            	'GROUP BY sw.prdct_id, sw.prdct_nm ' +
+            	'ORDER BY sw.prdct_id'
+  };
+  next_month = moment(dt);
+  next_month.add(1, 'M');
+  last_month = moment(dt);
+  last_month.add(-1, 'M');  
+  connection.query(selectSalesQuery)
+    .then(function(result) {
+      var date_list = [];
+      Object.keys(result[0]).forEach(function(key){
+        if (key[0] === '_') {
+          date_list.push(key);
+        }
+      });
+      res.render('sales_trend_prdct_weekly', {
+        title: "週別商品販売動向",
+        lastMonth: last_month.format('YYYY-MM'),
+        nextMonth: next_month.format('YYYY-MM'),
+        salesList: result,
+        dateList: date_list
+      });
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
+});
+
+//月ごとの商品販売動向
+router.get('/sales_trend_prdct_monthly', function(req, res, next) {
+  var dt = new Date(req.query.year);
+  if (isNaN(dt)) {
+    dt = new Date();
+  }
+  var year = dt.getFullYear();
+  next_year = moment(dt);
+  next_year.add(1, 'Y');
+  last_year = moment(dt);
+  last_year.add(-1, 'Y');
+  var select_date = "";
+  for(var i=1; i<=12; i++){
+    select_date += ',SUM(CASE DATE_TRUNC(\'MONTH\', s1.trade_date) WHEN \'' + year + '-' + i +'-01\' THEN s1.trade_num ELSE 0 END) AS "_' + i + '月" ';
+  }
+  var selectSalesQuery = {
+    text: 'SELECT s1.prdct_id AS prdct_id ' +  
+	              ',s1.prdct_nm AS prdct_nm ' +
+	              select_date +
+            'FROM ' +
+            '( ' +
+              'SELECT sales.prdct_id ' + 
+                    ',pm.prdct_nm ' +
+                    ',sales.trade_num ' + 
+                    ',trade_date ' +
+                'FROM sales ' +
+                'LEFT OUTER JOIN prdct_mst AS pm ' + 
+                  'ON sales.prdct_id = pm.prdct_id ' +
+            ') AS s1 ' +
+            'GROUP BY s1.prdct_id,s1.prdct_nm ' + 
+            'ORDER BY s1.prdct_id'
+  };
+  connection.query(selectSalesQuery)
+    .then(function(result) {
+      var date_list = [];
+      Object.keys(result[0]).forEach(function(key){
+        if (key[0] === '_') {
+          date_list.push(key);
+        }
+      });
+      res.render('sales_trend_prdct_monthly', {
+        title: "月別商品販売動向",
+        lastYear: last_year.format('YYYY-MM'),
+        nextYear: next_year.format('YYYY-MM'),
+        dateList: date_list,
+        salesList: result
+      });
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
+});
+
+//localhost:3000/sales_trend_category_daily
+router.get('/sales_trend_category_daily', function(req, res, next) {
+  var dt = new Date(req.query.month);
+  if (isNaN(dt)) {
+    dt = new Date();
+  }
+  var year = dt.getFullYear();
+  var month = dt.getMonth() + 1;
+  var date = new Date(year, month, 0);
+  var last_day = date.getDate();
+  var select_date = "";
+  var moment_date = moment(dt);
+  for(var i=1; i<=last_day; i++){
+    select_date += ',SUM(CASE s1.trade_date WHEN \'' + moment_date.format('YYYY-MM') + '-' + i  + '\' THEN s1.trade_num ELSE 0 END) AS "_' + month + '/' + i + '" ';
+  }
+  var selectSalesQuery = {
+    text: 'SELECT s1.cat_cd AS cat_cd ' +
+                ',s1.cat_nm AS cat_nm ' +
+                select_date +
+	          'FROM ' +
+	          '( ' +
+              'SELECT cat.cat_cd ' +
+                    ',cat.cat_nm ' +
+                    ',sales.prdct_id ' +
+                 		',pm.prdct_nm ' + 
+                 		',sales.trade_num ' +  
+                 		',CAST(sales.trade_date AS DATE) AS trade_date ' +
+	          	'FROM sales ' + 
+	          	'LEFT OUTER JOIN prdct_mst AS pm ' + 
+                'ON sales.prdct_id = pm.prdct_id ' +
+              'LEFT OUTER JOIN category AS cat ' +
+                'ON sales.cat_cd = cat.cat_cd ' +
+	          ') AS s1 ' +
+	          'GROUP BY s1.cat_cd,s1.cat_nm ' +
+	          'ORDER BY s1.cat_cd'
+  };
+  next_month = moment(dt);
+  next_month.add(1, 'M');
+  last_month = moment(dt);
+  last_month.add(-1, 'M'); 
+  connection.query(selectSalesQuery)
+    .then(function(result) {
+      var date_list = [];
+      Object.keys(result[0]).forEach(function(key){
+        if(key[0] === '_'){
+          date_list.push(key);
+        }
+      });
+      res.render('sales_trend_category_daily', {
+        title: "カテゴリ別販売動向",
+        lastMonth: last_month.format('YYYY-MM'),
+        nextMonth: next_month.format('YYYY-MM'),
+        dateList: date_list,
+        salesList: result
+      });
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
+});
+
+//localhost:3000/sales_trend_category_weekly
+router.get('/sales_trend_category_weekly', function(req, res, next) {
+  var dt = new Date(req.query.month);
+  if (isNaN(dt)) {
+    dt = new Date();
+  }
+  var year = dt.getFullYear();
+  var month = dt.getMonth() + 1;
+  var date = new Date(year, month, 0);
+  var last_day = date.getDate();
+  var select_date = "";
+  var moment_date = moment(dt);
+  var first_date = new Date(year, dt.getMonth(), 1);
+  var day_of_week = (first_date.getDay() == 0)?0:(7 -first_date.getDay());
+  var first_sunday = new Date(year, dt.getMonth(), 1 + day_of_week);
+  var fs = first_sunday.getDate();
+  for(var i=fs; i<=last_day; i+=7){
+    select_date += ',SUM(CASE sw.trade_week WHEN \'' + moment_date.format('YYYY/MM') + '/' + i  + '\' THEN sw.sales_week ELSE 0 END) AS "_' + month + '/' + i + '" ';
+  }
+  var selectSalesQuery = {
+    text: 'SELECT sw.cat_cd ' +
+                 ',sw.cat_nm ' +
+                 select_date +
+            	'FROM ( ' +
+            'SELECT TO_CHAR(s1.trade_day - s1.day_of_the_week, \'yyyy/mm/dd\') AS trade_week ' +
+            	  ',s1.cat_cd ' +
+            	  ',s1.cat_nm ' +
+            	  ',SUM(s1.trade_num) AS sales_week ' +
+            	'FROM ' +
+            	'( ' +
+            		'SELECT CAST(sales.trade_date AS DATE) AS trade_day ' +
+            		       ',pm.cat_cd ' +
+            			     ',cat.cat_nm ' +
+                       ',SUM(CASE WHEN sales.trade_num IS NULL THEN 0 ELSE sales.trade_num END) AS trade_num ' +
+            			     ',CAST(extract(dow FROM sales.trade_date) AS INT ) AS day_of_the_week ' +
+            			'FROM prdct_mst AS pm ' +
+            			'LEFT OUTER JOIN sales ' +
+                    'ON pm.prdct_id = sales.prdct_id ' +
+                  'LEFT OUTER JOIN category AS cat ' +
+                    'ON pm.cat_cd = cat.cat_cd ' +
+            			'GROUP BY trade_day, pm.cat_cd, cat.cat_nm, day_of_the_week ' +
+            			'ORDER BY trade_day ' +
+                ') AS s1 ' +
+            	'GROUP BY trade_week, s1.cat_cd, s1.cat_nm ' +
+            	'ORDER BY trade_week ' +
+            	') AS sw ' +
+            	'GROUP BY sw.cat_cd, sw.cat_nm ' +
+            	'ORDER BY sw.cat_cd'
+  };
+  next_month = moment(dt);
+  next_month.add(1, 'M');
+  last_month = moment(dt);
+  last_month.add(-1, 'M');  
+  connection.query(selectSalesQuery)
+    .then(function(result) {
+      var date_list = [];
+      Object.keys(result[0]).forEach(function(key){
+        if (key[0] === '_') {
+          date_list.push(key);
+        }
+      });
+      res.render('sales_trend_category_weekly', {
+        title: "週別カテゴリ販売動向",
+        lastMonth: last_month.format('YYYY-MM'),
+        nextMonth: next_month.format('YYYY-MM'),
+        salesList: result,
+        dateList: date_list
+      });
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
+});
+
+//localhost:3000/sales_trend_category_monthly
+router.get('/sales_trend_category_monthly', function(req, res, next) {
+  var dt = new Date(req.query.year);
+  if (isNaN(dt)) {
+    dt = new Date();
+  }
+  var year = dt.getFullYear();
+  next_year = moment(dt);
+  next_year.add(1, 'Y');
+  last_year = moment(dt);
+  last_year.add(-1, 'Y');
+  var select_date = "";
+  for(var i=1; i<=12; i++){
+    select_date += ',SUM(CASE DATE_TRUNC(\'MONTH\', s1.trade_date) WHEN \'' + year + '-' + i +'-01\' THEN s1.trade_num ELSE 0 END) AS "_' + i + '月" ';
+  }
+  var selectSalesQuery = {
+    text: 'SELECT s1.cat_cd AS cat_cd ' +  
+	              ',s1.cat_nm AS cat_nm ' +
+	              select_date +
+            'FROM ' +
+            '( ' +
+              'SELECT sales.cat_cd ' + 
+                    ',cat.cat_nm ' +
+                    ',sales.trade_num ' + 
+                    ',trade_date ' +
+                'FROM sales ' +
+                'LEFT OUTER JOIN category AS cat ' +
+                  'ON sales.cat_cd = cat.cat_cd ' +
+            ') AS s1 ' +
+            'GROUP BY s1.cat_cd,s1.cat_nm ' + 
+            'ORDER BY s1.cat_cd'
+  };
+  connection.query(selectSalesQuery)
+    .then(function(result) {
+      var date_list = [];
+      Object.keys(result[0]).forEach(function(key){
+        if (key[0] === '_') {
+          date_list.push(key);
+        }
+      });
+      res.render('sales_trend_category_monthly', {
+        title: "月別カテゴリ販売動向",
+        lastYear: last_year.format('YYYY-MM'),
+        nextYear: next_year.format('YYYY-MM'),
+        dateList: date_list,
+        salesList: result
+      });
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
+});
+
+//localhost:3000/sales_trend_category_yearly
+router.get('/sales_trend_category_yearly', function(req, res, next) {
+  var dt = new Date(req.query.year);
+  if (isNaN(dt)) {
+    dt = new Date();
+  }
+  var year = dt.getFullYear();
+  next_10year = moment(dt);
+  next_10year.add(10, 'Y');
+  last_10year = moment(dt);
+  last_10year.add(-10, 'Y');
+  var select_date = "";
+  for(var i=year - 10; i<=year; i++){
+    select_date += ',SUM(CASE DATE_TRUNC(\'YEAR\', s1.trade_date) WHEN \'' + i + '-01-01\' THEN s1.trade_num ELSE 0 END) AS "_' + i + '年" ';
+  }
+  var selectSalesQuery = {
+    text: 'SELECT s1.cat_cd AS cat_cd ' +  
+	              ',s1.cat_nm AS cat_nm ' +
+	              select_date +
+            'FROM ' +
+            '( ' +
+              'SELECT sales.cat_cd ' + 
+                    ',cat.cat_nm ' +
+                    ',sales.trade_num ' + 
+                    ',trade_date ' +
+                'FROM sales ' +
+                'LEFT OUTER JOIN category AS cat ' +
+                  'ON sales.cat_cd = cat.cat_cd ' +
+            ') AS s1 ' +
+            'GROUP BY s1.cat_cd,s1.cat_nm ' + 
+            'ORDER BY s1.cat_cd'
+  };
+  connection.query(selectSalesQuery)
+    .then(function(result) {
+      var date_list = [];
+      Object.keys(result[0]).forEach(function(key){
+        if (key[0] === '_') {
+          date_list.push(key);
+        }
+      });
+      res.render('sales_trend_category_yearly', {
+        title: "年別カテゴリ販売動向",
+        last10Year: last_10year.format('YYYY'),
+        next10Year: next_10year.format('YYYY'),
+        dateList: date_list,
+        salesList: result
+      });
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
+});
+
+module.exports = router;  
