@@ -400,8 +400,4 @@ SELECT pm.prdct_id
 	ON pm.prdct_id = arrival.prdct_id
 	LEFT OUTER JOIN sales
 	ON pm.prdct_id = sales.prdct_id
-	WHERE EXTRACT(YEAR FROM arrival.trade_date) = 2019
-	AND EXTRACT(MONTH FROM arrival.trade_date) = 7
-	AND EXTRACT(YEAR FROM sales.trade_date) = 2019
-	AND EXTRACT(MONTH FROM sales.trade_date) = 7
 	GROUP BY pm.prdct_id, pm.prdct_nm

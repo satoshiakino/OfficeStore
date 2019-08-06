@@ -1018,6 +1018,11 @@ router.get('/invntry_count_result2', function(req, res, next) {
     });
 });
 
+//localhost:3000/invntry_status
+router.get('/invntry_status', function(req, res, next) {
+  var
+})
+
 //localhost:3000/sales_day
 router.get('/sales_day', function(req, res, next) {
   var selectSalesQuery = {
