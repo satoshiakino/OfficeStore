@@ -393,11 +393,21 @@ SELECT SUM(pm.price * pm.cost_rate * arrival.trade_num) AS total_stock_value
 //è§ïiÇ≤Ç∆ÇÃç›å…êî
 SELECT pm.prdct_id
 	  ,pm.prdct_nm
-	  ,SUM(CASE WHEN arrival.trade_num IS NULL THEN 0 ELSE arrival.trade_num END 
-	  	- CASE WHEN sales.trade_num IS NULL THEN 0 ELSE sales.trade_num END) AS total_stock
+	  ,CASE WHEN (arrvl.a_num - sls.s_num) IS NULL THEN 0 ELSE (arrvl.a_num - sls.s_num) END AS trade_num
 	FROM prdct_mst AS pm
-	LEFT OUTER JOIN arrival
-	ON pm.prdct_id = arrival.prdct_id
-	LEFT OUTER JOIN sales
-	ON pm.prdct_id = sales.prdct_id
-	GROUP BY pm.prdct_id, pm.prdct_nm
+	LEFT OUTER JOIN 
+	(
+		SELECT prdct_id
+			  ,SUM(CASE WHEN trade_num IS NULL THEN 0 ELSE trade_num END) AS a_num
+			FROM arrival
+			GROUP BY prdct_id
+	) AS arrvl
+	ON pm.prdct_id = arrvl.prdct_id
+	LEFT OUTER JOIN 
+	(
+		SELECT prdct_id
+			  ,SUM(CASE WHEN trade_num IS NULL THEN 0 ELSE trade_num END) AS s_num
+			FROM sales
+			GROUP BY prdct_id
+	) AS sls
+	ON pm.prdct_id = sls.prdct_id
