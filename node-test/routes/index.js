@@ -1020,7 +1020,121 @@ router.get('/invntry_count_result2', function(req, res, next) {
 
 //localhost:3000/invntry_status
 router.get('/invntry_status', function(req, res, next) {
-  var
+  var selectInventoryQuery = {
+    text: 'SELECT SUM(pm.price * (CASE WHEN (arrvl.a_num - sls.s_num) IS NULL THEN 0 ELSE (arrvl.a_num - sls.s_num) END)) AS stock_value ' +
+            'FROM prdct_mst AS pm ' +
+            'LEFT OUTER JOIN ' +
+            '( ' +
+              'SELECT prdct_id ' +
+                    ',SUM(CASE WHEN trade_num IS NULL THEN 0 ELSE trade_num END) AS a_num ' +
+                'FROM arrival ' +
+                'WHERE EXTRACT(YEAR FROM arrival.trade_date) = EXTRACT(YEAR FROM now()) ' +
+                  'AND EXTRACT(MONTH FROM arrival.trade_date) = EXTRACT(MONTH FROM now()) - 1 ' +
+                'GROUP BY prdct_id ' +
+            ') AS arrvl ' +
+            'ON pm.prdct_id = arrvl.prdct_id ' +
+            'LEFT OUTER JOIN ' +
+            '( ' +
+              'SELECT prdct_id ' +
+                    ',SUM(CASE WHEN trade_num IS NULL THEN 0 ELSE trade_num END) AS s_num ' +
+                'FROM sales ' +
+                'WHERE EXTRACT(YEAR FROM sales.trade_date) = EXTRACT(YEAR FROM now()) ' +
+                  'AND EXTRACT(MONTH FROM sales.trade_date) = EXTRACT(MONTH FROM now()) - 1 ' +
+                'GROUP BY prdct_id ' +
+            ') AS sls ' +
+            'ON pm.prdct_id = sls.prdct_id'
+  };
+  var selectArrivalQuery = {
+    text: 'SELECT SUM(pm.price * pm.cost_rate * arrival.trade_num) AS total_stock_value ' +
+            'FROM arrival ' +
+            'LEFT OUTER JOIN prdct_mst AS pm ' +
+            'ON arrival.prdct_id = pm.prdct_id ' +
+            'WHERE EXTRACT(YEAR FROM arrival.trade_date) = 2019 ' +
+            'AND EXTRACT(MONTH FROM arrival.trade_date) = 8'
+  };
+  var selectPrdctInvntryQuery = {
+    text: 'SELECT pm.prdct_id ' +
+	              ',pm.prdct_nm ' +
+	              ',CASE WHEN (arrvl.a_num - sls.s_num) IS NULL THEN 0 ELSE (arrvl.a_num - sls.s_num) END AS trade_num ' +
+	          'FROM prdct_mst AS pm ' +
+	          'LEFT OUTER JOIN ' +
+	          '( ' +
+	          	'SELECT prdct_id ' +
+	          		    ',SUM(CASE WHEN trade_num IS NULL THEN 0 ELSE trade_num END) AS a_num ' +
+	          		'FROM arrival ' +
+	          		'GROUP BY prdct_id ' +
+	          ') AS arrvl ' +
+	          'ON pm.prdct_id = arrvl.prdct_id ' +
+	          'LEFT OUTER JOIN ' +
+	          '( ' +
+	          	'SELECT prdct_id ' +
+	          		    ',SUM(CASE WHEN trade_num IS NULL THEN 0 ELSE trade_num END) AS s_num ' +
+	          		'FROM sales ' +
+	          		'GROUP BY prdct_id ' +
+	          ') AS sls ' +
+	          'ON pm.prdct_id = sls.prdct_id'
+  };
+  var selectInventoryQuery2 = {
+    text: 'SELECT SUM(pm.price * (CASE WHEN (arrvl.a_num - sls.s_num) IS NULL THEN 0 ELSE (arrvl.a_num - sls.s_num) END)) AS stock_value ' +
+            'FROM prdct_mst AS pm ' +
+            'LEFT OUTER JOIN ' +
+            '( ' +
+              'SELECT prdct_id ' +
+                    ',SUM(CASE WHEN trade_num IS NULL THEN 0 ELSE trade_num END) AS a_num ' +
+                'FROM arrival ' +
+                'WHERE EXTRACT(YEAR FROM arrival.trade_date) = EXTRACT(YEAR FROM now()) ' +
+                  'AND EXTRACT(MONTH FROM arrival.trade_date) = EXTRACT(MONTH FROM now()) ' +
+                'GROUP BY prdct_id ' +
+            ') AS arrvl ' +
+            'ON pm.prdct_id = arrvl.prdct_id ' +
+            'LEFT OUTER JOIN ' +
+            '( ' +
+              'SELECT prdct_id ' +
+                    ',SUM(CASE WHEN trade_num IS NULL THEN 0 ELSE trade_num END) AS s_num ' +
+                'FROM sales ' +
+                'WHERE EXTRACT(YEAR FROM sales.trade_date) = EXTRACT(YEAR FROM now()) ' +
+                  'AND EXTRACT(MONTH FROM sales.trade_date) = EXTRACT(MONTH FROM now()) ' +
+                'GROUP BY prdct_id ' +
+            ') AS sls ' +
+            'ON pm.prdct_id = sls.prdct_id'
+  };
+  var inventory;
+  var inventory2;
+  var arrival;
+  var prdct_invntry;
+  Promise.all([
+    connection.query(selectInventoryQuery)
+      .then(function(invntry){
+        inventory = invntry;
+      }),
+    connection.query(selectInventoryQuery2)
+      .then(function(invntry2){
+        inventory2 = invntry2;
+      }),
+    connection.query(selectArrivalQuery)
+      .then(function(arrvl){
+        arrival = arrvl;
+      }),
+    connection.query(selectPrdctInvntryQuery)
+      .then(function(prdct){
+        prdct_invntry = prdct;
+      }),
+  ])
+  .then(function(){
+    res.render('invntry_status', {
+      title: '在庫状況',
+      inventory: inventory,
+      inventory2: inventory2,
+      arrival: arrival,
+      invntryList: prdct_invntry
+    });
+    res.end();
+  })
+  .catch(function(err){
+    console.log(err.error);
+    res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+    res.end();
+  });
 })
 
 //localhost:3000/sales_day
