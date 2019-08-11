@@ -27,6 +27,16 @@
         <button><a href="/sales_week">週別売上</a></button>
         <button><a href="/sales_month">月別売上</a></button>
         <button><a href="/sales_year">年別売上</a></button>
+        <form action='/sales_week' method='get' class='sales_week-form'>
+          <button type="submit" class="submit">
+              <input type="hidden" name="month" value=<%= lastMonth %>>前月
+          </button>
+        </form>
+        <form action='/sales_week' method='get' class='sales_week-form'>
+          <button type="submit" class="submit">
+              <input type="hidden" name="month" value=<%= nextMonth %>>次月
+          </button>
+        </form>
         <table rules="all">
           <tr>
             <th>週</th>

@@ -84,3 +84,23 @@ create table inventory_count (
  count_date timestamp,
  result_no integer
 )
+
+//カレンダーマスタ
+create table calendar_mst (
+ "DATE" char(8),
+ days date primary key
+)
+
+ INSERT INTO calendar_mst
+SELECT
+--日付文字列
+  TO_CHAR(date ('21000331') - CAST( CAST (DATES AS varchar) || ' days' as interval ), 'YYYYMMDD' ) AS "date",
+--日付date型
+  (date ('21000331') - CAST( CAST (DATES AS varchar) || ' days' as interval ) )::date AS days
+FROM
+--カレンダーの動的生成
+  GENERATE_SERIES(0, (date ('21000331') - date ('20000401'))::integer) AS "month"(DATES)
+
+alter table calendar_mst add column "day" int
+
+update calendar_mst set "day" = EXTRACT(DAY FROM days)
