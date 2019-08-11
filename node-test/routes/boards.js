@@ -30,7 +30,7 @@ router.get('/:board_id', function(req, res, next){
             messageList: messages
         });
         res.end();
-    })
+    });
 });
 
 
@@ -53,6 +53,6 @@ router.post('/:board_id', function(req, res, next){
             res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack } });
             res.end();
         });
-})
+});
 
 module.exports = router;

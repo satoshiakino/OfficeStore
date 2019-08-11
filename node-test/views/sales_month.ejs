@@ -27,6 +27,16 @@
         <button><a href="/sales_week">週別売上</a></button>
         <button><a href="/sales_month">月別売上</a></button>
         <button><a href="/sales_year">年別売上</a></button>
+        <form action='/sales_month' method='get' class='sales_month-form'>
+          <button type="submit" class="submit">
+              <input type="hidden" name="year" value=<%= lastYear %>>前年
+          </button>
+        </form>
+        <form action='/sales_month' method='get' class='sales_month-form'>
+          <button type="submit" class="submit">
+              <input type="hidden" name="year" value=<%= nextYear %>>次年
+          </button>
+        </form>
         <table rules="all">
           <tr>
             <th>月</th>

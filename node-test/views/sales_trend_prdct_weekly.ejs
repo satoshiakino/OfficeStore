@@ -7,6 +7,9 @@
     <meta name="format-detection" content="telephone=no">
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script>
+
+    </script>
   </head>
   <body>
     <header>
@@ -23,32 +26,36 @@
     </header>
     <div class="wrapper">
       <div align="center">
-        <button><a href="/sales_day">日別売上</a></button>
-        <button><a href="/sales_week">週別売上</a></button>
-        <button><a href="/sales_month">月別売上</a></button>
-        <button><a href="/sales_year">年別売上</a></button>
-        <form action='/sales_week' method='get' class='sales_week-form'>
+        <form action='/sales_trend_prdct_weekly' method='get' class='sales_trend-form'>
           <button type="submit" class="submit">
               <input type="hidden" name="month" value=<%= lastMonth %>>前月
           </button>
         </form>
-        <form action='/sales_week' method='get' class='sales_week-form'>
+        <form action='/sales_trend_prdct_weekly' method='get' class='sales_trend-form'>
           <button type="submit" class="submit">
               <input type="hidden" name="month" value=<%= nextMonth %>>次月
           </button>
         </form>
-        <table rules="all">
-          <tr>
-            <th>週</th>
-            <th>売上</th>
-          </tr>
-          <% resultList.forEach(function(resultItem){ %>
-            <tr class="main-list__item">
-              <td class="sales_week__trade_week"><%= resultItem.trade_week %></td>
-              <td class="sales_week__sales_week"><%= resultItem.sales_week %></td>
-            </tr>
+        <button><a href="/sales_trend_prdct_daily">日別商品販売動向</a></button>
+        <button><a href="/sales_trend_prdct_weekly">週別商品販売動向</a></button>
+        <button><a href="/sales_trend_prdct_monthly">月別商品販売動向</a></button>
+        <button><a href="/sales_trend_prdct_yearly">年別商品販売動向</a></button>
+      <table rules="all">
+        <tr>
+          <th>商品名</th>
+          <% dateList.forEach(function(dt){ %>
+            <th><%= dt.replace('_', '') %></th>
           <% }); %>
-        </table>
+        </tr>
+        <% salesList.forEach(function(salesItem){ %>
+          <tr class="main-list__item">
+            <td class="sales_trend__prdct_nm"><%= salesItem.prdct_nm %></td>
+            <% dateList.forEach(function(dt){ %>
+              <td class="sales_trend__date"><%= salesItem[dt] %></td>
+            <% }); %>
+          </tr>
+        <% }); %>
+      </table>
       </div>
     </div>
   </body>

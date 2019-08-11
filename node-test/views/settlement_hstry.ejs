@@ -15,37 +15,33 @@
         <ul>
           <li><a href="/mst_menu">マスタ登録・修正</a></li>
           <li><a href="/arrvl_menu">仕入登録・修正</a></li>
-          <li><a href="/sales_menu">売上登録・修正</a></li>
-          <li class="current"><a href="/sales_check">売上確認</a></li>
+          <li class="current"><a href="/sales_menu">売上登録・修正</a></li>
+          <li><a href="/sales_check">売上確認</a></li>
           <li><a href="/inventory">在庫確認</a></li>
         </ul>
       </nav>
     </header>
     <div class="wrapper">
       <div align="center">
-        <button><a href="/sales_day">日別売上</a></button>
-        <button><a href="/sales_week">週別売上</a></button>
-        <button><a href="/sales_month">月別売上</a></button>
-        <button><a href="/sales_year">年別売上</a></button>
-        <form action='/sales_day' method='get' class='sales_day-form'>
-          <button type="submit" class="submit">
-              <input type="hidden" name="month" value=<%= lastMonth %>>前月
-          </button>
-        </form>
-        <form action='/sales_day' method='get' class='sales_day-form'>
-          <button type="submit" class="submit">
-              <input type="hidden" name="month" value=<%= nextMonth %>>次月
-          </button>
-        </form>
         <table rules="all">
           <tr>
             <th>日付</th>
-            <th>売上</th>
+            <th>仕入高</th>
+            <th>売上高</th>
+            <th>損益</th>
+            <th>計算上現金</th>
+            <th>現金</th>
+            <th>現金過不足</th>
           </tr>
           <% resultList.forEach(function(resultItem){ %>
             <tr class="main-list__item">
-              <td class="sales_day__days"><%= resultItem.days %></td>
-              <td class="sales_day__sales_day"><%= resultItem.sales_day %></td>
+              <td class="settlement__settle_date"><%= resultItem.settle_date %></td>
+              <td class="settlement__total_cost"><%= resultItem.total_cost %></td>
+              <td class="settlement__total_sales"><%= resultItem.total_sales %></td>
+              <td class="settlement__profit_loss"><%= resultItem.profit_loss %></td>
+              <td class="settlement__total_calc_cash"><%= resultItem.total_calc_cash %></td>
+              <td class="settlement__total_cash"><%= resultItem.total_cash %></td>
+              <td class="settlement__excess_deficiency"><%= resultItem.excess_deficiency %></td>
             </tr>
           <% }); %>
         </table>
