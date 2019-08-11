@@ -23,20 +23,10 @@
     </header>
     <div class="wrapper">
       <div align="center">
-          <form action='/sales_trend_category_yearly' method='get' class='sales_trend-form'>
-            <button type="submit" class="submit">
-                <input type="hidden" name="year" value=<%= last10Year %>>前10年
-            </button>
-          </form>
-          <form action='/sales_trend_category_yearly' method='get' class='sales_trend-form'>
-            <button type="submit" class="submit">
-                <input type="hidden" name="year" value=<%= next10Year %>>次10年
-            </button>
-          </form>
-          <!--<button><a href="/sales_trend_category">カテゴリ別販売動向</a></button>-->
           <button><a href="/sales_trend_category_daily">日別商品販売動向</a></button>
           <button><a href="/sales_trend_category_weekly">週別商品販売動向</a></button>
           <button><a href="/sales_trend_category_monthly">月別商品販売動向</a></button>
+          <button><a href="/sales_trend_category_yearly">年別商品販売動向</a></button>
       <table rules="all">
         <tr>
           <th>カテゴリ名</th>
