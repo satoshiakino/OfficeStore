@@ -1264,7 +1264,7 @@ router.get('/sales_year', function(req, res, next) {
             'LEFT OUTER JOIN prdct_mst AS pm ' +
             '  ON sales.prdct_id = pm.prdct_id ' +
             'WHERE cm.days > now() - interval \'10year\' ' +
-              'AND cm.days < now() + interval \'10year\' ' +
+              'AND cm.days < now() ' +
             'GROUP BY trade_year ' + 
             'ORDER BY trade_year ' 
   };
@@ -1458,6 +1458,53 @@ router.get('/sales_trend_prdct_monthly', function(req, res, next) {
         title: "月別商品販売動向",
         lastYear: last_year.format('YYYY-MM'),
         nextYear: next_year.format('YYYY-MM'),
+        dateList: date_list,
+        salesList: result
+      });
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
+});
+
+//localhost:3000/sales_trend_prdct_yearly
+router.get('/sales_trend_prdct_yearly', function(req, res, next) {
+  var dt = new Date();
+  var year = dt.getFullYear();
+  var select_date = "";
+  for(var i=10; i>=0; i--){
+    select_date += ',SUM(CASE DATE_TRUNC(\'YEAR\', s1.trade_date) WHEN \'' + (year - i) + '-01-01\' THEN s1.trade_num ELSE 0 END) AS "_' + (year - i) + '年" ';
+  }
+  var selectSalesQuery = {
+    text: 'SELECT s1.prdct_id AS prdct_id ' +  
+	              ',s1.prdct_nm AS prdct_nm ' +
+	              select_date +
+            'FROM ' +
+            '( ' +
+              'SELECT sales.prdct_id ' + 
+                    ',pm.prdct_nm ' +
+                    ',sales.trade_num ' + 
+                    ',trade_date ' +
+                'FROM sales ' +
+                'LEFT OUTER JOIN prdct_mst AS pm ' + 
+                  'ON sales.prdct_id = pm.prdct_id ' +
+            ') AS s1 ' +
+            'GROUP BY s1.prdct_id,s1.prdct_nm ' + 
+            'ORDER BY s1.prdct_id'
+  };
+  connection.query(selectSalesQuery)
+    .then(function(result) {
+      var date_list = [];
+      Object.keys(result[0]).forEach(function(key){
+        if (key[0] === '_') {
+          date_list.push(key);
+        }
+      });
+      res.render('sales_trend_prdct_yearly', {
+        title: "年別商品販売動向",
         dateList: date_list,
         salesList: result
       });
