@@ -22,22 +22,17 @@
       </nav>
     </header>
     <div class="wrapper">
-        <form action="/prdct_reg" method="post" class="prdct_reg-form">
-          <span class="label">カテゴリ：</span>
+        <form action="/prdct_reg" method="post" class="reg-form">
+          <span class="label">カテゴリ</span>
           <select name="cat_cd" required>
             <option value="">カテゴリを選んでください</option>
             <% catList.forEach(function(catItem){ %>
               <option value=<%= catItem.cat_cd %>><%= catItem.cat_nm %></option>
             <% }); %>
-          </select>
-          <br>
-          <br>
-          <span class="label">JANコード：</span><input type="text" name="jan" class="input" required><br>
-          <br>
+          </select><br>
+          <span class="label">JANコード</span><input type="text" name="jan" class="input" required><br>
           <span class="label">商品名</span><input type="text" name="prdct_nm" class="input" required><br>
-          <br>
           <span class="label">原価</span><input type="number" name="cost" class="input" required><br>
-          <br>
           <span class="label">売価</span><input type="number" name="price" class="input" required><br>
           <br>
           <br>
