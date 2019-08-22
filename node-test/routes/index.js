@@ -378,7 +378,7 @@ router.get('/arrvl_hstry', function(req, res, next) {
                  ",pm.prdct_nm" +   
                  ",pm.cost" +
                  ",arrvl.trade_num" +  
-                 ",TO_CHAR(arrvl.trade_date, \'yyyy.mm.dd Dy hh24:mi:ss\') AS trade_date " + 
+                 ",TO_CHAR(arrvl.trade_date, \'yyyy/mm/dd hh24:mi:ss\') AS trade_date " + 
           "FROM arrival AS arrvl " +  
           "LEFT OUTER JOIN prdct_mst AS pm " +  
           "ON arrvl.prdct_id = pm.prdct_id " +  
@@ -500,7 +500,7 @@ router.get('/sales_hstry', function(req, res, next) {
                 ",pm.prdct_nm" + 
                 ",pm.price" +
                 ",sales.trade_num" +
-                ",TO_CHAR(sales.trade_date, \'yyyy.mm.dd Dy hh24:mi:ss\') AS trade_date " +
+                ",TO_CHAR(sales.trade_date, \'yyyy/mm/dd hh24:mi:ss\') AS trade_date " +
             "FROM sales " +   
             "LEFT OUTER JOIN prdct_mst AS pm " +   
              "ON sales.prdct_id = pm.prdct_id " +  
@@ -737,11 +737,13 @@ router.get('/invntry_count', function(req, res, next) {
           'FROM prdct_mst AS pm ' +
           'LEFT OUTER JOIN ' +
           '( ' +
-          'SELECT prdct_id ' +
-              ',SUM(trade_num) AS arrvl_num ' +
-              ',SUM(trade_num * cost) AS arrvl_cost ' +
-          'FROM arrival ' +
-          'GROUP BY prdct_id ' +
+          'SELECT arrvl.prdct_id ' +
+              ',SUM(arrvl.trade_num) AS arrvl_num ' +
+              ',SUM(arrvl.trade_num * pm.cost) AS arrvl_cost ' +
+          'FROM arrival AS arrvl ' +
+          'LEFT OUTER JOIN prdct_mst AS pm ' +
+          'ON arrvl.prdct_id = pm.prdct_id ' +
+          'GROUP BY arrvl.prdct_id ' +
           ') AS arrival ' +
           'ON pm.prdct_id = arrival.prdct_id ' +
           'LEFT OUTER JOIN ' +
