@@ -22,9 +22,9 @@
       </nav>
     </header>
     <div class="wrapper">
-        <form action="/sales_reg" method="post" class="sales_reg-form">
+        <form action="/sales_reg" method="post" class="reg-form">
           <span class="label">カテゴリ：</span>
-          <select name="cat_cd" required>
+          <select name="cat_cd" class="select" required>
             <option value="">カテゴリを選んでください</option>
             <% catList.forEach(function(catItem){ %>
               <option value=<%= catItem.cat_cd %>><%= catItem.cat_nm %></option>
@@ -32,7 +32,7 @@
           </select>
           <br>
           <span class="label">商品名：</span>
-          <select name="prdct_id" required>
+          <select name="prdct_id" class="select" required>
             <option value="">商品を選んでください</option>
             <% prdctList.forEach(function(prdctItem){ %>
               <option value=<%= prdctItem.prdct_id %>><%= prdctItem.prdct_nm %></option>

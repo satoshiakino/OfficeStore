@@ -24,7 +24,7 @@
     <div class="wrapper">
         <form action="/prdct_reg" method="post" class="reg-form">
           <span class="label">カテゴリ</span>
-          <select name="cat_cd" required>
+          <select name="cat_cd" class="select" required>
             <option value="">カテゴリを選んでください</option>
             <% catList.forEach(function(catItem){ %>
               <option value=<%= catItem.cat_cd %>><%= catItem.cat_nm %></option>

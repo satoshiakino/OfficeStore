@@ -178,36 +178,28 @@ table.menu tr th a {
   background-color: #fff;
 }
 .input {
+  width: 200px;
+  height: 50px;
   display: inline-block;
-  font-size: 12px;
   vertical-align: middle;
+  text-indent: 3px;
   border: 1px #ccc solid;
   background-color: #fff;
 }
-.file-wrap {
-  position: relative;
-  padding: 10px 30px;
-  margin: 4px auto 0;
-  width: 200px;
-  overflow: hidden;
-  line-height: 1;
-  font-size: 14px;
-  font-weight: bold;
-  color: #fff;
-  text-align: center;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
-  vertical-align: middle;
-  border-radius: 5px;
-  background-color: #008b8b;
-  box-sizing: border-box;
-}
 .reg-form {
   margin-left: 30px;
+}
+.select {
+  width: 202px;
+  height: 52px;
+  margin-left: -4px;
+  border: 1px #ccc solid;
 }
 .label {
 width: 120px;
 height: 50px;
 line-height: 50px;
+text-indent: 3px;
 color: #fff;
 background-color: #36364d;
 border: 1px #ccc solid;
@@ -215,9 +207,8 @@ border: 1px #ccc solid;
 .btn {
   display: inline-block;
   padding: 5px;
-  margin: 10px 0 0 10px;
-  border: 1px #ccc solid;
-  border-radius: 5px;
+  text-decoration: none;
+  color: #36364d;
   background-color: #fff;
 }
 .error {
@@ -229,11 +220,15 @@ border: 1px #ccc solid;
 }
 .submit {
   display: inline-block;
-  padding: 7px 10px;
-  font-size: 15px;
-  font-weight: bold;
-  vertical-align: middle;
-  border: 1px #ccc solid;
-  background-color: #fff;
-  -webkit-appearance: none;
+  width: 80px;
+  height: 40px;
+  text-decoration: none;
+  color: #36364d;
+  border: solid 2px #36364d;
+  border-radius: 3px;
+  transition: .4s;
+}
+.submit:hover {
+  background: #36364d;
+  color: #fff;
 }

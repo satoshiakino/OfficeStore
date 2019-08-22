@@ -33,9 +33,9 @@
       </nav>
     </header>
     <div class="wrapper">
-      <form action="/arrvl_reg" method="post" class="arrvl_reg-form">
+      <form action="/arrvl_reg" method="post" class="reg-form">
         <span class="label">カテゴリ：</span>
-        <select name="cat_cd" required onchange="onChangeCategory(this)">
+        <select name="cat_cd" class="select" required onchange="onChangeCategory(this)">
           <option value="">カテゴリを選んでください</option>
           <% catList.forEach(function(catItem){ %>
             <option value=<%= catItem.cat_cd %>><%= catItem.cat_nm %></option>
@@ -43,7 +43,7 @@
         </select>
         <br>
         <span class="label">商品名：</span>
-        <select id="prdct_id_select" name="prdct_id" required>
+        <select id="prdct_id_select" name="prdct_id" class="select" required>
           <option value="">商品を選んでください</option>
           <% prdctList.forEach(function(prdctItem){ %>
             <option value=<%= prdctItem.prdct_id %> category=<%= prdctItem.cat_cd %> style="display:none;"><%= prdctItem.prdct_nm %></option>
