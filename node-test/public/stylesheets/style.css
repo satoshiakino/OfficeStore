@@ -244,3 +244,33 @@ border: 1px #ccc solid;
 .inventory-form {
   margin-left: 40px;
 }
+.before {
+  display: inline-block;
+  margin-left: 30px;
+}
+.after {
+  display: inline-block;
+  margin-right: 40px;
+  float: right;
+}
+#switch {
+  width: 60%;
+  margin-left: 30%;
+}
+#switch ul {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+#switch ul li {
+  display: inline;
+  margin-left: 10px;
+  text-align: center;
+}
+#switch ul li a {
+  display: inline-block;
+  width: 100px;
+  height: 40px;
+  line-height: 40px;
+  color: #fff;
+  background-color: #9fb083;
+}

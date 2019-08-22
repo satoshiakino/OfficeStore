@@ -22,34 +22,36 @@
       </nav>
     </header>
     <div class="wrapper">
-      <div align="center">
-        <button><a href="/sales_day">日別売上</a></button>
-        <button><a href="/sales_week">週別売上</a></button>
-        <button><a href="/sales_month">月別売上</a></button>
-        <button><a href="/sales_year">年別売上</a></button>
-        <form action='/sales_day' method='get' class='sales_day-form'>
-          <button type="submit" class="submit">
-              <input type="hidden" name="month" value=<%= lastMonth %>>前月
-          </button>
-        </form>
-        <form action='/sales_day' method='get' class='sales_day-form'>
-          <button type="submit" class="submit">
-              <input type="hidden" name="month" value=<%= nextMonth %>>次月
-          </button>
-        </form>
-        <table rules="all">
-          <tr>
-            <th>日付</th>
-            <th>売上</th>
-          </tr>
-          <% resultList.forEach(function(resultItem){ %>
-            <tr class="main-list__item">
-              <td class="sales_day__days"><%= resultItem.days %></td>
-              <td class="sales_day__sales_day"><%= resultItem.sales_day %></td>
-            </tr>
-          <% }); %>
-        </table>
+      <div id="switch">
+        <ul>
+          <li><a href="/sales_day">日別売上</a></li>
+          <li><a href="/sales_week">週別売上</a></li>
+          <li><a href="/sales_month">月別売上</a></li>
+          <li><a href="/sales_year">年別売上</a></li>
+        </ul>
       </div>
+      <form action='/sales_day' method='get' class='before'>
+        <button type="submit" class="submit">
+            <input type="hidden" name="month" value=<%= lastMonth %>>前月
+        </button>
+      </form>
+      <form action='/sales_day' method='get' class='after'>
+        <button type="submit" class="submit">
+            <input type="hidden" name="month" value=<%= nextMonth %>>次月
+        </button>
+      </form>
+      <table rules="all">
+        <tr>
+          <th>日付</th>
+          <th>売上</th>
+        </tr>
+        <% resultList.forEach(function(resultItem){ %>
+          <tr class="main-list__item">
+            <td class="sales_day__days"><%= resultItem.days %></td>
+            <td class="sales_day__sales_day"><%= resultItem.sales_day %></td>
+          </tr>
+        <% }); %>
+      </table>
     </div>
   </body>
 </html>
