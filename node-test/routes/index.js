@@ -1151,19 +1151,44 @@ router.get('/sales_day', function(req, res, next) {
   next_month.add(1, 'M');
   last_month = moment(dt);
   last_month.add(-1, 'M');
-  console.log(next_month);
   var selectSalesQuery = {
-    text: 'SELECT TO_CHAR(cm.days, \'YYYY/MM/DD\') AS days ' +
-                ',CASE WHEN SUM(pm.price * sales.trade_num) IS NULL THEN 0 ELSE SUM(pm.price * sales.trade_num) END AS sales_day ' +
-            'FROM calendar_mst AS cm ' +
-            'LEFT OUTER JOIN sales ' +
-              'ON cm.days = sales.trade_date::date ' +  
-            'LEFT OUTER JOIN prdct_mst AS pm ' +
-              'ON sales.prdct_id = pm.prdct_id ' +
-            'WHERE cm.year = ' + year + ' ' +
-              'AND cm.month = ' + month + ' ' +
-            'GROUP BY days ' +
-            'ORDER BY days'
+    text: 'SELECT ca1.days1 ' +
+            	  ',ca1.sales_day1 ' +
+            	  ',ca2.days2 ' +
+            	  ',ca2.sales_day2 ' +
+            'FROM ' +
+            '( ' +
+            'SELECT TO_CHAR(cm.days, \'DD\') AS days1 ' +
+                  ',CASE WHEN SUM(pm.price * sales.trade_num) IS NULL THEN 0 ELSE SUM(pm.price * sales.trade_num) END AS sales_day1 ' + 
+            			',cm.day ' +
+              'FROM calendar_mst AS cm ' + 
+              'LEFT OUTER JOIN sales ' +
+                'ON cm.days = sales.trade_date::date ' +
+              'LEFT OUTER JOIN prdct_mst AS pm ' +
+                'ON sales.prdct_id = pm.prdct_id ' + 
+              'WHERE cm.year = ' + year +
+                'AND cm.month = ' + month +
+            		'AND cm.day < 17 ' +
+                'GROUP BY days ' +
+            ') AS ca1 ' +
+            'LEFT OUTER JOIN ' +
+            '( ' +
+            'SELECT TO_CHAR(cm.days, \'DD\') AS days2 ' +
+                  ',CASE WHEN SUM(pm.price * sales.trade_num) IS NULL THEN 0 ELSE SUM(pm.price * sales.trade_num) END AS sales_day2 ' +
+            			',cm.day ' +
+              'FROM calendar_mst AS cm ' +
+              'LEFT OUTER JOIN sales ' +
+                'ON cm.days = sales.trade_date::date ' +
+              'LEFT OUTER JOIN prdct_mst AS pm ' +
+                'ON sales.prdct_id = pm.prdct_id ' +
+              'WHERE cm.year = ' + year +
+                'AND cm.month = ' + month +
+            		'AND cm.day > 16 ' +
+            		'AND cm.day < 32 ' +
+              'GROUP BY days ' +
+            ') AS ca2 ' +
+            'ON ca1.day + 16 = ca2.day ' +
+            'ORDER BY ca1.days1 '
   };
   connection.query(selectSalesQuery)
     .then(function(result) {
@@ -1171,7 +1196,9 @@ router.get('/sales_day', function(req, res, next) {
         title: "日別売上",
         resultList: result,
         lastMonth: last_month.format('YYYY/MM'),
-        nextMonth: next_month.format('YYYY/MM')
+        nextMonth: next_month.format('YYYY/MM'),
+        year: year,
+        month: month
       });
       res.end();
     });
@@ -1190,7 +1217,7 @@ router.get('/sales_week', function(req, res, next) {
   last_month = moment(dt);
   last_month.add(-1, 'M');
   var selectSalesQuery = {
-    text: 'SELECT TO_CHAR(s1.days - s1.day_of_the_week, \'yyyy/mm/dd\') AS trade_week ' +
+    text: 'SELECT TO_CHAR(s1.days - s1.day_of_the_week, \'mm/dd\') AS trade_week ' +
 	              ',SUM(sale_data) AS sales_week ' +
 	          'FROM ' +
 	          '( ' +
@@ -1214,7 +1241,9 @@ router.get('/sales_week', function(req, res, next) {
         title: "週別売上",
         resultList: result,
         lastMonth: last_month.format('YYYY/MM'),
-        nextMonth: next_month.format('YYYY/MM')
+        nextMonth: next_month.format('YYYY/MM'),
+        year: year,
+        month: month
       });
       res.end();
     });
@@ -1249,7 +1278,8 @@ router.get('/sales_month', function(req, res, next) {
         title: "月別売上",
         resultList: result,
         lastYear: last_year.format('YYYY'),
-        nextYear: next_year.format('YYYY')
+        nextYear: next_year.format('YYYY'),
+        year: year
       });
       res.end();
     });
