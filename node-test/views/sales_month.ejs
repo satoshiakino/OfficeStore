@@ -22,34 +22,39 @@
       </nav>
     </header>
     <div class="wrapper">
-      <div align="center">
-        <button><a href="/sales_day">日別売上</a></button>
-        <button><a href="/sales_week">週別売上</a></button>
-        <button><a href="/sales_month">月別売上</a></button>
-        <button><a href="/sales_year">年別売上</a></button>
-        <form action='/sales_month' method='get' class='sales_month-form'>
-          <button type="submit" class="submit">
-              <input type="hidden" name="year" value=<%= lastYear %>>前年
-          </button>
-        </form>
-        <form action='/sales_month' method='get' class='sales_month-form'>
-          <button type="submit" class="submit">
-              <input type="hidden" name="year" value=<%= nextYear %>>次年
-          </button>
-        </form>
-        <table rules="all">
-          <tr>
-            <th>月</th>
-            <th>売上</th>
-          </tr>
-          <% resultList.forEach(function(resultItem){ %>
-            <tr class="main-list__item">
-              <td class="sales_month__trade_month"><%= resultItem.trade_month %></td>
-              <td class="sales_month__sales_month"><%= resultItem.sales_month %></td>
-            </tr>
-          <% }); %>
-        </table>
+      <div id="switch">
+        <ul>
+          <li><a href="/sales_day">日別売上</a></li>
+          <li><a href="/sales_week">週別売上</a></li>
+          <li><a href="/sales_month">月別売上</a></li>
+          <li><a href="/sales_year">年別売上</a></li>
+        </ul>
       </div>
+      <h2 class="date"><%= year %>年</h2>
+      <form action='/sales_month' method='get' class='before'>
+        <button type="submit" class="submit">
+            <input type="hidden" name="year" value=<%= lastYear %>>前年
+        </button>
+      </form>
+      <form action='/sales_month' method='get' class='after'>
+        <button type="submit" class="submit">
+            <input type="hidden" name="year" value=<%= nextYear %>>次年
+        </button>
+      </form>
+      <div id="sales">
+      <table class="sales_col2" rules="all">
+        <tr>
+          <th>月</th>
+          <th>売上</th>
+        </tr>
+        <% resultList.forEach(function(resultItem){ %>
+          <tr class="main-list__item">
+            <td class="sales_month__trade_month"><%= resultItem.trade_month %></td>
+            <td class="sales_month__sales_month"><%= resultItem.sales_month %></td>
+          </tr>
+        <% }); %>
+      </table>
+    </div>
     </div>
   </body>
 </html>

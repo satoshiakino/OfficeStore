@@ -30,6 +30,7 @@
           <li><a href="/sales_year">年別売上</a></li>
         </ul>
       </div>
+      <h2 class="date"><%= year %>年<%= month %>月</h2>
       <form action='/sales_day' method='get' class='before'>
         <button type="submit" class="submit">
             <input type="hidden" name="month" value=<%= lastMonth %>>前月
@@ -40,18 +41,24 @@
             <input type="hidden" name="month" value=<%= nextMonth %>>次月
         </button>
       </form>
-      <table rules="all">
+      <div id="sales">
+      <table class="sales_col4" rules="all">
         <tr>
+          <th>日付</th>
+          <th>売上</th>
           <th>日付</th>
           <th>売上</th>
         </tr>
         <% resultList.forEach(function(resultItem){ %>
           <tr class="main-list__item">
-            <td class="sales_day__days"><%= resultItem.days %></td>
-            <td class="sales_day__sales_day"><%= resultItem.sales_day %></td>
+            <td class="sales_day__days"><%= resultItem.days1 %></td>
+            <td class="sales_day__sales_day"><%= resultItem.sales_day1 %></td>
+            <td class="sales_day__days"><%= resultItem.days2 %></td>
+            <td class="sales_day__sales_day"><%= resultItem.sales_day2 %></td>
           </tr>
         <% }); %>
       </table>
+    </div>
     </div>
   </body>
 </html>

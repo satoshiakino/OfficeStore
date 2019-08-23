@@ -42,38 +42,6 @@ header h1 {
   margin: 5px 0 10px;
   margin-left: 30px;
 }
-#global_navi {
-  width: auto;
-  clear: both;
-  overflow: hidden;
-  margin: 16px auto;
-}
-#global_navi ul li {
-  width: 19%;
-  float: left;
-  margin-right: 1px;
-  text-align: center;
-}
-#global_navi ul li a {
-  display: block;
-  padding: 16px;
-  background-color: #352b23;
-  color: #fff;
-  text-decoration: none;
-}
-#global_navi ul li.current a {
-  background-color: #b7a077;
-}
-#global_navi ul li a:hover {
-  background-color: #8c7a5b;
-}
-#breadcrumb { font-size: smaller; }
-#breadcrumb ol li { display: inline; }
-#breadcrumb ol li::after {
-  content: ">";
-  padding-left: 7px;
-}
-#breadcrumb ol li:last-child::after { content: none; }
 table {
   width: 90%;
   text-align: center;
@@ -83,21 +51,6 @@ th {
   height: 30px;
   color: #fff;
   background-color: #668b8a;
-}
-ul.menu {
-  width: 1800px;
-  list-style: none outside;
-}
-ul.menu li a {
-  display: block;
-  margin: 30px;
-  margin-left: 250px;
-  padding: 25px;
-  background-color: #668b8a;
-  color: #fff;
-  float: left;
-  width: 500px;
-  text-align: center;
 }
 table.menu {
   width: 90%;
@@ -120,6 +73,21 @@ table.menu tr th a {
 }
 input.id {
   height: 30px;
+}
+ul.menu {
+  width: 1800px;
+  list-style: none outside;
+}
+ul.menu li a {
+  display: block;
+  margin: 30px;
+  margin-left: 250px;
+  padding: 25px;
+  background-color: #668b8a;
+  color: #fff;
+  float: left;
+  width: 500px;
+  text-align: center;
 }
 /*Main*/
 
@@ -253,6 +221,81 @@ border: 1px #ccc solid;
   margin-right: 40px;
   float: right;
 }
+.sales_col4 {
+  display: inline-block;
+  width: 700px;
+  border: none;
+}
+.sales_col4 tr th {
+  border: 1px rgb(65, 65, 65) solid;
+}
+.sales_day__days {
+  width: 105px;
+}
+.sales_day__sales_day {
+  width: 245px;
+}
+.date {
+  text-align: center;
+}
+.sales_col2 {
+  display: inline-block;
+  width: 500px;
+  border: none;
+}
+.sales_col2 tr th{
+  border: 1px rgb(65, 65, 65) solid;
+}
+.sales_week__trade_week {
+  width: 200px;
+}
+.sales_week__sales_week {
+  width: 300px;
+}
+.sales_month__trade_month {
+  width: 200px;
+}
+.sales_month__sales_month {
+  width: 300px;
+}
+.sales_year__trade_year {
+  width: 200px;
+}
+.sales_year__sales_year {
+  width: 300px;
+}
+#global_navi {
+  width: auto;
+  clear: both;
+  overflow: hidden;
+  margin: 16px auto;
+}
+#global_navi ul li {
+  width: 19%;
+  float: left;
+  margin-right: 1px;
+  text-align: center;
+}
+#global_navi ul li a {
+  display: block;
+  padding: 16px;
+  background-color: #352b23;
+  color: #fff;
+  text-decoration: none;
+}
+#global_navi ul li.current a {
+  background-color: #b7a077;
+}
+#global_navi ul li a:hover {
+  background-color: #8c7a5b;
+}
+#breadcrumb { font-size: smaller; }
+#breadcrumb ol li { display: inline; }
+#breadcrumb ol li::after {
+  content: ">";
+  padding-left: 7px;
+}
+#breadcrumb ol li:last-child::after { content: none; }
 #switch {
   width: 60%;
   margin-left: 30%;
@@ -273,4 +316,7 @@ border: 1px #ccc solid;
   line-height: 40px;
   color: #fff;
   background-color: #9fb083;
+}
+#sales {
+  text-align: center;
 }
