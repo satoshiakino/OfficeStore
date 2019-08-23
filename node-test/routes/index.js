@@ -1324,7 +1324,7 @@ router.get('/sales_trend_prdct_daily', function(req, res, next) {
   var select_date = "";
   var moment_date = moment(dt);
   for(var i=1; i<=last_day; i++){
-    select_date += ',SUM(CASE s1.trade_date WHEN \'' + moment_date.format('YYYY-MM') + '-' + i  + '\' THEN s1.trade_num ELSE 0 END) AS "_' + month + '/' + i + '" ';
+    select_date += ',SUM(CASE s1.trade_date WHEN \'' + moment_date.format('YYYY-MM') + '-' + i  + '\' THEN s1.trade_num ELSE 0 END) AS "_' + i + '" ';
   }
   var selectSalesQuery = {
     text: 'SELECT s1.prdct_id AS prdct_id ' +
@@ -1360,7 +1360,9 @@ router.get('/sales_trend_prdct_daily', function(req, res, next) {
         lastMonth: last_month.format('YYYY-MM'),
         nextMonth: next_month.format('YYYY-MM'),
         salesList: result,
-        dateList: date_list
+        dateList: date_list,
+        year: year,
+        month: month
       });
       res.end();
     })

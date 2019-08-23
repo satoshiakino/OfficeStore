@@ -264,6 +264,52 @@ border: 1px #ccc solid;
 .sales_year__sales_year {
   width: 300px;
 }
+.sales_trend {
+  display: inline-block;
+  margin-top: 30px;
+  border: none;
+}
+.sales_trend tr th {
+  border: 1px rgb(65, 65, 65) solid;
+}
+.sales_trend__prdct_nm {
+  width: 200px;
+}
+.sales_trend__date {
+  width: 25px;
+}
+.settlement-form {
+  margin-left: 30px;
+}
+.settlement-form span {
+  height: 30px;
+  line-height: 30px;
+}
+.settlement-form input {
+  height: 30px;
+  line-height: 30px;
+}
+.settlement2 {
+  display: inline-block;
+  width: 400px;
+  margin-left: 30px;
+  border: none;
+}
+.settlement2 td {
+  height: 30px;
+}
+.index_horizontal {
+  width: 200px;
+  color: #fff;
+  background: #668b8a;
+  border: 1px rgb(65, 65, 65) solid;
+}
+.value {
+  width: 150px;
+}
+.settlement2-form {
+  margin-left: 307px;
+}
 #global_navi {
   width: auto;
   clear: both;
