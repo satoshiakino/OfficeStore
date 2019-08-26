@@ -22,12 +22,17 @@
       </nav>
     </header>
     <div class="wrapper">
-      <div align="center">
-        <button><a href="/sales_trend_prdct_daily">日別商品販売動向</a></button>
-        <button><a href="/sales_trend_prdct_weekly">週別商品販売動向</a></button>
-        <button><a href="/sales_trend_prdct_monthly">月別商品販売動向</a></button>
-        <button><a href="/sales_trend_prdct_yearly">年別商品販売動向</a></button>
-      <table rules="all">
+      <div id="switch">
+        <ul>
+          <li><a href="/sales_trend_prdct_daily">日別商品販売動向</a></li>
+          <li><a href="/sales_trend_prdct_weekly">週別商品販売動向</a></li>
+          <li><a href="/sales_trend_prdct_monthly">月別商品販売動向</a></li>
+          <li><a href="/sales_trend_prdct_yearly">年別商品販売動向</a></li>
+        </ul>
+      </div>
+      <h2 class="date">年間売上</h2>
+      <div id="sales">
+      <table class="sales_trend" rules="all">
         <tr>
           <th>商品名</th>
           <% dateList.forEach(function(dt){ %>
@@ -38,11 +43,12 @@
           <tr class="main-list__item">
             <td class="sales_trend__prdct_nm"><%= salesItem.prdct_nm %></td>
             <% dateList.forEach(function(dt){ %>
-              <td class="sales_trend__date"><%= salesItem[dt] %></td>
+              <td class="sales_trend__date_year"><%= salesItem[dt] %></td>
             <% }); %>
           </tr>
         <% }); %>
       </table>
+      </div>
       </div>
     </div>
   </body>

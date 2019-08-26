@@ -370,6 +370,33 @@ SELECT s1.prdct_id AS prdct_id
   GROUP BY s1.prdct_id,s1.prdct_nm  
   ORDER BY s1.prdct_id
 
+//商品販売動向（年別）
+SELECT s1.prdct_id AS prdct_id  
+	  ,s1.prdct_nm AS prdct_nm  
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2019-01-01' THEN s1.trade_num ELSE 0 END) AS "_2019年"  
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2018-01-01' THEN s1.trade_num ELSE 0 END) AS "_2018年"  
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2017-01-01' THEN s1.trade_num ELSE 0 END) AS "_2017年"  
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2016-01-01' THEN s1.trade_num ELSE 0 END) AS "_2016年"  
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2015-01-01' THEN s1.trade_num ELSE 0 END) AS "_2015年"  
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2014-01-01' THEN s1.trade_num ELSE 0 END) AS "_2014年"  
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2013-01-01' THEN s1.trade_num ELSE 0 END) AS "_2013年"  
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2012-01-01' THEN s1.trade_num ELSE 0 END) AS "_2012年"  
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2011-01-01' THEN s1.trade_num ELSE 0 END) AS "_2011年"  
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2010-01-01' THEN s1.trade_num ELSE 0 END) AS "_2010年"  
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2009-01-01' THEN s1.trade_num ELSE 0 END) AS "_2009年"  
+  FROM  
+  (  
+  	SELECT sales.prdct_id  
+     		  ,pm.prdct_nm   
+     		  ,sales.trade_num    
+     		  ,trade_date  
+  	FROM sales   
+  	LEFT OUTER JOIN prdct_mst AS pm   
+  	  ON sales.prdct_id = pm.prdct_id  
+  ) AS s1  
+  GROUP BY s1.prdct_id,s1.prdct_nm  
+  ORDER BY s1.prdct_id
+
 //2019年7月の期末在庫高（8月の月初在庫高）
 SELECT SUM(pm.price * (CASE WHEN (arrvl.a_num - sls.s_num) IS NULL THEN 0 ELSE (arrvl.a_num - sls.s_num) END)) AS stock_value
 	FROM prdct_mst AS pm
@@ -393,6 +420,37 @@ SELECT SUM(pm.price * (CASE WHEN (arrvl.a_num - sls.s_num) IS NULL THEN 0 ELSE (
 			GROUP BY prdct_id
 	) AS sls
 	ON pm.prdct_id = sls.prdct_id
+
+//カテゴリ別販売動向（年別）
+SELECT s1.cat_cd AS cat_cd  
+      ,s1.cat_nm AS cat_nm  
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2009-01-01' THEN s1.trade_num ELSE 0 END) AS "_2009年"  
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2010-01-01' THEN s1.trade_num ELSE 0 END) AS "_2010年" 
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2011-01-01' THEN s1.trade_num ELSE 0 END) AS "_2011年" 
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2012-01-01' THEN s1.trade_num ELSE 0 END) AS "_2012年" 
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2013-01-01' THEN s1.trade_num ELSE 0 END) AS "_2013年" 
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2014-01-01' THEN s1.trade_num ELSE 0 END) AS "_2014年" 
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2015-01-01' THEN s1.trade_num ELSE 0 END) AS "_2015年" 
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2016-01-01' THEN s1.trade_num ELSE 0 END) AS "_2016年" 
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2017-01-01' THEN s1.trade_num ELSE 0 END) AS "_2017年" 
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2018-01-01' THEN s1.trade_num ELSE 0 END) AS "_2018年" 
+	  ,SUM(CASE DATE_TRUNC('YEAR', s1.trade_date) WHEN '2019-01-01' THEN s1.trade_num ELSE 0 END) AS "_2019年" 
+  FROM  
+  (  
+  	SELECT sales.cat_cd
+		  ,cat.cat_nm
+			  ,sales.prdct_id  
+     		  ,pm.prdct_nm   
+     		  ,sales.trade_num    
+     		  ,trade_date  
+  	FROM sales   
+  	LEFT OUTER JOIN prdct_mst AS pm   
+  	  ON sales.prdct_id = pm.prdct_id  
+	LEFT OUTER JOIN category AS cat 
+	  ON sales.cat_cd = cat.cat_cd
+  ) AS s1  
+  GROUP BY s1.cat_cd,s1.cat_nm  
+  ORDER BY s1.cat_cd
 
 //2019年8月の仕入高
 SELECT SUM(pm.price * pm.cost_rate * arrival.trade_num) AS total_stock_value

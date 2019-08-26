@@ -22,8 +22,9 @@
       </nav>
     </header>
     <div class="wrapper">
-      <div align="center">
-        <table rules="all">
+      <button id="ca_pr_switch"><a href="/invntry_count_result">商品別結果</a></button>
+      <div id="sales">
+        <table class="sales_trend" rules="all">
           <tr>
             <th>実施日</th>
             <th>カテゴリ名</th>
@@ -31,14 +32,13 @@
           </tr>
           <% resultList.forEach(function(resultItem){ %>
             <tr class="main-list__item">
-              <td class="inventory_count__count_date"><%= resultItem.count_date %></td>
-              <td class="inventory_count__cat_nm"><%= resultItem.cat_nm %></td>
-              <td class="inventory_count__stock_value"><%= resultItem.stock_value %></td>
+              <td class="count_date"><%= resultItem.count_date1 %></td>
+              <td class="cat_nm"><%= resultItem.cat_nm %></td>
+              <td class="stock_value"><%= resultItem.stock_value %></td>
             </tr>
           <% }); %>
         </table>
       </div>
-      <button align="center"><a href="/invntry_count_result">商品別結果</a></button>
     </div>
   </body>
 </html>

@@ -36,25 +36,23 @@
           </tr>
           <% salesList.forEach(function(salesItem){ %>
             <tr class="main-list__item">
-              <td class="sales__sales_id"><%= salesItem.sales_id %></td>
-              <td class="sales__cat_cd"><%= salesItem.cat_cd %></td>
-              <td class="sales__cat_nm"><%= salesItem.cat_nm %></td>
-              <td class="sales__jan"><%= salesItem.jan %></td>
-              <td class="sales__prdct_nm"><%= salesItem.prdct_nm %></td>
-              <td class="sales__trade_num"><%= salesItem.trade_num %></td>
-              <td class="sales__price"><%= salesItem.price %></td>
-              <td class="sales__trade_date"><%= salesItem.trade_date %></td>
+              <td class="id"><%= salesItem.sales_id %></td>
+              <td class="cat_cd"><%= salesItem.cat_cd %></td>
+              <td class="cat_nm"><%= salesItem.cat_nm %></td>
+              <td class="jan"><%= salesItem.jan %></td>
+              <td class="prdct_nm"><%= salesItem.prdct_nm %></td>
+              <td class="trade_num"><%= salesItem.trade_num %></td>
+              <td class="price"><%= salesItem.price %></td>
+              <td class="trade_date"><%= salesItem.trade_date %></td>
             </tr>
           <% }); %>
         </table>
       </div>
     </div>
-    <form action="/sales_hstry" method="post" class="sales_hstry-form" name="delete_hstry">
+    <form action="/sales_hstry" method="post" class="reg-form" name="delete_hstry">
         <span class="label">id：</span>
         <input type="number" name="sales_id" class="input" required>
         <input type="hidden" name="_method" value="delete">
-        <br>
-        <br>
         <button type="submit" class="submit" id="delete_hstry_button">削除</button>
         <br>
     </form>

@@ -22,34 +22,39 @@
       </nav>
     </header>
     <div class="wrapper">
-      <div align="center">
-        <button><a href="/sales_day">日別売上</a></button>
-        <button><a href="/sales_week">週別売上</a></button>
-        <button><a href="/sales_month">月別売上</a></button>
-        <button><a href="/sales_year">年別売上</a></button>
-        <form action='/sales_week' method='get' class='sales_week-form'>
-          <button type="submit" class="submit">
-              <input type="hidden" name="month" value=<%= lastMonth %>>前月
-          </button>
-        </form>
-        <form action='/sales_week' method='get' class='sales_week-form'>
-          <button type="submit" class="submit">
-              <input type="hidden" name="month" value=<%= nextMonth %>>次月
-          </button>
-        </form>
-        <table rules="all">
-          <tr>
-            <th>週</th>
-            <th>売上</th>
-          </tr>
-          <% resultList.forEach(function(resultItem){ %>
-            <tr class="main-list__item">
-              <td class="sales_week__trade_week"><%= resultItem.trade_week %></td>
-              <td class="sales_week__sales_week"><%= resultItem.sales_week %></td>
-            </tr>
-          <% }); %>
-        </table>
+      <div id="switch">
+        <ul>
+          <li><a href="/sales_day">日別売上</a></li>
+          <li><a href="/sales_week">週別売上</a></li>
+          <li><a href="/sales_month">月別売上</a></li>
+          <li><a href="/sales_year">年別売上</a></li>
+        </ul>
       </div>
+      <h2 class="date"><%= year %>年<%= month %>月</h2>
+      <form action='/sales_week' method='get' class='before'>
+        <button type="submit" class="submit">
+            <input type="hidden" name="month" value=<%= lastMonth %>>前月
+        </button>
+      </form>
+      <form action='/sales_week' method='get' class='after'>
+        <button type="submit" class="submit">
+            <input type="hidden" name="month" value=<%= nextMonth %>>次月
+        </button>
+      </form>
+      <div id="sales">
+      <table class="sales_col2" rules="all">
+        <tr>
+          <th>週</th>
+          <th>売上</th>
+        </tr>
+        <% resultList.forEach(function(resultItem){ %>
+          <tr class="main-list__item">
+            <td class="sales_week__trade_week"><%= resultItem.trade_week %></td>
+            <td class="sales_week__sales_week"><%= resultItem.sales_week %></td>
+          </tr>
+        <% }); %>
+      </table>
+    </div>
     </div>
   </body>
 </html>

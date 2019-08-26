@@ -1,53 +1,3 @@
-html, body, div, span, applet, object, iframe,
-h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-a, abbr, acronym, address, big, cite, code,
-del, dfn, em, img, ins, kbd, q, s, samp,
-small, strike, strong, sub, sup, tt, var,
-b, u, i, center,
-dl, dt, dd, ol, ul, li,
-fieldset, form, label, legend,
-table, caption, tbody, tfoot, thead,
-article, aside, canvas, details, embed,
-figure, figcaption, footer, header, hgroup,
-menu, nav, output, ruby, section, summary,
-time, mark, audio, video {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  font-size: 100%;
-  font: inherit;
-  vertical-align: baseline;
-}
-
-article, aside, details, figcaption, figure,
-footer, header, hgroup, menu, nav, section {
-  display: block;
-}
-body {
-  line-height: 1;
-}
-ol, ul {
-  list-style: none;
-}
-blockquote, q {
-  quotes: none;
-}
-blockquote:before, blockquote:after,
-q:before, q:after {
-  content: '';
-  content: none;
-}
-table {
-  width: 90%;
-  text-align: center;
-}
-/*table th {
-  width: 30%;
-}
-table td {
-  width: 30%;
-}*/
-
 /*Base*/
 
 html {
@@ -83,49 +33,46 @@ input, textarea, button {
   color: inherit;
   -webkit-appearance: none;
 }
-input:-webkit-autofill, textarea:-webkit-autofill {
-  -webkit-box-shadow: 0 0 0px 1000px white inset;
-}
 header {
-  width: 980px;
+  width: auto;
   margin: 0 auto;
 }
 header h1 {
   float: left;
   margin: 5px 0 10px;
+  margin-left: 30px;
 }
-#global_navi {
-  width: 980px;
-  clear: both;
-  overflow: hidden;
-  margin: 16px auto;
-}
-#global_navi ul li {
-  width: 195px;
-  float: left;
-  margin-right: 1px;
+table {
   text-align: center;
+  border: 1px rgb(65, 65, 65) solid;
 }
-#global_navi ul li a {
-  display: block;
-  padding: 16px;
-  background-color: #352b23;
+th {
+  height: 30px;
   color: #fff;
-  text-decoration: none;
+  background-color: #668b8a;
 }
-#global_navi ul li.current a {
-  background-color: #b7a077;
+table.menu {
+  width: 90%;
+  padding: 30px 20px;
+  border: none;
 }
-#global_navi ul li a:hover {
-  background-color: #8c7a5b;
+table.menu tr th {
+  width: 40%;
+  line-height: 5em;
+  color: #fff;
+  background-color: #668b8a;
 }
-#breadcrumb { font-size: smaller; }
-#breadcrumb ol li { display: inline; }
-#breadcrumb ol li::after {
-  content: ">";
-  padding-left: 7px;
+table.menu tr td {
+  height: 20px;
 }
-#breadcrumb ol li:last-child::after { content: none; }
+table.menu tr th a {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+input.id {
+  height: 30px;
+}
 ul.menu {
   width: 1800px;
   list-style: none outside;
@@ -135,29 +82,11 @@ ul.menu li a {
   margin: 30px;
   margin-left: 250px;
   padding: 25px;
-  background-color: #36364d;
+  background-color: #668b8a;
   color: #fff;
   float: left;
   width: 500px;
   text-align: center;
-}
-table.menu {
-  width: 90%;
-  padding: 30px 20px;
-}
-table.menu tr th {
-  width: 40%;
-  line-height: 5em;
-  color: #fff;
-  background-color: #36364d;
-}
-table.menu tr td {
-  height: 20px;
-}
-table.menu tr th a {
-  display: block;
-  width: 100%;
-  height: 100%;
 }
 /*Main*/
 
@@ -204,8 +133,6 @@ table.menu tr th a {
   background-size: cover;
   background-position: center;
 }
-.message__title {
-}
 .massage__date {
   font-size: 10px;
   color: #ccc;
@@ -225,47 +152,37 @@ table.menu tr th a {
   background-color: #fff;
 }
 .input {
+  width: 200px;
+  height: 50px;
   display: inline-block;
-  padding: 10px;
-  font-size: 12px;
   vertical-align: middle;
+  text-indent: 3px;
   border: 1px #ccc solid;
   background-color: #fff;
 }
-.file-wrap {
-  position: relative;
-  padding: 10px 30px;
-  margin: 4px auto 0;
-  width: 200px;
-  overflow: hidden;
-  line-height: 1;
-  font-size: 14px;
-  font-weight: bold;
-  color: #fff;
-  text-align: center;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
-  vertical-align: middle;
-  border-radius: 5px;
-  background-color: #008b8b;
-  box-sizing: border-box;
+.reg-form {
+  margin-left: 30px;
 }
-.file {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
+.select {
+  width: 202px;
+  height: 52px;
+  margin-left: -4px;
+  border: 1px #ccc solid;
 }
 .label {
-width: 100px;
+width: 120px;
+height: 50px;
+line-height: 50px;
+text-indent: 3px;
+color: #fff;
+background-color: #668b8a;
+border: 1px #ccc solid;
 }
 .btn {
   display: inline-block;
   padding: 5px;
-  margin: 10px 0 0 10px;
-  border: 1px #ccc solid;
-  border-radius: 5px;
+  text-decoration: none;
+  color: #668b8a;
   background-color: #fff;
 }
 .error {
@@ -277,11 +194,252 @@ width: 100px;
 }
 .submit {
   display: inline-block;
-  padding: 7px 10px;
-  font-size: 15px;
-  font-weight: bold;
-  vertical-align: middle;
-  border: 1px #ccc solid;
-  background-color: #fff;
-  -webkit-appearance: none;
+  width: 80px;
+  height: 40px;
+  text-decoration: none;
+  color: #668b8a;
+  border: solid 2px #668b8a;
+  border-radius: 3px;
+  transition: .4s;
+}
+.submit:hover {
+  background: #668b8a;
+  color: #fff;
+}
+.inventory-form {
+  margin-left: 40px;
+}
+.id {
+  width: 50px;
+}
+.cat_id {
+  width: 80px;
+}
+.cat_cd {
+  width: 100px;
+}
+.cat_nm {
+  width: 200px;
+}
+.jan {
+  width: 150px;
+}
+.prdct_nm {
+  width: 300px;
+}
+.price {
+  width: 90px;
+}
+.cost {
+  width: 70px;
+}
+.cost_rate {
+  width: 70px;
+}
+.trade_num {
+  width: 70px;
+}
+.trade_date {
+  width: 180px;
+}
+.settle_date {
+  width: 100px;
+}
+.total_cost {
+  width: 100px;
+}
+.total_sales {
+  width: 100px;
+}
+.profit_loss {
+  width: 100px;
+}
+.total_calc_cash {
+  width: 100px;
+}
+.total_cash {
+  width: 100px;
+}
+.excess_deficiency {
+  width: 100px;
+}
+.before {
+  display: inline-block;
+  margin-left: 30px;
+}
+.after {
+  display: inline-block;
+  margin-right: 40px;
+  float: right;
+}
+.sales_col4 {
+  display: inline-block;
+  width: 700px;
+  border: none;
+}
+.sales_col4 tr th {
+  border: 1px rgb(65, 65, 65) solid;
+}
+.sales_day__days {
+  width: 105px;
+}
+.sales_day__sales_day {
+  width: 245px;
+}
+.date {
+  text-align: center;
+}
+.sales_col2 {
+  display: inline-block;
+  width: 500px;
+  border: none;
+}
+.sales_col2 tr th{
+  border: 1px rgb(65, 65, 65) solid;
+}
+.sales_week__trade_week {
+  width: 200px;
+}
+.sales_week__sales_week {
+  width: 300px;
+}
+.sales_month__trade_month {
+  width: 200px;
+}
+.sales_month__sales_month {
+  width: 300px;
+}
+.sales_year__trade_year {
+  width: 200px;
+}
+.sales_year__sales_year {
+  width: 300px;
+}
+.sales_trend {
+  display: inline-block;
+  margin-top: 30px;
+  border: none;
+}
+.sales_trend tr th {
+  border: 1px rgb(65, 65, 65) solid;
+}
+.sales_trend__prdct_nm {
+  width: 200px;
+}
+.sales_trend__date {
+  width: 25px;
+}
+.sales_trend__date_week {
+  width: 150px;
+}
+.sales_trend__date_month {
+  width: 50px;
+}
+.sales_trend__date_year {
+  width: 70px;
+}
+.settlement-form {
+  margin-left: 30px;
+}
+.settlement-form span {
+  height: 30px;
+  line-height: 30px;
+}
+.settlement-form input {
+  height: 30px;
+  line-height: 30px;
+}
+.settlement2 {
+  display: inline-block;
+  width: 400px;
+  margin-left: 30px;
+  border: none;
+}
+.settlement2 td {
+  height: 30px;
+}
+.index_horizontal {
+  width: 200px;
+  color: #fff;
+  background: #668b8a;
+  border: 1px rgb(65, 65, 65) solid;
+}
+.value {
+  width: 150px;
+}
+.settlement2-form {
+  margin-left: 307px;
+}
+.count_date {
+  width: 150px;
+}
+.invntry_num, .count_num, .dif, .stock_value, .invntry_status {
+  width: 90px;
+}
+#global_navi {
+  width: auto;
+  clear: both;
+  overflow: hidden;
+  margin: 16px auto;
+}
+#global_navi ul li {
+  width: 19%;
+  float: left;
+  margin-right: 1px;
+  text-align: center;
+}
+#global_navi ul li a {
+  display: block;
+  padding: 16px;
+  background-color: #352b23;
+  color: #fff;
+  text-decoration: none;
+}
+#global_navi ul li.current a {
+  background-color: #b7a077;
+}
+#global_navi ul li a:hover {
+  background-color: #8c7a5b;
+}
+#breadcrumb { font-size: smaller; }
+#breadcrumb ol li { display: inline; }
+#breadcrumb ol li::after {
+  content: ">";
+  padding-left: 7px;
+}
+#breadcrumb ol li:last-child::after { content: none; }
+#switch {
+  width: 70%;
+  margin-left: 30%;
+}
+#switch ul {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+#switch ul li {
+  display: inline;
+  margin-left: 10px;
+  text-align: center;
+}
+#switch ul li a {
+  display: inline-block;
+  width: 150px;
+  height: 40px;
+  line-height: 40px;
+  color: #fff;
+  background-color: #9fb083;
+}
+#sales {
+  text-align: center;
+}
+#ca_pr_switch {
+  margin-left: 30px;
+}
+#ca_pr_switch a {
+  display: inline-block;
+  width: 150px;
+  height: 40px;
+  line-height: 40px;
+  color: #fff;
+  background-color: #9fb083;
 }

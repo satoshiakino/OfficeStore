@@ -35,13 +35,13 @@
           </tr>
           <% resultList.forEach(function(resultItem){ %>
             <tr class="main-list__item">
-              <td class="settlement__settle_date"><%= resultItem.settle_date %></td>
-              <td class="settlement__total_cost"><%= resultItem.total_cost %></td>
-              <td class="settlement__total_sales"><%= resultItem.total_sales %></td>
-              <td class="settlement__profit_loss"><%= resultItem.profit_loss %></td>
-              <td class="settlement__total_calc_cash"><%= resultItem.total_calc_cash %></td>
-              <td class="settlement__total_cash"><%= resultItem.total_cash %></td>
-              <td class="settlement__excess_deficiency"><%= resultItem.excess_deficiency %></td>
+              <td class="settle_date"><%= resultItem.settle_date %></td>
+              <td class="total_cost"><%= resultItem.total_cost %></td>
+              <td class="total_sales"><%= resultItem.total_sales %></td>
+              <td class="profit_loss"><%= resultItem.profit_loss %></td>
+              <td class="total_calc_cash"><%= resultItem.total_calc_cash %></td>
+              <td class="total_cash"><%= resultItem.total_cash %></td>
+              <td class="excess_deficiency"><%= resultItem.excess_deficiency %></td>
             </tr>
           <% }); %>
         </table>

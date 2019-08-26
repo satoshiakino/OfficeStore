@@ -36,25 +36,23 @@
             </tr>
             <% arrvlList.forEach(function(arrvlItem){ %>
               <tr class="main-list__item">
-                <td class="arrvl__arrvl_id"><%= arrvlItem.arrvl_id %></td>
-                <td class="arrvl__cat_cd"><%= arrvlItem.cat_cd %></td>
-                <td class="arrvl__cat_nm"><%= arrvlItem.cat_nm %></td>
-                <td class="arrvl__jan"><%= arrvlItem.jan %></td>
-                <td class="arrvl__prdct_nm"><%= arrvlItem.prdct_nm %></td>
-                <td class="arrvl__cost"><%= arrvlItem.cost %></td>
-                <td class="arrvl__trade_num"><%= arrvlItem.trade_num %></td>
-                <td class="arrvl__trade_date"><%= arrvlItem.trade_date %></td>
+                <td class="id"><%= arrvlItem.arrvl_id %></td>
+                <td class="cat_cd"><%= arrvlItem.cat_cd %></td>
+                <td class="cat_nm"><%= arrvlItem.cat_nm %></td>
+                <td class="jan"><%= arrvlItem.jan %></td>
+                <td class="prdct_nm"><%= arrvlItem.prdct_nm %></td>
+                <td class="cost"><%= arrvlItem.cost %></td>
+                <td class="trade_num"><%= arrvlItem.trade_num %></td>
+                <td class="trade_date"><%= arrvlItem.trade_date %></td>
               </tr>
             <% }); %>
           </table>
         </div>
     </div>
-    <form action="/arrvl_hstry" method="post" class="arrvl_hstry-form" name="delete_hstry">
+    <form action="/arrvl_hstry" method="post" class="reg-form" name="delete_hstry">
         <span class="label">id：</span>
         <input type="number" name="arrvl_id" class="input" required>
         <input type="hidden" name="_method" value="delete">
-        <br>
-        <br>
         <button type="submit" class="submit" id="delete_hstry_button">削除</button>
         <br>
     </form>

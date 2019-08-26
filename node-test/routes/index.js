@@ -378,7 +378,7 @@ router.get('/arrvl_hstry', function(req, res, next) {
                  ",pm.prdct_nm" +   
                  ",pm.cost" +
                  ",arrvl.trade_num" +  
-                 ",TO_CHAR(arrvl.trade_date, \'yyyy.mm.dd Dy hh24:mi:ss\') AS trade_date " + 
+                 ",TO_CHAR(arrvl.trade_date, \'yyyy/mm/dd hh24:mi:ss\') AS trade_date " + 
           "FROM arrival AS arrvl " +  
           "LEFT OUTER JOIN prdct_mst AS pm " +  
           "ON arrvl.prdct_id = pm.prdct_id " +  
@@ -500,7 +500,7 @@ router.get('/sales_hstry', function(req, res, next) {
                 ",pm.prdct_nm" + 
                 ",pm.price" +
                 ",sales.trade_num" +
-                ",TO_CHAR(sales.trade_date, \'yyyy.mm.dd Dy hh24:mi:ss\') AS trade_date " +
+                ",TO_CHAR(sales.trade_date, \'yyyy/mm/dd hh24:mi:ss\') AS trade_date " +
             "FROM sales " +   
             "LEFT OUTER JOIN prdct_mst AS pm " +   
              "ON sales.prdct_id = pm.prdct_id " +  
@@ -737,11 +737,13 @@ router.get('/invntry_count', function(req, res, next) {
           'FROM prdct_mst AS pm ' +
           'LEFT OUTER JOIN ' +
           '( ' +
-          'SELECT prdct_id ' +
-              ',SUM(trade_num) AS arrvl_num ' +
-              ',SUM(trade_num * cost) AS arrvl_cost ' +
-          'FROM arrival ' +
-          'GROUP BY prdct_id ' +
+          'SELECT arrvl.prdct_id ' +
+              ',SUM(arrvl.trade_num) AS arrvl_num ' +
+              ',SUM(arrvl.trade_num * pm.cost) AS arrvl_cost ' +
+          'FROM arrival AS arrvl ' +
+          'LEFT OUTER JOIN prdct_mst AS pm ' +
+          'ON arrvl.prdct_id = pm.prdct_id ' +
+          'GROUP BY arrvl.prdct_id ' +
           ') AS arrival ' +
           'ON pm.prdct_id = arrival.prdct_id ' +
           'LEFT OUTER JOIN ' +
@@ -776,11 +778,10 @@ router.post('/invntry_count', function(req, res, next) {
   var count_num = req.body.count;
   var prdct_id = req.body.prdct_id;
   var insertArrivalQuery = {
-    text: 'INSERT INTO arrival (cat_cd, prdct_id, trade_num, cost, trade_date, checked, count) ' +
+    text: 'INSERT INTO arrival (cat_cd, prdct_id, trade_num, trade_date, checked, count) ' +
           'SELECT pm.cat_cd ' +
                 ',ic.prdct_id ' +
                 ',ic.count_num - ic.invntry_num AS dif ' +
-                ',pm.price * pm.cost_rate AS cost ' +
                 ',ic.count_date ' +
                 ',true AS checked ' +
                 ',true AS count ' +
@@ -821,7 +822,6 @@ router.post('/invntry_count', function(req, res, next) {
                   '( ' +
                   'SELECT prdct_id ' + 
                       ',SUM(trade_num) AS arrvl_num ' +
-                      ',SUM(trade_num * cost) AS arrvl_cost ' + 
                   'FROM arrival ' +
                     'WHERE count = false ' +
                     'GROUP BY prdct_id '+
@@ -831,7 +831,6 @@ router.post('/invntry_count', function(req, res, next) {
                   '( ' +
                     'SELECT sales.prdct_id ' + 
                         ',SUM(sales.trade_num) AS sales_num ' +
-                        ',SUM(sales.trade_num * pm.price) AS total_sales ' + 
                       'FROM sales ' +
                       'LEFT OUTER JOIN prdct_mst AS pm ' + 
                       'ON sales.prdct_id = pm.prdct_id ' +
@@ -979,7 +978,7 @@ router.get('/invntry_count_result', function(req, res, next) {
 	              'ON ic.prdct_id = pm.prdct_id ' +
 	            'LEFT OUTER JOIN category AS cat ' +
                 'ON pm.cat_cd = cat.cat_cd ' +
-              'ORDER BY ic.prdct_id'
+              'ORDER BY ic.result_no, ic.prdct_id'
   };
   connection.query(selectInventoryCountQuery)
     .then(function(result) {
@@ -1006,7 +1005,7 @@ router.get('/invntry_count_result2', function(req, res, next) {
 	          'LEFT OUTER JOIN category AS cat ' +
 	            'ON pm.cat_cd = cat.cat_cd ' +
 	          'GROUP BY ic.result_no, pm.cat_cd, cat.cat_nm, count_date1 ' +
-	          'ORDER BY pm.cat_cd'
+	          'ORDER BY count_date1, ic.result_no, pm.cat_cd'
   };
   connection.query(selectInventoryCountQuery)
     .then(function(result){
@@ -1149,19 +1148,44 @@ router.get('/sales_day', function(req, res, next) {
   next_month.add(1, 'M');
   last_month = moment(dt);
   last_month.add(-1, 'M');
-  console.log(next_month);
   var selectSalesQuery = {
-    text: 'SELECT TO_CHAR(cm.days, \'YYYY/MM/DD\') AS days ' +
-                ',CASE WHEN SUM(pm.price * sales.trade_num) IS NULL THEN 0 ELSE SUM(pm.price * sales.trade_num) END AS sales_day ' +
-            'FROM calendar_mst AS cm ' +
-            'LEFT OUTER JOIN sales ' +
-              'ON cm.days = sales.trade_date::date ' +  
-            'LEFT OUTER JOIN prdct_mst AS pm ' +
-              'ON sales.prdct_id = pm.prdct_id ' +
-            'WHERE cm.year = ' + year + ' ' +
-              'AND cm.month = ' + month + ' ' +
-            'GROUP BY days ' +
-            'ORDER BY days'
+    text: 'SELECT ca1.days1 ' +
+            	  ',ca1.sales_day1 ' +
+            	  ',ca2.days2 ' +
+            	  ',ca2.sales_day2 ' +
+            'FROM ' +
+            '( ' +
+            'SELECT TO_CHAR(cm.days, \'DD\') AS days1 ' +
+                  ',CASE WHEN SUM(pm.price * sales.trade_num) IS NULL THEN 0 ELSE SUM(pm.price * sales.trade_num) END AS sales_day1 ' + 
+            			',cm.day ' +
+              'FROM calendar_mst AS cm ' + 
+              'LEFT OUTER JOIN sales ' +
+                'ON cm.days = sales.trade_date::date ' +
+              'LEFT OUTER JOIN prdct_mst AS pm ' +
+                'ON sales.prdct_id = pm.prdct_id ' + 
+              'WHERE cm.year = ' + year +
+                'AND cm.month = ' + month +
+            		'AND cm.day < 17 ' +
+                'GROUP BY days ' +
+            ') AS ca1 ' +
+            'LEFT OUTER JOIN ' +
+            '( ' +
+            'SELECT TO_CHAR(cm.days, \'DD\') AS days2 ' +
+                  ',CASE WHEN SUM(pm.price * sales.trade_num) IS NULL THEN 0 ELSE SUM(pm.price * sales.trade_num) END AS sales_day2 ' +
+            			',cm.day ' +
+              'FROM calendar_mst AS cm ' +
+              'LEFT OUTER JOIN sales ' +
+                'ON cm.days = sales.trade_date::date ' +
+              'LEFT OUTER JOIN prdct_mst AS pm ' +
+                'ON sales.prdct_id = pm.prdct_id ' +
+              'WHERE cm.year = ' + year +
+                'AND cm.month = ' + month +
+            		'AND cm.day > 16 ' +
+            		'AND cm.day < 32 ' +
+              'GROUP BY days ' +
+            ') AS ca2 ' +
+            'ON ca1.day + 16 = ca2.day ' +
+            'ORDER BY ca1.days1 '
   };
   connection.query(selectSalesQuery)
     .then(function(result) {
@@ -1169,7 +1193,9 @@ router.get('/sales_day', function(req, res, next) {
         title: "日別売上",
         resultList: result,
         lastMonth: last_month.format('YYYY/MM'),
-        nextMonth: next_month.format('YYYY/MM')
+        nextMonth: next_month.format('YYYY/MM'),
+        year: year,
+        month: month
       });
       res.end();
     });
@@ -1188,7 +1214,7 @@ router.get('/sales_week', function(req, res, next) {
   last_month = moment(dt);
   last_month.add(-1, 'M');
   var selectSalesQuery = {
-    text: 'SELECT TO_CHAR(s1.days - s1.day_of_the_week, \'yyyy/mm/dd\') AS trade_week ' +
+    text: 'SELECT TO_CHAR(s1.days - s1.day_of_the_week, \'mm/dd\') AS trade_week ' +
 	              ',SUM(sale_data) AS sales_week ' +
 	          'FROM ' +
 	          '( ' +
@@ -1212,7 +1238,9 @@ router.get('/sales_week', function(req, res, next) {
         title: "週別売上",
         resultList: result,
         lastMonth: last_month.format('YYYY/MM'),
-        nextMonth: next_month.format('YYYY/MM')
+        nextMonth: next_month.format('YYYY/MM'),
+        year: year,
+        month: month
       });
       res.end();
     });
@@ -1247,7 +1275,8 @@ router.get('/sales_month', function(req, res, next) {
         title: "月別売上",
         resultList: result,
         lastYear: last_year.format('YYYY'),
-        nextYear: next_year.format('YYYY')
+        nextYear: next_year.format('YYYY'),
+        year: year
       });
       res.end();
     });
@@ -1292,7 +1321,7 @@ router.get('/sales_trend_prdct_daily', function(req, res, next) {
   var select_date = "";
   var moment_date = moment(dt);
   for(var i=1; i<=last_day; i++){
-    select_date += ',SUM(CASE s1.trade_date WHEN \'' + moment_date.format('YYYY-MM') + '-' + i  + '\' THEN s1.trade_num ELSE 0 END) AS "_' + month + '/' + i + '" ';
+    select_date += ',SUM(CASE s1.trade_date WHEN \'' + moment_date.format('YYYY-MM') + '-' + i  + '\' THEN s1.trade_num ELSE 0 END) AS "_' + i + '" ';
   }
   var selectSalesQuery = {
     text: 'SELECT s1.prdct_id AS prdct_id ' +
@@ -1328,7 +1357,9 @@ router.get('/sales_trend_prdct_daily', function(req, res, next) {
         lastMonth: last_month.format('YYYY-MM'),
         nextMonth: next_month.format('YYYY-MM'),
         salesList: result,
-        dateList: date_list
+        dateList: date_list,
+        year: year,
+        month: month
       });
       res.end();
     })
@@ -1403,7 +1434,9 @@ router.get('/sales_trend_prdct_weekly', function(req, res, next) {
         lastMonth: last_month.format('YYYY-MM'),
         nextMonth: next_month.format('YYYY-MM'),
         salesList: result,
-        dateList: date_list
+        dateList: date_list,
+        year: year,
+        month: month
       });
       res.end();
     })
@@ -1459,7 +1492,8 @@ router.get('/sales_trend_prdct_monthly', function(req, res, next) {
         lastYear: last_year.format('YYYY-MM'),
         nextYear: next_year.format('YYYY-MM'),
         dateList: date_list,
-        salesList: result
+        salesList: result,
+        year: year
       });
       res.end();
     })
@@ -1530,7 +1564,7 @@ router.get('/sales_trend_category_daily', function(req, res, next) {
   var select_date = "";
   var moment_date = moment(dt);
   for(var i=1; i<=last_day; i++){
-    select_date += ',SUM(CASE s1.trade_date WHEN \'' + moment_date.format('YYYY-MM') + '-' + i  + '\' THEN s1.trade_num ELSE 0 END) AS "_' + month + '/' + i + '" ';
+    select_date += ',SUM(CASE s1.trade_date WHEN \'' + moment_date.format('YYYY-MM') + '-' + i  + '\' THEN s1.trade_num ELSE 0 END) AS "_' + i + '" ';
   }
   var selectSalesQuery = {
     text: 'SELECT s1.cat_cd AS cat_cd ' +
@@ -1570,7 +1604,9 @@ router.get('/sales_trend_category_daily', function(req, res, next) {
         lastMonth: last_month.format('YYYY-MM'),
         nextMonth: next_month.format('YYYY-MM'),
         dateList: date_list,
-        salesList: result
+        salesList: result,
+        year: year,
+        month: month
       });
       res.end();
     })
@@ -1647,7 +1683,9 @@ router.get('/sales_trend_category_weekly', function(req, res, next) {
         lastMonth: last_month.format('YYYY-MM'),
         nextMonth: next_month.format('YYYY-MM'),
         salesList: result,
-        dateList: date_list
+        dateList: date_list,
+        year: year,
+        month: month
       });
       res.end();
     })
@@ -1703,7 +1741,8 @@ router.get('/sales_trend_category_monthly', function(req, res, next) {
         lastYear: last_year.format('YYYY-MM'),
         nextYear: next_year.format('YYYY-MM'),
         dateList: date_list,
-        salesList: result
+        salesList: result,
+        year: year
       });
       res.end();
     })
@@ -1716,18 +1755,11 @@ router.get('/sales_trend_category_monthly', function(req, res, next) {
 
 //localhost:3000/sales_trend_category_yearly
 router.get('/sales_trend_category_yearly', function(req, res, next) {
-  var dt = new Date(req.query.year);
-  if (isNaN(dt)) {
-    dt = new Date();
-  }
+  var dt = new Date();
   var year = dt.getFullYear();
-  next_10year = moment(dt);
-  next_10year.add(10, 'Y');
-  last_10year = moment(dt);
-  last_10year.add(-10, 'Y');
   var select_date = "";
-  for(var i=year - 10; i<=year; i++){
-    select_date += ',SUM(CASE DATE_TRUNC(\'YEAR\', s1.trade_date) WHEN \'' + i + '-01-01\' THEN s1.trade_num ELSE 0 END) AS "_' + i + '年" ';
+  for(var i=10; i>=0; i--){
+    select_date += ',SUM(CASE DATE_TRUNC(\'YEAR\', s1.trade_date) WHEN \'' + (year - i) + '-01-01\' THEN s1.trade_num ELSE 0 END) AS "_' + (year - i) + '年" ';
   }
   var selectSalesQuery = {
     text: 'SELECT s1.cat_cd AS cat_cd ' +  
@@ -1737,11 +1769,15 @@ router.get('/sales_trend_category_yearly', function(req, res, next) {
             '( ' +
               'SELECT sales.cat_cd ' + 
                     ',cat.cat_nm ' +
+                    ',sales.prdct_id ' +
+                    ',pm.prdct_nm ' +
                     ',sales.trade_num ' + 
                     ',trade_date ' +
                 'FROM sales ' +
+                'LEFT OUTER JOIN prdct_mst AS pm ' + 
+                  'ON sales.prdct_id = pm.prdct_id ' +
                 'LEFT OUTER JOIN category AS cat ' +
-                  'ON sales.cat_cd = cat.cat_cd ' +
+                  'ON sales.cat_cd = cat.cat_cd' +
             ') AS s1 ' +
             'GROUP BY s1.cat_cd,s1.cat_nm ' + 
             'ORDER BY s1.cat_cd'
@@ -1755,9 +1791,7 @@ router.get('/sales_trend_category_yearly', function(req, res, next) {
         }
       });
       res.render('sales_trend_category_yearly', {
-        title: "年別カテゴリ販売動向",
-        last10Year: last_10year.format('YYYY'),
-        next10Year: next_10year.format('YYYY'),
+        title: "年別商品販売動向",
         dateList: date_list,
         salesList: result
       });

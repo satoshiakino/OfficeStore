@@ -24,10 +24,9 @@
     </header>
     <div class="wrapper">
         <% catList.forEach(function(catItem){ %>
-        <form action="/cat_update" method="post" class="cat_update-form">
+        <form action="/cat_update" method="post" class="reg-form">
           <br>
           <span class="label">カテゴリコード：</span><input type="text" name="cat_cd" class="input" value=<%= catItem.cat_cd %> required><br>
-          <br>
           <span class="label">カテゴリ名</span><input type="text" name="cat_nm" class="input" value=<%= catItem.cat_nm %> required><br>
           <br>
           <br>

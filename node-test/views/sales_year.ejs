@@ -22,12 +22,17 @@
       </nav>
     </header>
     <div class="wrapper">
-      <div align="center">
-        <button><a href="/sales_day">日別売上</a></button>
-        <button><a href="/sales_week">週別売上</a></button>
-        <button><a href="/sales_month">月別売上</a></button>
-        <button><a href="/sales_year">年別売上</a></button>
-        <table rules="all">
+      <div id="switch">
+        <ul>
+          <li><a href="/sales_day">日別売上</a></li>
+          <li><a href="/sales_week">週別売上</a></li>
+          <li><a href="/sales_month">月別売上</a></li>
+          <li><a href="/sales_year">年別売上</a></li>
+        </ul>
+      </div>
+      <h2 class="date">年間売上</h2>
+      <div id="sales">
+        <table class="sales_col2" rules="all">
           <tr>
             <th>年</th>
             <th>売上</th>

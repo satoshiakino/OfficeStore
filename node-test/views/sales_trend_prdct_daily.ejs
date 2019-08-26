@@ -25,22 +25,27 @@
       </nav>
     </header>
     <div class="wrapper">
-      <div align="center">
-        <form action='/sales_trend_prdct_daily' method='get' class='sales_trend-form'>
-          <button type="submit" class="submit">
-              <input type="hidden" name="month" value=<%= lastMonth %>>前月
-          </button>
-        </form>
-        <form action='/sales_trend_prdct_daily' method='get' class='sales_trend-form'>
-          <button type="submit" class="submit">
-              <input type="hidden" name="month" value=<%= nextMonth %>>次月
-          </button>
-        </form>
-        <button><a href="/sales_trend_prdct_daily">日別商品販売動向</a></button>
-        <button><a href="/sales_trend_prdct_weekly">週別商品販売動向</a></button>
-        <button><a href="/sales_trend_prdct_monthly">月別商品販売動向</a></button>
-        <button><a href="/sales_trend_prdct_yearly">年別商品販売動向</a></button>
-      <table rules="all">
+      <div id="switch">
+        <ul>
+          <li><a href="/sales_trend_prdct_daily">日別商品販売動向</a></li>
+          <li><a href="/sales_trend_prdct_weekly">週別商品販売動向</a></li>
+          <li><a href="/sales_trend_prdct_monthly">月別商品販売動向</a></li>
+          <li><a href="/sales_trend_prdct_yearly">年別商品販売動向</a></li>
+        </ul>
+      </div>
+      <h2 class="date"><%= year %>年<%= month %>月</h2>
+      <form action='/sales_trend_prdct_daily' method='get' class='before'>
+        <button type="submit" class="submit">
+            <input type="hidden" name="month" value=<%= lastMonth %>>前月
+        </button>
+      </form>
+      <form action='/sales_trend_prdct_daily' method='get' class='after'>
+        <button type="submit" class="submit">
+            <input type="hidden" name="month" value=<%= nextMonth %>>次月
+        </button>
+      </form>
+      <div id="sales">
+      <table class="sales_trend" rules="all">
         <tr>
           <th>商品名</th>
           <% dateList.forEach(function(dt){ %>
