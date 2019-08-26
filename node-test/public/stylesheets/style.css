@@ -443,3 +443,6 @@ border: 1px #ccc solid;
   color: #fff;
   background-color: #9fb083;
 }
+#search {
+  flex: 0 0 300px;
+}
