@@ -43,7 +43,6 @@ header h1 {
   margin-left: 30px;
 }
 table {
-  width: 90%;
   text-align: center;
   border: 1px rgb(65, 65, 65) solid;
 }
@@ -134,8 +133,6 @@ ul.menu li a {
   background-size: cover;
   background-position: center;
 }
-.message__title {
-}
 .massage__date {
   font-size: 10px;
   color: #ccc;
@@ -212,6 +209,60 @@ border: 1px #ccc solid;
 .inventory-form {
   margin-left: 40px;
 }
+.id {
+  width: 50px;
+}
+.cat_id {
+  width: 80px;
+}
+.cat_cd {
+  width: 100px;
+}
+.cat_nm {
+  width: 200px;
+}
+.jan {
+  width: 150px;
+}
+.prdct_nm {
+  width: 300px;
+}
+.price {
+  width: 90px;
+}
+.cost {
+  width: 70px;
+}
+.cost_rate {
+  width: 70px;
+}
+.trade_num {
+  width: 70px;
+}
+.trade_date {
+  width: 180px;
+}
+.settle_date {
+  width: 100px;
+}
+.total_cost {
+  width: 100px;
+}
+.total_sales {
+  width: 100px;
+}
+.profit_loss {
+  width: 100px;
+}
+.total_calc_cash {
+  width: 100px;
+}
+.total_cash {
+  width: 100px;
+}
+.excess_deficiency {
+  width: 100px;
+}
 .before {
   display: inline-block;
   margin-left: 30px;
@@ -278,6 +329,15 @@ border: 1px #ccc solid;
 .sales_trend__date {
   width: 25px;
 }
+.sales_trend__date_week {
+  width: 150px;
+}
+.sales_trend__date_month {
+  width: 50px;
+}
+.sales_trend__date_year {
+  width: 70px;
+}
 .settlement-form {
   margin-left: 30px;
 }
@@ -309,6 +369,12 @@ border: 1px #ccc solid;
 }
 .settlement2-form {
   margin-left: 307px;
+}
+.count_date {
+  width: 150px;
+}
+.invntry_num, .count_num, .dif, .stock_value, .invntry_status {
+  width: 90px;
 }
 #global_navi {
   width: auto;
@@ -343,7 +409,7 @@ border: 1px #ccc solid;
 }
 #breadcrumb ol li:last-child::after { content: none; }
 #switch {
-  width: 60%;
+  width: 70%;
   margin-left: 30%;
 }
 #switch ul {
@@ -357,7 +423,7 @@ border: 1px #ccc solid;
 }
 #switch ul li a {
   display: inline-block;
-  width: 100px;
+  width: 150px;
   height: 40px;
   line-height: 40px;
   color: #fff;
@@ -365,4 +431,15 @@ border: 1px #ccc solid;
 }
 #sales {
   text-align: center;
+}
+#ca_pr_switch {
+  margin-left: 30px;
+}
+#ca_pr_switch a {
+  display: inline-block;
+  width: 150px;
+  height: 40px;
+  line-height: 40px;
+  color: #fff;
+  background-color: #9fb083;
 }

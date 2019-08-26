@@ -22,31 +22,31 @@
       </nav>
     </header>
     <div class="wrapper">
-      <div align="center">
-        <table rules="all">
+      <div id="sales">
+        <table class="sales_trend" rules="all">
             <tr>
-                <td>月初在庫高</td>
-                <td><%= inventory[0].stock_value %></td>
+                <td class="index_horizontal">月初在庫高</td>
+                <td class="invntry_status"><%= inventory[0].stock_value %></td>
             </tr>
             <tr>
-                <td>仕入高</td>
-                <td><%= parseInt(arrival[0].total_stock_value) %></td>
+                <td class="index_horizontal">仕入高</td>
+                <td class="invntry_status"><%= parseInt(arrival[0].total_stock_value) %></td>
             </tr>
             <tr>
-                <td>現在在庫高</td>
-                <td><%= inventory2[0].stock_value %></td>
+                <td class="index_horizontal">現在在庫高</td>
+                <td class="invntry_status"><%= inventory2[0].stock_value %></td>
             </tr>
         </table>
         <br>
-        <table rules="all">
+        <table class="sales_trend" rules="all">
           <tr>
             <th>商品名</th>
             <th>在庫数</th>
           </tr>
           <% invntryList.forEach(function(invntryItem){ %>
             <tr class="main-list__item">
-              <td class="invntry_status__prdct_nm"><%= invntryItem.prdct_nm %></td>
-              <td class="invntry_status__trade_num"><%= invntryItem.trade_num %></td>
+              <td class="prdct_nm"><%= invntryItem.prdct_nm %></td>
+              <td class="trade_num"><%= invntryItem.trade_num %></td>
             </tr>
           <% }); %>
         </table>
