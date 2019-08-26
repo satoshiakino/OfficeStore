@@ -36,14 +36,14 @@
           </tr>
           <% salesList.forEach(function(salesItem){ %>
             <tr class="main-list__item">
-              <td class="sales__sales_id"><%= salesItem.sales_id %></td>
-              <td class="sales__cat_cd"><%= salesItem.cat_cd %></td>
-              <td class="sales__cat_nm"><%= salesItem.cat_nm %></td>
-              <td class="sales__jan"><%= salesItem.jan %></td>
-              <td class="sales__prdct_nm"><%= salesItem.prdct_nm %></td>
-              <td class="sales__trade_num"><%= salesItem.trade_num %></td>
-              <td class="sales__price"><%= salesItem.price %></td>
-              <td class="sales__trade_date"><%= salesItem.trade_date %></td>
+              <td class="id"><%= salesItem.sales_id %></td>
+              <td class="cat_cd"><%= salesItem.cat_cd %></td>
+              <td class="cat_nm"><%= salesItem.cat_nm %></td>
+              <td class="jan"><%= salesItem.jan %></td>
+              <td class="prdct_nm"><%= salesItem.prdct_nm %></td>
+              <td class="trade_num"><%= salesItem.trade_num %></td>
+              <td class="price"><%= salesItem.price %></td>
+              <td class="trade_date"><%= salesItem.trade_date %></td>
             </tr>
           <% }); %>
         </table>

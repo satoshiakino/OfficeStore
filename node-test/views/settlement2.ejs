@@ -22,14 +22,34 @@
       </nav>
     </header>
     <div class="wrapper">
-        <li>
-            <p>仕入高：</p><span><%= total_cost %></span>
-            <p>売上高：</p><span><%= total_sales %></span>
-            <p>損益：</p><span><%= profit_loss %></span>
-            <p>計算上現金有高：</p><span><%= total_calc_cash %></span>
-            <p>現金過不足：</p><span><%= excess_deficiency %></span>
-            <p>現金有高：</p><span><%= total_cash %></span>
-        </li>
+      <div>
+        <table class="settlement2" rules="all">
+          <tr>
+            <td class="index_horizontal">仕入高</td>
+            <td class="value"><%= total_cost %></td>
+          </tr>
+          <tr>
+            <td class="index_horizontal">売上高</td>
+            <td class="value"><%= total_sales %></td>
+          </tr>
+          <tr>
+            <td class="index_horizontal">損益</td>
+            <td class="value"><%= profit_loss %></td>
+          </tr>
+          <tr>
+            <td class="index_horizontal">計算上現金有高</td>
+            <td class="value"><%= total_calc_cash %></td>
+          </tr>
+          <tr>
+            <td class="index_horizontal">現金過不足</td>
+            <td class="value"><%= excess_deficiency %></td>
+          </tr>
+          <tr>
+            <td class="index_horizontal">現金有高</td>
+            <td class="value"><%= total_cash %></td>
+          </tr>
+        </table>
+      </div>
         <form action="/settlement2" method="post" class="settlement2-form">
           <br>
           <button type="submit" class="submit">登録</button>

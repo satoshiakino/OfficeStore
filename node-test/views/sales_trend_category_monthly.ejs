@@ -22,22 +22,27 @@
       </nav>
     </header>
     <div class="wrapper">
-      <div align="center">
-          <form action='/sales_trend_category_monthly' method='get' class='sales_trend-form'>
-            <button type="submit" class="submit">
-                <input type="hidden" name="year" value=<%= lastYear %>>前年
-            </button>
-          </form>
-          <form action='/sales_trend_category_monthly' method='get' class='sales_trend-form'>
-            <button type="submit" class="submit">
-                <input type="hidden" name="year" value=<%= nextYear %>>次年
-            </button>
-          </form>
-          <button><a href="/sales_trend_category_daily">日別商品販売動向</a></button>
-          <button><a href="/sales_trend_category_weekly">週別商品販売動向</a></button>
-          <button><a href="/sales_trend_category_monthly">月別商品販売動向</a></button>
-          <button><a href="/sales_trend_category_yearly">年別商品販売動向</a></button>
-      <table rules="all">
+      <div id="switch">
+        <ul>
+          <li><a href="/sales_trend_category_daily">日別カテゴリ販売動向</a></li>
+          <li><a href="/sales_trend_category_weekly">週別カテゴリ販売動向</a></li>
+          <li><a href="/sales_trend_category_monthly">月別カテゴリ販売動向</a></li>
+          <li><a href="/sales_trend_category_yearly">年別カテゴリ販売動向</a></li>
+        </ul>
+      </div>
+      <h2 class="date"><%= year %>年</h2>
+      <form action='/sales_trend_category_monthly' method='get' class='before'>
+        <button type="submit" class="submit">
+            <input type="hidden" name="year" value=<%= lastYear %>>前年
+        </button>
+      </form>
+      <form action='/sales_trend_category_monthly' method='get' class='after'>
+        <button type="submit" class="submit">
+            <input type="hidden" name="year" value=<%= nextYear %>>次年
+        </button>
+      </form>
+      <div id="sales">
+      <table class="sales_trend" rules="all">
         <tr>
           <th>カテゴリ名</th>
           <% dateList.forEach(function(dt){ %>
@@ -46,13 +51,14 @@
         </tr>
         <% salesList.forEach(function(salesItem){ %>
           <tr class="main-list__item">
-            <td class="sales_trend__cat_nm"><%= salesItem.cat_nm %></td>
+            <td class="cat_nm"><%= salesItem.cat_nm %></td>
             <% dateList.forEach(function(dt){ %>
-              <td class="sales_trend__date"><%= salesItem[dt] %></td>
+              <td class="sales_trend__date_month"><%= salesItem[dt] %></td>
             <% }); %>
           </tr>
         <% }); %>
       </table>
+      </div>
       </div>
     </div>
   </body>
