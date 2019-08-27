@@ -443,6 +443,26 @@ border: 1px #ccc solid;
   color: #fff;
   background-color: #9fb083;
 }
+#main {
+  float: right;
+  margin-right: 30px;
+}
+#change-form {
+  margin-top: 10px;
+}
 #search {
-  flex: 0 0 300px;
+  float: left;
+  width: 200px;
+  height: 800px;
+  margin-left: 20px;
+  background-color: rgb(236, 236, 236);
+}
+#search table {
+  border: none;
+}
+#serch_input {
+  width: 170px;
+  height: 30px;
+  border: 1px rgb(65, 65, 65) solid;
+  background-color: #fff;
 }

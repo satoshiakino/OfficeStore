@@ -21,8 +21,7 @@
         </ul>
       </nav>
     </header>
-    <div class="wrapper">
-      <div align="center">
+      <div id="main">
       <table rules="all">
         <tr>
           <th>商品ID</th>
@@ -45,18 +44,24 @@
           </tr>
         <% }); %>
       </table>
+      <form action="/prdct_mst" method="post" id="change-form" name="delete_prdct">
+        <span class="label">id：</span>
+        <input type="number" name="id" class="input" required>
+        <button type="submit" class="submit" id="update_prdct_button">変更</button>
+        <br>
+      </form>
       </div>
-    </div>
-    <form action="/prdct_mst" method="post" class="reg-form" name="delete_prdct">
-      <span class="label">id：</span>
-      <input type="number" name="id" class="input" required>
-      <button type="submit" class="submit" id="update_prdct_button">変更</button>
-      <br>
-    </form>
     <div id="search">
-      <table rules="all">
+      <table>
         <tr>
-          <td>カテゴリ指定</td>
+          <td class="search_item">カテゴリを選択してください</td>
+        </tr>
+        <tr>
+          <td>
+            <form>
+              <input type="text" name="category" id="serch_input">
+            </form>
+          </td>
         </tr>
       </table>
     </div>
