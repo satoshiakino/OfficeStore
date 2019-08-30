@@ -104,3 +104,10 @@ FROM
 alter table calendar_mst add column "day" int
 
 update calendar_mst set "day" = EXTRACT(DAY FROM days)
+
+//Å•\¦Œ`®
+create table tax (
+  tax_cd boolean
+ ,tax_nm varchar(10))
+
+insert into tax(tax_cd, tax_nm) values(ture, '“àÅ'),(false,'ŠOÅ')

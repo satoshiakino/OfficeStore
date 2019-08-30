@@ -78,7 +78,7 @@ router.get('/prdct_mst', function(req, res, next) {
 });
 
 router.post('/prdct_mst', function(req, res, next){
-  var prdct_id = req.body.prdct_id;
+  var prdct_id = req.body.id;
   res.cookie('prdct_id', prdct_id, {maxAge:600000, httpOnly:false});
   res.redirect('/prdct_update');
   res.end();
@@ -310,10 +310,14 @@ router.get('/arrvl_reg', function(req, res, next) {
     text: 'SELECT cat_cd, cat_nm FROM category WHERE latest = true'
   };
   var selectPrdctQuery = {
-    text: 'SELECT prdct_id, prdct_nm, cat_cd FROM prdct_mst WHERE latest = true'
+    text: 'SELECT prdct_id, prdct_nm, cat_cd, cost FROM prdct_mst WHERE latest = true'
+  };
+  var selectTaxQuery = {
+    text: 'SELECT tax_cd, tax_nm FROM tax'
   };
   var category;
   var product;
+  var tax;
   Promise.all([
     connection.query(selectCategoryQuery)
       .then(function(cat){
@@ -332,13 +336,23 @@ router.get('/arrvl_reg', function(req, res, next) {
         console.log(err.error);
         res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
         res.end();
+      }),
+    connection.query(selectTaxQuery)
+      .then(function(tax_code){
+        tax = tax_code;
+      })
+      .catch(function(err){
+        console.log(err.error);
+        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+        res.end();
       })
   ])
   .then(function(){
     res.render('arrvl_reg', {
       title: "仕入登録",
       catList: category,
-      prdctList: product
+      prdctList: product,
+      taxList: tax
     });
     res.end();
   })
@@ -1054,7 +1068,7 @@ router.get('/invntry_status', function(req, res, next) {
   var selectPrdctInvntryQuery = {
     text: 'SELECT pm.prdct_id ' +
 	              ',pm.prdct_nm ' +
-	              ',CASE WHEN (arrvl.a_num - sls.s_num) IS NULL THEN 0 ELSE (arrvl.a_num - sls.s_num) END AS trade_num ' +
+	              ',CASE WHEN sls.s_num IS NULL THEN arrvl.a_num ELSE (arrvl.a_num - sls.s_num) END AS trade_num ' +
 	          'FROM prdct_mst AS pm ' +
 	          'LEFT OUTER JOIN ' +
 	          '( ' +
@@ -1074,7 +1088,7 @@ router.get('/invntry_status', function(req, res, next) {
 	          'ON pm.prdct_id = sls.prdct_id'
   };
   var selectInventoryQuery2 = {
-    text: 'SELECT SUM(pm.price * (CASE WHEN (arrvl.a_num - sls.s_num) IS NULL THEN 0 ELSE (arrvl.a_num - sls.s_num) END)) AS stock_value ' +
+    text: 'SELECT SUM(pm.price * (CASE WHEN sls.s_num IS NULL THEN arrvl.a_num ELSE (arrvl.a_num - sls.s_num) END)) AS stock_value ' +
             'FROM prdct_mst AS pm ' +
             'LEFT OUTER JOIN ' +
             '( ' +

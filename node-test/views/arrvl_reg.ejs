@@ -8,6 +8,15 @@
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
     <script>
+      function onChangeProduct(self) {
+        document.querySelectorAll("#cost>span").forEach(function(span) {
+          if(span.getAttribute("prdct_id") === self.value) {
+            span.style.display = 'block';
+          } else {
+            span.style.display = 'none';
+          }
+        })
+      }
       function onChangeCategory(self) {
         document.querySelectorAll("#prdct_id_select>option").forEach(function(option) {
           if(option.getAttribute("category") === self.value) {
@@ -32,7 +41,51 @@
         </ul>
       </nav>
     </header>
-    <div class="wrapper">
+      <span class="label">税表示</span>
+      <select name="tax" class="select" required>
+        <option value="">税表示形式を選択してください</option>
+        <% taxList.forEach(function(taxItem){ %>
+          <option value=<%= taxItem.tax_cd %>><%= taxItem.tax_nm %></option>
+        <% }); %>
+      </select>
+      <table>
+        <thead>
+          <tr>
+            <th>カテゴリ</th>
+            <th>商品名</th>
+            <th>個数</th>
+            <th>単価</th>
+            <th>金額</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <select name="cat_cd" class="select" required onchange="onChangeCategory(this)">
+                <option value="">カテゴリを選んでください</option>
+                <% catList.forEach(function(catItem){ %>
+                  <option value=<%= catItem.cat_cd %>><%= catItem.cat_nm %></option>
+                <% }); %>
+              </select>
+            </td>
+            <td>
+              <select id="prdct_id_select" name="prdct_id" class="select" required onchange="onChangeProduct(this)">
+                <option value="">商品を選んでください</option>
+                <% prdctList.forEach(function(prdctItem){ %>
+                  <option value=<%= prdctItem.prdct_id %> category=<%= prdctItem.cat_cd %> style="display:none;"><%= prdctItem.prdct_nm %></option>
+                <% }); %>
+              </select>
+            </td>
+            <td><input id="trade_num" type="number" name="trade_num" class="input" required></td>
+            <td id="cost">
+                <% prdctList.forEach(function(prdctItem){ %>
+                  <span prdct_id=<%= prdctItem.prdct_id %> style="display:none;"><%= prdctItem.cost %></span>
+                <% }); %>
+            </td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
       <form action="/arrvl_reg" method="post" class="reg-form">
         <span class="label">カテゴリ：</span>
         <select name="cat_cd" class="select" required onchange="onChangeCategory(this)">
