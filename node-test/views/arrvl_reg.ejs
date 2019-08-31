@@ -8,8 +8,21 @@
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
     <script>
+      function onChangeProduct(self) {
+        var tr = self.parentNode.parentNode;
+        var row_index = tr.sectionRowIndex;
+        document.querySelectorAll("#unit_price" + row_index + ">span").forEach(function(span) {
+          if(span.getAttribute("prdct_id") === self.value) {
+            span.style.display = 'block';
+          } else {
+            span.style.display = 'none';
+          }
+        })
+      }
       function onChangeCategory(self) {
-        document.querySelectorAll("#prdct_id_select>option").forEach(function(option) {
+        var tr = self.parentNode.parentNode;
+        var row_index = tr.sectionRowIndex;
+        document.querySelectorAll("#prdct_id_select" + row_index + ">option").forEach(function(option) {
           if(option.getAttribute("category") === self.value) {
             option.style.display = 'block';
           } else {
@@ -17,6 +30,68 @@
           }
         });
       };
+      function onChangeTradeNum(){
+        var trade_num = document.getElementsByName('trade_num');
+        var unit_price = document.getElementsByName('unit_price');
+        for(var i=0; i<trade_num.length; i++){
+          var cost = document.getElementsByName('cost');
+          if(trade_num[i].value) {
+            cost[i].innerText = parseInt(trade_num[i].value) * parseInt(unit_price[i].innerText);
+          };
+          if(isNaN(cost[i].innerText)){
+            cost[i].innerText = 0;
+          }
+        };
+        var cost = document.getElementsByClassName("arrvl_cost");
+        var total_cost = document.getElementById("arrvl_total_cost");
+        var amount = 0;
+        for(var i=0; i<cost.length; i++){
+          amount += parseInt(cost[i].innerText);
+        };
+        total_cost.innerHTML = amount;
+      };
+      function onClickAddRow() {
+        var table = document.getElementById("arrival");
+        var row = table.insertRow(-1);
+        var category = row.insertCell(-1);
+        var product = row.insertCell(-1);
+        var trade_num = row.insertCell(-1);
+        var unit_price = row.insertCell(-1);
+        var cost = row.insertCell(-1);
+        var delete_button = row.insertCell(-1);
+        var row_length = table.rows.length - 1;
+        category.innerHTML = '<select name="cat_cd" class="select" required onchange="onChangeCategory(this)"> ' +
+                               '<option value="">カテゴリを選んでください</option> ' +
+                               '<% catList.forEach(function(catItem){ %> ' +
+                                 '<option value=<%= catItem.cat_cd %>><%= catItem.cat_nm %></option> ' +
+                               '<% }); %> ' +
+                             '</select>';
+        product.innerHTML = '<select id="prdct_id_select'+ row_length +'" name="prdct_id" class="select" required onchange="onChangeProduct(this)"> ' +
+                              '<option value="">商品を選んでください</option> ' +
+                              '<% prdctList.forEach(function(prdctItem){ %> ' +
+                                '<option value=<%= prdctItem.prdct_id %> category=<%= prdctItem.cat_cd %> style="display:none;"><%= prdctItem.prdct_nm %></option> ' +
+                              '<% }); %> ' +
+                            '</select>';
+        trade_num.innerHTML = '<input id="trade_num'+ row_length +'" type="number" name="trade_num" class="input" value=0 onchange="onChangeTradeNum()" required>';
+        unit_price.innerHTML = '<div id="unit_price'+ row_length +'" name="unit_price" class="unit_price"> ' +
+                                 '<% prdctList.forEach(function(prdctItem){ %> ' +
+                                   '<span prdct_id=<%= prdctItem.prdct_id %> style="display:none;"><%= prdctItem.cost %></span> ' +
+                                 '<% }); %> ' +
+                               '</div>';
+        cost.innerHTML = '<div class="arrvl_cost" name="cost"></div>';
+        delete_button.innerHTML = '<button class="submit" onclick="deleteRow(this)">削除</button>'
+      }
+      function deleteRow(obj) {
+        tr = obj.parentNode.parentNode;
+        tr.parentNode.deleteRow(tr.sectionRowIndex);
+        var cost = document.getElementsByClassName("arrvl_cost");
+        var total_cost = document.getElementById("arrvl_total_cost");
+        var amount = 0;
+        for(var i=0; i<cost.length; i++){
+          amount += parseInt(cost[i].innerText);
+        };
+        total_cost.innerHTML = amount;
+      }
     </script>
   </head>
   <body>
@@ -32,25 +107,35 @@
         </ul>
       </nav>
     </header>
-    <div class="wrapper">
-      <form action="/arrvl_reg" method="post" class="reg-form">
-        <span class="label">カテゴリ：</span>
-        <select name="cat_cd" class="select" required onchange="onChangeCategory(this)">
-          <option value="">カテゴリを選んでください</option>
-          <% catList.forEach(function(catItem){ %>
-            <option value=<%= catItem.cat_cd %>><%= catItem.cat_nm %></option>
-          <% }); %>
-        </select>
+    <form action="/arrvl_reg" method="get" class="arrvl_reg0-form">
+      <span class="label">税表示</span>
+      <select name="tax_cd" class="select" required>
+        <% taxList.forEach(function(taxItem){ %>
+          <option value=<%= taxItem.tax_cd %>><%= taxItem.tax_nm %></option>
+        <% }); %>
+      </select>
+      <button type="submit" class="submit">切替</button>
+      <span id="arrvl_total" class="label">合計金額</span><span id="arrvl_total_cost">0</span>
+    </form>
+      <form action="/arrvl_reg" method="post" class="arrvl_reg-form">
+        <table id="arrival">
+          <thead>
+            <tr>
+              <th id="index_category">カテゴリ</th>
+              <th id="index_product">商品名</th>
+              <th id="index_trade_num">個数</th>
+              <th id="index_unit_price">単価</th>
+              <th id="index_cost">金額</th>
+              <th id="index_button"></th>
+            </tr>
+          </thead>
+        </table>
+        <button class="submit" onclick="onClickAddRow()">追加</button>
         <br>
-        <span class="label">商品名：</span>
-        <select id="prdct_id_select" name="prdct_id" class="select" required>
-          <option value="">商品を選んでください</option>
-          <% prdctList.forEach(function(prdctItem){ %>
-            <option value=<%= prdctItem.prdct_id %> category=<%= prdctItem.cat_cd %> style="display:none;"><%= prdctItem.prdct_nm %></option>
-          <% }); %>
-        </select>
         <br>
-        <span class="label">個数</span><input type="text" name="trade_num" class="input" required><br>
+        <br>
+        <br>
+        <br>
         <br>
         <br>
         <button type="submit" class="submit">登録</button>
