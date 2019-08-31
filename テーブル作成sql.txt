@@ -9,6 +9,7 @@ create table prdct_mst
   cost_rate DOUBLE PRECISION,
   latest boolean default true
   )
+//商品マスタ追加　alter table prdct_mst add column tax_cd boolean
 
 //仕入テーブル
 CREATE TABLE arrival
@@ -110,4 +111,4 @@ create table tax (
   tax_cd boolean
  ,tax_nm varchar(10))
 
-insert into tax(tax_cd, tax_nm) values(ture, '内税'),(false,'外税')
+insert into tax(tax_cd, tax_nm) values(true, '内税'),(false,'外税')
