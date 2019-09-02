@@ -70,6 +70,16 @@ table.menu tr th a {
   width: 100%;
   height: 100%;
 }
+table.menu tr th form {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+table.menu tr th form button {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
 input.id {
   height: 30px;
 }
@@ -376,6 +386,27 @@ border: 1px #ccc solid;
 .invntry_num, .count_num, .dif, .stock_value, .invntry_status {
   width: 90px;
 }
+.unit_price {
+  height: 50px;
+  line-height: 50px;
+  text-align: right;
+  border: 1px #ccc solid;
+  background-color: #fff;
+}
+.arrvl_cost {
+  height: 50px;
+  line-height: 50px;
+  text-align: right;
+  border: 1px #ccc solid;
+  background-color: #fff;
+}
+.arrvl_reg0-form {
+  display: inline-block;
+  margin-left: 40px;
+}
+.arrvl_reg-form button {
+  margin-left: 40px;
+}
 #global_navi {
   width: auto;
   clear: both;
@@ -442,4 +473,35 @@ border: 1px #ccc solid;
   line-height: 40px;
   color: #fff;
   background-color: #9fb083;
+}
+#index_category {
+  width: 200px;
+}
+#index_product {
+  width: 200px;
+}
+#index_trade_num {
+  width: 200px;
+}
+#index_unit_price {
+  width: 100px;
+}
+#index_cost {
+  width: 100px;
+}
+#index_button {
+  width: 100px;
+}
+#arrival {
+  margin-left: 40px;
+}
+#arrvl_total_cost {
+  width: 200px;
+  text-align: right;
+  line-height: 50px;
+  border: 1px #ccc solid;
+  background-color: #fff;
+}
+#arrvl_total {
+  margin-left: 190px;
 }
