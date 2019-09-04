@@ -972,31 +972,31 @@ router.get('/invntry_count_result2', function(req, res, next) {
 //localhost:3000/invntry_status
 router.get('/invntry_status', function(req, res, next) {
   var selectInventoryQuery = {
-    text: 'SELECT SUM(pm.price * (CASE WHEN (arrvl.a_num - sls.s_num) IS NULL THEN 0 ELSE (arrvl.a_num - sls.s_num) END)) AS stock_value ' +
-            'FROM prdct_mst AS pm ' +
-            'LEFT OUTER JOIN ' +
+    text: 'SELECT SUM(pm.price * (CASE WHEN sls.s_num IS NULL THEN arrvl.a_num ELSE (arrvl.a_num - sls.s_num) END)) AS stock_value ' +
+            'FROM ' +
             '( ' +
-              'SELECT prdct_id ' +
-                    ',SUM(CASE WHEN trade_num IS NULL THEN 0 ELSE trade_num END) AS a_num ' +
+              'SELECT prdct_id ' + 
+                    ',SUM(CASE WHEN trade_num IS NULL THEN 0 ELSE trade_num END) AS a_num ' + 
                 'FROM arrival ' +
-                'WHERE EXTRACT(YEAR FROM arrival.trade_date) = EXTRACT(YEAR FROM now()) ' +
-                  'AND EXTRACT(MONTH FROM arrival.trade_date) = EXTRACT(MONTH FROM now()) - 1 ' +
-                'GROUP BY prdct_id ' +
+                'WHERE EXTRACT(YEAR FROM arrival.trade_date) = EXTRACT(YEAR FROM now()) ' + 
+                  'AND EXTRACT(MONTH FROM arrival.trade_date) = EXTRACT(MONTH FROM now()) - 1 ' + 
+                'GROUP BY prdct_id ' + 
             ') AS arrvl ' +
-            'ON pm.prdct_id = arrvl.prdct_id ' +
-            'LEFT OUTER JOIN ' +
+            'LEFT OUTER JOIN ' + 
             '( ' +
               'SELECT prdct_id ' +
-                    ',SUM(CASE WHEN trade_num IS NULL THEN 0 ELSE trade_num END) AS s_num ' +
+                    ',SUM(CASE WHEN trade_num IS NULL THEN 0 ELSE trade_num END) AS s_num ' + 
                 'FROM sales ' +
                 'WHERE EXTRACT(YEAR FROM sales.trade_date) = EXTRACT(YEAR FROM now()) ' +
-                  'AND EXTRACT(MONTH FROM sales.trade_date) = EXTRACT(MONTH FROM now()) - 1 ' +
+                  'AND EXTRACT(MONTH FROM sales.trade_date) = EXTRACT(MONTH FROM now()) - 1 ' + 
                 'GROUP BY prdct_id ' +
             ') AS sls ' +
-            'ON pm.prdct_id = sls.prdct_id'
+            'ON arrvl.prdct_id = sls.prdct_id ' +
+            'LEFT OUTER JOIN prdct_mst AS pm ' +
+            'ON pm.prdct_id = arrvl.prdct_id'
   };
   var selectArrivalQuery = {
-    text: 'SELECT SUM(pm.cost * arrival.trade_num) AS total_stock_value ' +
+    text: 'SELECT CASE WHEN SUM(pm.cost * arrival.trade_num) IS NULL THEN 0 ELSE SUM(pm.cost * arrival.trade_num) END AS total_stock_value ' +
             'FROM arrival ' +
             'LEFT OUTER JOIN prdct_mst AS pm ' +
             'ON arrival.prdct_id = pm.prdct_id ' +
