@@ -120,14 +120,16 @@ router.get('/prdct_reg', function(req, res, next) {
 });
 
 router.post('/prdct_reg', function(req, res, next) {
-  var tax_cd = req.body.tax_cd;
-  console.log(tax_cd);
+  var tax_cd = (req.body.tax_cd == "true")?true:false;
   var jan = req.body.jan;
   var cat_cd = req.body.cat_cd;
   var prdct_nm = req.body.prdct_nm;
   var cost = req.body.cost;
+  if(tax_cd==false && cat_cd!="00"){
+    cost = Math.floor(cost * 1.08);
+  };
   var price = req.body.price;
-  var cost_rate = cost / price;
+  var cost_rate = (price == 0) ? 0 : (cost / price);
   var registerQuery = {
     text: 'INSERT INTO prdct_mst (tax_cd, cat_cd, jan, prdct_nm, cost, price, cost_rate) VALUES($1, $2, $3, $4, $5, $6, $7)',
     values: [tax_cd, cat_cd, jan, prdct_nm, cost, price, cost_rate],
@@ -497,7 +499,7 @@ router.get('/sales_reg', function(req, res, next) {
     text: 'SELECT cat_cd, cat_nm FROM category WHERE latest = true'
   };
   var selectPrdctQuery = {
-    text: 'SELECT prdct_id, prdct_nm FROM prdct_mst WHERE latest = true'
+    text: 'SELECT prdct_id, prdct_nm, cat_cd FROM prdct_mst WHERE latest = true'
   };
   var category;
   var product;
@@ -617,7 +619,6 @@ router.get('/settlement', function(req, res, next) {
 
 router.post('/settlement', function(req, res, next) {
   var totalCash = req.body.ten_thousand * 10000 + req.body.five_thousand * 5000 + req.body.one_thousand * 1000 + req.body.five_hundred * 500 + req.body.one_hundred * 100 + req.body.fifty * 50 + req.body.ten * 10 + req.body.five * 5 + req.body.one * 1;
-  //req.session.total_cash = totalCash;
   var total_cash = totalCash;
   res.cookie('total_cash', total_cash);
   res.redirect('/settlement2');
@@ -668,15 +669,9 @@ router.get('/settlement2', function(req, res, next) {
     res.cookie('profit_loss', total_sales - total_cost);
     res.cookie('total_calc_cash', last_cash - total_cost + total_sales);
     res.cookie('excess_deficiency', parseInt(req.cookies.total_cash, 10) - (last_cash - total_cost + total_sales));
-    /*req.session.total_cost = total_cost;
-    req.session.total_sales = total_sales;
-    req.session.profit_loss = total_sales - total_cost;
-    req.session.total_calc_cash = last_cash - total_cost + total_sales;
-    req.session.excess_deficiency = (last_cash - total_cost + total_sales) - req.session.total_cash;*/
     res.render('settlement2', {
       title: "settlement2",
       total_cash: parseInt(req.cookies.total_cash, 10),
-      //total_cash: req.session.total_cash,
       total_cost: total_cost,
       total_sales: total_sales,
       profit_loss: total_sales - total_cost,
@@ -699,12 +694,6 @@ router.post('/settlement2', function(req, res, next) {
   var total_calc_cash = parseInt(req.cookies.total_calc_cash, 10);
   var excess_deficiency = parseInt(req.cookies.excess_deficiency, 10);
   var total_cash = parseInt(req.cookies.total_cash, 10);
-  /*var total_cost = req.session.total_cost;
-  var total_sales = req.session.total_sales;
-  var profit_loss = req.session.profit_loss;
-  var total_calc_cash = req.session.total_calc_cash;
-  var excess_deficiency = req.session.excess_deficiency;
-  var total_cash = req.session.total_cash;*/
   var registerSettlementQuery = {
     text: "INSERT INTO settlement ( " +
           "total_cost, " +
@@ -869,11 +858,9 @@ router.post('/invntry_count', function(req, res, next) {
   };
   connection.query(selectResultNoQuery)
     .then(function(result_no) {
-      console.log("1やで");
       var result = (result_no[0].max === null)?0:result_no[0].max;
       var p = Promise.resolve();
       prdct_id.forEach(function(prdct, i){
-        console.log("2-:" + i);
         var insertInventoryCountQuery = {
           text: 'INSERT INTO inventory_count (prdct_id, invntry_num, count_num, count_date, result_no) ' +
                 'SELECT pm.prdct_id ' +   
@@ -913,117 +900,16 @@ router.post('/invntry_count', function(req, res, next) {
       });
       return p;
     }).then(function() {
-      console.log("3や");
       return connection.query(insertArrivalQuery);
     }).then(function() {
-      console.log("4!");
       return connection.query(updateArrivalQuery);
     }).then(function() {
-      console.log("5であってほしい");
       return connection.query(updateSalesQuery);
     }).then(function() {
-      console.log("終わりやで");
       res.redirect('/invntry_count');
       res.end();
     });
-  /*connection.query(insertInventoryCountQuery).then(function(){
-    console.log("1です");
-    return connection.query(selectCountIdQuery);
-  }).then(function(results){
-    console.log("2です");
-    console.log(results);
-    let invntry_id = results[0].invntry_id;
-    let p = Promise.resolve();
-    count_num.forEach(function(count, i) {
-      console.log("3-1:" + count);
-      var updateInventoryCountQuery = {
-        text: 'UPDATE inventory_count SET count_num = $1 WHERE invntry_id = $2',
-        values: [count, invntry_id + i]
-      };
-      p = p.then(function() {
-        console.log("3-2:" + count);
-        return connection.query(updateInventoryCountQuery);
-      });
-    });
-    return p;
-  }).then(function() {
-      console.log("4");
-      return true;
-  }).then(function(){
-    console.log("5");
-    res.redirect('/invntry_count');
-    res.end();
-  });*/
 });
-  /*  console.log(count_id[0].invntry_id);
-    var invntry_id = count_id[0].invntry_id;
-    for(var i=0; i<=count_num.length; i++){
-      var count = count_num[i];
-      var updateInventoryCountQuery = {
-        text: 'UPDATE inventory_count SET count_num = $1 WHERE invntry_id = $2',
-        values: [count, invntry_id]
-      };
-      connection.query(updateInventoryCountQuery)
-        .then(function(){});
-      invntry_id++;
-    }
-    connection.query(insertArrivalQuery)
-      .then(function(){
-        console.log("3だといいな");
-        connection.query(updateArrivalQuery)
-          .then(function(){
-            console.log("4もしくは5");
-          });
-        connection.query(updateSalesQuery)
-          .then(function(){
-            console.log("4もしくは5");
-          });
-      });
-  });
-});
-res.redirect('/invntry_count');
-res.end();
-});*/
-
-  /*connection.query(insertInventoryCountQuery)
-    .then(function(){
-      console.log("1です");
-      connection.query(selectCountIdQuery)
-        .then(function(count_id){
-          console.log("2です");
-          console.log(count_id[0].invntry_id);
-          var invntry_id = count_id[0].invntry_id;
-          for(var i=0; i<=count_num.length; i++){
-            var count = count_num[i];
-            var updateInventoryCountQuery = {
-              text: 'UPDATE inventory_count SET count_num = $1 WHERE invntry_id = $2',
-              values: [count, invntry_id]
-            };
-            connection.query(updateInventoryCountQuery)
-              .then(function(){});
-            invntry_id++;
-          }
-          connection.query(insertArrivalQuery)
-            .then(function(){
-              console.log("3だといいな");
-              connection.query(updateArrivalQuery)
-                .then(function(){
-                  console.log("4もしくは5");
-                });
-              connection.query(updateSalesQuery)
-                .then(function(){
-                  console.log("4もしくは5");
-                });
-            });
-        });
-    });
-
-  res.redirect('/invntry_count');
-  res.end();
-});*/
-
-/*var cat_id = req.body.cat_id;
-  res.cookie('cat_id', cat_id, {maxAge:600000, httpOnly:false});*/
 
 //localhost:3000/invntry_count_result
 router.get('/invntry_count_result', function(req, res, next) {
