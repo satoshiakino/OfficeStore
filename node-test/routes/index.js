@@ -59,7 +59,7 @@ router.get('/prdct_mst', function(req, res, next) {
                 ",prdct.jan" +
                 ",prdct.prdct_nm" +
                 ",prdct.price" +
-                ",prdct.cost_rate " +
+                ",prdct.cost " +
                 ",prdct.latest " +
           "FROM prdct_mst AS prdct " +
           "LEFT OUTER JOIN category AS cat " + 
@@ -75,7 +75,7 @@ router.get('/prdct_mst', function(req, res, next) {
                 ",prdct.jan" +
                 ",prdct.prdct_nm" +
                 ",prdct.price" +
-                ",prdct.cost_rate " +
+                ",prdct.cost " +
                 ",prdct.latest " +
           "FROM prdct_mst AS prdct " +
           "LEFT OUTER JOIN category AS cat " + 
@@ -516,6 +516,13 @@ router.post('/arrvl_reg', function(req, res, next) {
 
 //localhost:3000/arrvl_hstry
 router.get('/arrvl_hstry', function(req, res, next) {
+  var cat_cd = req.query.cat_cd;
+  var tax_cd = req.query.tax_cd;
+  var min_cost = req.query.min_cost;
+  var max_cost = req.query.max_cost;
+  if(!cat_cd){ cat_cd = "0"; };
+  if(!min_cost){ min_cost = 0; };
+  if(!max_cost){ max_cost = 1000; };
   getArrivalQuery = {
     text: "SELECT  arrvl.arrvl_id" +    
                  ",arrvl.cat_cd" +   
@@ -524,27 +531,109 @@ router.get('/arrvl_hstry', function(req, res, next) {
                  ",pm.prdct_nm" +   
                  ",pm.cost" +
                  ",arrvl.trade_num" +  
-                 ",TO_CHAR(arrvl.trade_date, \'yyyy/mm/dd hh24:mi:ss\') AS trade_date " + 
+                 ",TO_CHAR(arrvl.trade_date, \'yyyy/mm/dd\') AS trade_date " + 
           "FROM arrival AS arrvl " +  
           "LEFT OUTER JOIN prdct_mst AS pm " +  
           "ON arrvl.prdct_id = pm.prdct_id " +  
           "LEFT OUTER JOIN category AS cat " +  
-          "ON arrvl.cat_cd = cat.cat_cd " +  
-          "ORDER BY arrvl.trade_date"
+          "ON arrvl.cat_cd = cat.cat_cd " + 
+          "WHERE CASE WHEN $1 = '0' THEN 1 = 1 ELSE arrvl.cat_cd = $1 END " +
+            "AND pm.cost >= $2 " +
+            "AND pm.cost < $3 " + 
+          "ORDER BY arrvl.trade_date",
+    values: [cat_cd, min_cost, max_cost]
   };
-  connection.query(getArrivalQuery)
-    .then(function(arrival){
-      res.render('arrvl_hstry', {
-        title: "arrvl_hstry",
-        arrvlList: arrival
+  getArrivalTaxQuery = {
+    text: "SELECT  arrvl.arrvl_id" +    
+                 ",arrvl.cat_cd" +   
+                 ",cat.cat_nm" +   
+                 ",pm.jan" + 
+                 ",pm.prdct_nm" +   
+                 ",pm.cost" +
+                 ",pm.tax_cd " +
+                 ",arrvl.trade_num" +  
+                 ",TO_CHAR(arrvl.trade_date, \'yyyy/mm/dd\') AS trade_date " + 
+          "FROM arrival AS arrvl " +  
+          "LEFT OUTER JOIN prdct_mst AS pm " +  
+          "ON arrvl.prdct_id = pm.prdct_id " +  
+          "LEFT OUTER JOIN category AS cat " +  
+          "ON arrvl.cat_cd = cat.cat_cd " + 
+          "WHERE CASE WHEN $1 = '0' THEN 1 = 1 ELSE arrvl.cat_cd = $1 END " +
+            "AND pm.cost >= $2 " +
+            "AND pm.cost < $3 " +
+            "AND pm.tax_cd = $4 " + 
+          "ORDER BY arrvl.trade_date",
+    values: [cat_cd, min_cost, max_cost, tax_cd]
+  }; 
+    var selectCategoryQuery = {
+      text: 'SELECT cat_cd, cat_nm FROM category WHERE latest = true'
+    };
+    var selectTaxQuery = {
+      text: 'SELECT tax_cd, tax_nm FROM tax'
+    }
+    var arrival;
+    var category;
+    var tax;
+    if(!tax_cd || tax_cd === ""){
+      Promise.all([
+        connection.query(getArrivalQuery)
+          .then(function(arrvl){
+            arrival = arrvl;
+          }),
+        connection.query(selectCategoryQuery)
+          .then(function(cat){
+            category = cat;
+          }),
+        connection.query(selectTaxQuery)
+          .then(function(tax_cd){
+            tax = tax_cd;
+          })
+      ])
+      .then(function(){
+        res.render('arrvl_hstry', {
+          title: "arrvl_hstry",
+          arrvlList: arrival,
+          catList: category,
+          taxList: tax
+        });
+        res.end();
+      })
+      .catch(function(err){
+        console.log(err.error);
+        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+        res.end();
       });
-      res.end();
-    })
-    .catch(function(err){
-      console.log(err.error);
-      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-      res.end();
-    });
+    } else {
+      Promise.all([
+        connection.query(getArrivalTaxQuery)
+          .then(function(arrvl){
+            arrival = arrvl;
+          }),
+        connection.query(selectCategoryQuery)
+          .then(function(cat){
+            category = cat;
+          }),
+        connection.query(selectTaxQuery)
+          .then(function(tax_cd){
+            tax = tax_cd;
+          })
+      ])
+      .then(function(){
+        res.render('arrvl_hstry', {
+          title: "arrvl_hstry",
+          arrvlList: arrival,
+          catList: category,
+          taxList: tax
+        });
+        res.end();
+      })
+      .catch(function(err){
+        console.log(err.error);
+        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+        res.end();
+      });
+    };
+
 });
 
 router.delete('/arrvl_hstry', function(req, res, next) {
