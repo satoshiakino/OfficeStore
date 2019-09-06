@@ -21,8 +21,40 @@
         </ul>
       </nav>
     </header>
-    <div class="wrapper">
-      <div align="center">
+      <div id="search">
+        <form action="/prdct_mst" method="get" name="search_prdct">
+          <table>
+            <tr>
+              <td class="search_item">カテゴリ:</td>
+            </tr>
+            <tr>
+              <td>
+                <select name="cat_cd" class="search_select">
+                  <option value="">カテゴリを選んでください</option>
+                  <% catList.forEach(function(catItem){ %>
+                    <option value=<%= catItem.cat_cd %>><%= catItem.cat_nm %></option>
+                  <% }); %>
+                </select>
+              </td>
+            </tr>
+            <tr>
+                <td class="search_item">税表示:</td>
+              </tr>
+              <tr>
+                <td>
+                  <select name="tax_cd" class="search_select">
+                    <option value="">税表示形式を選んでください</option>
+                    <% taxList.forEach(function(taxItem){ %>
+                      <option value=<%= taxItem.tax_cd %>><%= taxItem.tax_nm %></option>
+                    <% }); %>
+                  </select>
+                </td>
+              </tr>
+          </table>
+          <button type="submit" class="submit">検索</button>
+        </form>
+      </div>
+      <div id="main">
       <table rules="all">
         <tr>
           <th>商品ID</th>
@@ -45,13 +77,12 @@
           </tr>
         <% }); %>
       </table>
+      <form action="/prdct_mst" method="post" id="change-form" name="delete_prdct">
+        <span class="label">id：</span>
+        <input type="number" name="id" class="input" required>
+        <button type="submit" class="submit" id="update_prdct_button">変更</button>
+        <br>
+      </form>
       </div>
-    </div>
-    <form action="/prdct_mst" method="post" class="reg-form" name="delete_prdct">
-      <span class="label">id：</span>
-      <input type="number" name="id" class="input" required>
-      <button type="submit" class="submit" id="update_prdct_button">変更</button>
-      <br>
-    </form>
   </body>
 </html>

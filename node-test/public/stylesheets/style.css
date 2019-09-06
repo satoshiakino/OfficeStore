@@ -229,7 +229,7 @@ border: 1px #ccc solid;
   width: 100px;
 }
 .cat_nm {
-  width: 200px;
+  width: 150px;
 }
 .jan {
   width: 150px;
@@ -386,6 +386,16 @@ border: 1px #ccc solid;
 .invntry_num, .count_num, .dif, .stock_value, .invntry_status {
   width: 90px;
 }
+<<<<<<< HEAD
+.search_select {
+  width: 180px;
+  height: 40px;
+  margin-left: -4px;
+  border: 1px #ccc solid;
+}
+.search_item {
+  text-align: left;
+=======
 .unit_price {
   height: 50px;
   line-height: 50px;
@@ -406,6 +416,7 @@ border: 1px #ccc solid;
 }
 .arrvl_reg-form button {
   margin-left: 40px;
+>>>>>>> develop
 }
 #global_navi {
   width: auto;
@@ -474,6 +485,31 @@ border: 1px #ccc solid;
   color: #fff;
   background-color: #9fb083;
 }
+<<<<<<< HEAD
+#main {
+  width: 980px;
+  float: left;
+  margin-left: 30px;
+}
+#change-form {
+  margin-top: 10px;
+}
+#search {
+  float: left;
+  width: 180px;
+  height: 400px;
+  margin-left: 40px;
+  background-color: rgb(236, 236, 236);
+}
+#search table {
+  border: none;
+}
+#serch_input {
+  width: 170px;
+  height: 30px;
+  border: 1px rgb(65, 65, 65) solid;
+  background-color: #fff;
+=======
 #index_category {
   width: 200px;
 }
@@ -504,4 +540,5 @@ border: 1px #ccc solid;
 }
 #arrvl_total {
   margin-left: 190px;
+>>>>>>> develop
 }

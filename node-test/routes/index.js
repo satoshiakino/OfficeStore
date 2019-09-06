@@ -48,6 +48,10 @@ router.get('/mst_menu', function(req, res, next) {
 
 //localhost:3000/prdct_mst
 router.get('/prdct_mst', function(req, res, next) {
+  var cat_cd = req.query.cat_cd;
+  if(!cat_cd){ cat_cd = "0"; };
+  var tax_cd = req.query.tax_cd;
+  console.log(cat_cd);
   var getPrdctMstQuery = {
     text: "SELECT prdct.prdct_id" + 
                 ",prdct.cat_cd" +
@@ -60,13 +64,57 @@ router.get('/prdct_mst', function(req, res, next) {
           "FROM prdct_mst AS prdct " +
           "LEFT OUTER JOIN category AS cat " + 
             "ON prdct.cat_cd = cat.cat_cd " +
-          "WHERE prdct.latest = true"
+          "WHERE prdct.latest = true " +
+            "AND CASE WHEN $1 = '0' THEN 1 = 1 ELSE prdct.cat_cd = $1 END ",
+    values: [cat_cd]
   };
-  connection.query(getPrdctMstQuery)
-    .then(function(prdctMst){
+  var getPrdctMstTaxQuery = {
+    text: "SELECT prdct.prdct_id" + 
+                ",prdct.cat_cd" +
+                ",cat.cat_nm" +
+                ",prdct.jan" +
+                ",prdct.prdct_nm" +
+                ",prdct.price" +
+                ",prdct.cost_rate " +
+                ",prdct.latest " +
+          "FROM prdct_mst AS prdct " +
+          "LEFT OUTER JOIN category AS cat " + 
+            "ON prdct.cat_cd = cat.cat_cd " +
+          "WHERE prdct.latest = true " +
+            "AND CASE WHEN $1 = '0' THEN 1 = 1 ELSE prdct.cat_cd = $1 END " +
+            "AND prdct.tax_cd = $2 ",
+    values: [cat_cd, tax_cd]
+  };
+  var selectCategoryQuery = {
+    text: 'SELECT cat_cd, cat_nm FROM category WHERE latest = true'
+  };
+  var selectTaxQuery = {
+    text: 'SELECT tax_cd, tax_nm FROM tax'
+  }
+  var prdct_mst;
+  var category;
+  var tax;
+  if(!tax_cd || tax_cd === ""){
+    Promise.all([
+      connection.query(getPrdctMstQuery)
+        .then(function(prdctMst){
+          prdct_mst = prdctMst;
+        }),
+      connection.query(selectCategoryQuery)
+        .then(function(cat){
+          category = cat;
+        }),
+      connection.query(selectTaxQuery)
+        .then(function(tax_cd){
+          tax = tax_cd;
+        })
+    ])
+    .then(function(){
       res.render('prdct_mst', {
         title: '商品マスタ',
-        prdctList: prdctMst
+        prdctList: prdct_mst,
+        catList: category,
+        taxList: tax
       });
       res.end();
     })
@@ -75,6 +123,36 @@ router.get('/prdct_mst', function(req, res, next) {
       res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
       res.end();
     });
+  } else {
+    Promise.all([
+      connection.query(getPrdctMstTaxQuery)
+        .then(function(prdctMst){
+          prdct_mst = prdctMst;
+        }),
+      connection.query(selectCategoryQuery)
+        .then(function(cat){
+          category = cat;
+        }),
+      connection.query(selectTaxQuery)
+        .then(function(tax_cd){
+          tax = tax_cd;
+        })
+    ])
+    .then(function(){
+      res.render('prdct_mst', {
+        title: '商品マスタ',
+        prdctList: prdct_mst,
+        catList: category,
+        taxList: tax
+      });
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
+  };
 });
 
 router.post('/prdct_mst', function(req, res, next){
