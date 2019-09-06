@@ -24,7 +24,12 @@
     <div align="center">
       <table class="menu">
           <tr>
-            <th><a href='/arrvl_reg'>仕入登録</a></th>
+            <th>
+              <form action="/arrvl_reg" method="get">
+                <input type="hidden" name="tax_cd" value="true">
+                <button type="submit" class="arrvl_menu_button">仕入登録</button>
+              </form>
+            </th>
             <td></td>
             <th><a href='/arrvl_hstry'>仕入登録履歴確認</a></th>
           </tr>

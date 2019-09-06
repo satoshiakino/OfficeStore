@@ -23,6 +23,13 @@
     </header>
     <div class="wrapper">
         <form action="/prdct_reg" method="post" class="reg-form">
+          <span class="label">税表示</span>
+          <select name="tax_cd" class="select" required>
+            <option value="">税表示を選んでください</option>
+            <% taxList.forEach(function(taxItem){ %>
+              <option value=<%= taxItem.tax_cd %>><%= taxItem.tax_nm %></option>
+            <% }); %>
+          </select><br>
           <span class="label">カテゴリ</span>
           <select name="cat_cd" class="select" required>
             <option value="">カテゴリを選んでください</option>
