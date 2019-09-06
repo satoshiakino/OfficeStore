@@ -21,40 +21,91 @@
         </ul>
       </nav>
     </header>
-    <div class="wrapper">
-        <div align="center">
-          <table rules="all">
+    <div id="search">
+        <form action="/arrvl_hstry" method="get" name="search_prdct">
+          <table>
             <tr>
-              <th>ID</th>
-              <th>カテゴリコード</th>
-              <th>カテゴリ名</th>
-              <th>JAN</th>
-              <th>商品名</th>
-              <th>原価</th>
-              <th>個数</th>
-              <th>登録日</th>
+              <td class="search_item">カテゴリ:</td>
             </tr>
-            <% arrvlList.forEach(function(arrvlItem){ %>
-              <tr class="main-list__item">
-                <td class="id"><%= arrvlItem.arrvl_id %></td>
-                <td class="cat_cd"><%= arrvlItem.cat_cd %></td>
-                <td class="cat_nm"><%= arrvlItem.cat_nm %></td>
-                <td class="jan"><%= arrvlItem.jan %></td>
-                <td class="prdct_nm"><%= arrvlItem.prdct_nm %></td>
-                <td class="cost"><%= arrvlItem.cost %></td>
-                <td class="trade_num"><%= arrvlItem.trade_num %></td>
-                <td class="trade_date"><%= arrvlItem.trade_date %></td>
+            <tr>
+              <td>
+                <select name="cat_cd" class="search_select">
+                  <option value="">カテゴリを選んでください</option>
+                  <% catList.forEach(function(catItem){ %>
+                    <option value=<%= catItem.cat_cd %>><%= catItem.cat_nm %></option>
+                  <% }); %>
+                </select>
+              </td>
+            </tr>
+            <tr>
+                <td class="search_item">税表示:</td>
               </tr>
-            <% }); %>
+              <tr>
+                <td>
+                  <select name="tax_cd" class="search_select">
+                    <option value="">税表示形式を選んでください</option>
+                    <% taxList.forEach(function(taxItem){ %>
+                      <option value=<%= taxItem.tax_cd %>><%= taxItem.tax_nm %></option>
+                    <% }); %>
+                  </select>
+                </td>
+            </tr>
+            <tr>
+              <td class="search_item">原価:</td>
+            </tr>
+            <tr>
+              <td>
+                <input type="number" class="search_input" name="min_cost">円
+              </td>
+            </tr>
+            <tr>
+              <td class="search_option">以上</td>
+            </tr>
+            <tr>
+              <td>
+                <input type="number" class="search_input" name="max_cost">円
+              </td>
+            </tr>
+            <tr>
+              <td class="search_option">未満</td>
+            </tr>
           </table>
-        </div>
-    </div>
+          <button type="submit" class="submit">検索</button>
+        </form>
+      </div>
+      <div id="main">
+        <table rules="all">
+          <tr>
+            <th>ID</th>
+            <th>カテゴリコード</th>
+            <th>カテゴリ名</th>
+            <th>JAN</th>
+            <th>商品名</th>
+            <th>原価</th>
+            <th>個数</th>
+            <th>登録日</th>
+          </tr>
+          <% arrvlList.forEach(function(arrvlItem){ %>
+            <tr class="main-list__item">
+              <td class="id"><%= arrvlItem.arrvl_id %></td>
+              <td class="cat_cd"><%= arrvlItem.cat_cd %></td>
+              <td class="cat_nm"><%= arrvlItem.cat_nm %></td>
+              <td class="jan"><%= arrvlItem.jan %></td>
+              <td class="prdct_nm"><%= arrvlItem.prdct_nm %></td>
+              <td class="cost"><%= arrvlItem.cost %></td>
+              <td class="trade_num"><%= arrvlItem.trade_num %></td>
+              <td class="trade_date"><%= arrvlItem.trade_date %></td>
+            </tr>
+          <% }); %>
+        </table>
+      </div>
     <form action="/arrvl_hstry" method="post" class="reg-form" name="delete_hstry">
-        <span class="label">id：</span>
+      <span id="delete_reg">
+        <span id="delete_label" class="label">id：</span>
         <input type="number" name="arrvl_id" class="input" required>
         <input type="hidden" name="_method" value="delete">
         <button type="submit" class="submit" id="delete_hstry_button">削除</button>
-        <br>
+      </span>
     </form>
   </body>
 </html>
