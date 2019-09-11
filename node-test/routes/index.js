@@ -50,8 +50,6 @@ router.get('/mst_menu', function(req, res, next) {
 router.get('/prdct_mst', function(req, res, next) {
   var cat_cd = req.query.cat_cd;
   if(!cat_cd){ cat_cd = "0"; };
-  var tax_cd = req.query.tax_cd;
-  console.log(cat_cd);
   var getPrdctMstQuery = {
     text: "SELECT prdct.prdct_id" + 
                 ",prdct.cat_cd" +
@@ -59,7 +57,6 @@ router.get('/prdct_mst', function(req, res, next) {
                 ",prdct.jan" +
                 ",prdct.prdct_nm" +
                 ",prdct.price" +
-                ",prdct.cost " +
                 ",prdct.latest " +
           "FROM prdct_mst AS prdct " +
           "LEFT OUTER JOIN category AS cat " + 
@@ -68,91 +65,34 @@ router.get('/prdct_mst', function(req, res, next) {
             "AND CASE WHEN $1 = '0' THEN 1 = 1 ELSE prdct.cat_cd = $1 END ",
     values: [cat_cd]
   };
-  var getPrdctMstTaxQuery = {
-    text: "SELECT prdct.prdct_id" + 
-                ",prdct.cat_cd" +
-                ",cat.cat_nm" +
-                ",prdct.jan" +
-                ",prdct.prdct_nm" +
-                ",prdct.price" +
-                ",prdct.cost " +
-                ",prdct.latest " +
-          "FROM prdct_mst AS prdct " +
-          "LEFT OUTER JOIN category AS cat " + 
-            "ON prdct.cat_cd = cat.cat_cd " +
-          "WHERE prdct.latest = true " +
-            "AND CASE WHEN $1 = '0' THEN 1 = 1 ELSE prdct.cat_cd = $1 END " +
-            "AND prdct.tax_cd = $2 ",
-    values: [cat_cd, tax_cd]
-  };
   var selectCategoryQuery = {
     text: 'SELECT cat_cd, cat_nm FROM category WHERE latest = true'
   };
-  var selectTaxQuery = {
-    text: 'SELECT tax_cd, tax_nm FROM tax'
-  }
   var prdct_mst;
   var category;
-  var tax;
-  if(!tax_cd || tax_cd === ""){
-    Promise.all([
-      connection.query(getPrdctMstQuery)
-        .then(function(prdctMst){
-          prdct_mst = prdctMst;
-        }),
-      connection.query(selectCategoryQuery)
-        .then(function(cat){
-          category = cat;
-        }),
-      connection.query(selectTaxQuery)
-        .then(function(tax_cd){
-          tax = tax_cd;
-        })
-    ])
-    .then(function(){
-      res.render('prdct_mst', {
-        title: '商品マスタ',
-        prdctList: prdct_mst,
-        catList: category,
-        taxList: tax
-      });
-      res.end();
-    })
-    .catch(function(err){
-      console.log(err.error);
-      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-      res.end();
+  Promise.all([
+    connection.query(getPrdctMstQuery)
+      .then(function(prdctMst){
+        prdct_mst = prdctMst;
+      }),
+    connection.query(selectCategoryQuery)
+      .then(function(cat){
+        category = cat;
+      })
+  ])
+  .then(function(){
+    res.render('prdct_mst', {
+      title: '商品マスタ',
+      prdctList: prdct_mst,
+      catList: category
     });
-  } else {
-    Promise.all([
-      connection.query(getPrdctMstTaxQuery)
-        .then(function(prdctMst){
-          prdct_mst = prdctMst;
-        }),
-      connection.query(selectCategoryQuery)
-        .then(function(cat){
-          category = cat;
-        }),
-      connection.query(selectTaxQuery)
-        .then(function(tax_cd){
-          tax = tax_cd;
-        })
-    ])
-    .then(function(){
-      res.render('prdct_mst', {
-        title: '商品マスタ',
-        prdctList: prdct_mst,
-        catList: category,
-        taxList: tax
-      });
-      res.end();
-    })
-    .catch(function(err){
-      console.log(err.error);
-      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-      res.end();
-    });
-  };
+    res.end();
+  })
+  .catch(function(err){
+    console.log(err.error);
+    res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+    res.end();
+  });
 });
 
 router.post('/prdct_mst', function(req, res, next){
@@ -167,50 +107,29 @@ router.get('/prdct_reg', function(req, res, next) {
   var selectCategoryQuery = {
     text: 'SELECT cat_cd, cat_nm FROM category WHERE latest = true'
   };
-  var selectTaxQuery = {
-    text: 'SELECT tax_cd, tax_nm FROM tax'
-  };
-  var category;
-  var tax;
-  Promise.all([
     connection.query(selectCategoryQuery)
       .then(function(cat){
-        category = cat;
-      }),
-    connection.query(selectTaxQuery)
-      .then(function(tax_cd){
-        tax = tax_cd;
+        res.render('prdct_reg', {
+          title: "商品マスタ登録",
+          catList: cat
+        });
+        res.end();
       })
-  ])
-    .then(function(){
-      res.render('prdct_reg', {
-        title: "商品マスタ登録",
-        catList: category,
-        taxList: tax
+      .catch(function(err){
+        console.log(err.error);
+        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack } });
+        res.end();
       });
-      res.end();
-    })
-    .catch(function(err){
-      console.log(err.error);
-      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack } });
-      res.end();
-    });
 });
 
 router.post('/prdct_reg', function(req, res, next) {
-  var tax_cd = (req.body.tax_cd == "true")?true:false;
   var jan = req.body.jan;
   var cat_cd = req.body.cat_cd;
   var prdct_nm = req.body.prdct_nm;
-  var cost = req.body.cost;
-  if(tax_cd==false && cat_cd!="00"){
-    cost = Math.floor(cost * 1.08);
-  };
   var price = req.body.price;
-  var cost_rate = (price == 0) ? 0 : (cost / price);
   var registerQuery = {
-    text: 'INSERT INTO prdct_mst (tax_cd, cat_cd, jan, prdct_nm, cost, price, cost_rate) VALUES($1, $2, $3, $4, $5, $6, $7)',
-    values: [tax_cd, cat_cd, jan, prdct_nm, cost, price, cost_rate],
+    text: 'INSERT INTO prdct_mst (cat_cd, jan, prdct_nm, price) VALUES($1, $2, $3, $4)',
+    values: [cat_cd, jan, prdct_nm, price],
   };
   connection.query(registerQuery)
     .then(function(prdct){
