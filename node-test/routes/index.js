@@ -325,26 +325,6 @@ router.get('/arrvl_menu', function(req, res, next) {
   res.end();
 });
 
-//localhost:3000/arrvl_reg0
-router.get('/arrvl_reg0', function(req, res, next) {
-  var selectTaxQuery = {
-    text: 'SELECT tax_cd, tax_nm FROM tax'
-  };
-  connection.query(selectTaxQuery)
-    .then(function(tax){
-      res.render('arrvl_reg0', {
-        title: "仕入登録",
-        taxList: tax
-      });
-      res.end();
-    })
-    .catch(function(err){
-      console.log(err.error);
-      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-      res.end();
-    });
-});
-
 //localhost:3000/arrvl_reg
 router.get('/arrvl_reg', function(req, res, next) {
   var tax_cd = (req.query.tax_cd=="true") ? false : true;
@@ -352,8 +332,7 @@ router.get('/arrvl_reg', function(req, res, next) {
     text: 'SELECT cat_cd, cat_nm FROM category WHERE latest = true'
   };
   var selectPrdctQuery = {
-    text: 'SELECT prdct_id, prdct_nm, cat_cd, cost FROM prdct_mst WHERE latest = true AND tax_cd = $1',
-    values: [tax_cd]
+    text: 'SELECT prdct_id, prdct_nm, cat_cd FROM prdct_mst WHERE latest = true'
   };
   var selectTaxQuery = {
     text: 'SELECT tax_cd, tax_nm FROM tax WHERE tax_cd = $1',
@@ -411,19 +390,22 @@ router.post('/arrvl_reg', function(req, res, next) {
   var cat_cd = req.body.cat_cd;
   var prdct_id = req.body.prdct_id;
   var trade_num = req.body.trade_num;
+  var cost = req.body.unit_price;
+  var tax_cd = req.body.tax;
+  if(tax_cd==="false"){ cost = Math.floor(cost*1.08) };
   if(Array.isArray(cat_cd)){
     for(var i=0; i<cat_cd.length; i++){
       var registerArrivalQuery = {
-        text: "INSERT INTO arrival (cat_cd, prdct_id, trade_num, trade_date) VALUES($1, $2, $3, now())",
-        values: [cat_cd[i], prdct_id[i], trade_num[i]],
+        text: "INSERT INTO arrival (prdct_id, trade_num, cost, trade_date) VALUES($1, $2, $3, now())",
+        values: [prdct_id[i], trade_num[i], cost[i]],
       };
       connection.query(registerArrivalQuery)
         .then(function(){});
     }
   } else if(Array.isArray(cat_cd)==false){
     var registerArrivalQuery2 = {
-      text: "INSERT INTO arrival (cat_cd, prdct_id, trade_num, trade_date) VALUES($1, $2, $3, now())",
-      values: [cat_cd, prdct_id, trade_num],
+      text: "INSERT INTO arrival (prdct_id, trade_num, cost, trade_date) VALUES($1, $2, $3, now())",
+      values: [prdct_id, trade_num, cost],
     };
     connection.query(registerArrivalQuery2)
       .then(function(){});
@@ -436,7 +418,6 @@ router.post('/arrvl_reg', function(req, res, next) {
 //localhost:3000/arrvl_hstry
 router.get('/arrvl_hstry', function(req, res, next) {
   var cat_cd = req.query.cat_cd;
-  var tax_cd = req.query.tax_cd;
   var min_cost = req.query.min_cost;
   var max_cost = req.query.max_cost;
   if(!cat_cd){ cat_cd = "0"; };
@@ -444,115 +425,52 @@ router.get('/arrvl_hstry', function(req, res, next) {
   if(!max_cost){ max_cost = 1000; };
   getArrivalQuery = {
     text: "SELECT  arrvl.arrvl_id" +    
-                 ",arrvl.cat_cd" +   
+                 ",pm.cat_cd" +   
                  ",cat.cat_nm" +   
                  ",pm.jan" + 
                  ",pm.prdct_nm" +   
-                 ",pm.cost" +
+                 ",arrvl.cost" +
                  ",arrvl.trade_num" +  
                  ",TO_CHAR(arrvl.trade_date, \'yyyy/mm/dd\') AS trade_date " + 
           "FROM arrival AS arrvl " +  
           "LEFT OUTER JOIN prdct_mst AS pm " +  
           "ON arrvl.prdct_id = pm.prdct_id " +  
           "LEFT OUTER JOIN category AS cat " +  
-          "ON arrvl.cat_cd = cat.cat_cd " + 
-          "WHERE CASE WHEN $1 = '0' THEN 1 = 1 ELSE arrvl.cat_cd = $1 END " +
-            "AND pm.cost >= $2 " +
-            "AND pm.cost < $3 " + 
+          "ON pm.cat_cd = cat.cat_cd " + 
+          "WHERE CASE WHEN $1 = '0' THEN 1 = 1 ELSE pm.cat_cd = $1 END " +
+            "AND arrvl.cost >= $2 " +
+            "AND arrvl.cost < $3 " + 
           "ORDER BY arrvl.trade_date",
     values: [cat_cd, min_cost, max_cost]
   };
-  getArrivalTaxQuery = {
-    text: "SELECT  arrvl.arrvl_id" +    
-                 ",arrvl.cat_cd" +   
-                 ",cat.cat_nm" +   
-                 ",pm.jan" + 
-                 ",pm.prdct_nm" +   
-                 ",pm.cost" +
-                 ",pm.tax_cd " +
-                 ",arrvl.trade_num" +  
-                 ",TO_CHAR(arrvl.trade_date, \'yyyy/mm/dd\') AS trade_date " + 
-          "FROM arrival AS arrvl " +  
-          "LEFT OUTER JOIN prdct_mst AS pm " +  
-          "ON arrvl.prdct_id = pm.prdct_id " +  
-          "LEFT OUTER JOIN category AS cat " +  
-          "ON arrvl.cat_cd = cat.cat_cd " + 
-          "WHERE CASE WHEN $1 = '0' THEN 1 = 1 ELSE arrvl.cat_cd = $1 END " +
-            "AND pm.cost >= $2 " +
-            "AND pm.cost < $3 " +
-            "AND pm.tax_cd = $4 " + 
-          "ORDER BY arrvl.trade_date",
-    values: [cat_cd, min_cost, max_cost, tax_cd]
-  }; 
-    var selectCategoryQuery = {
-      text: 'SELECT cat_cd, cat_nm FROM category WHERE latest = true'
-    };
-    var selectTaxQuery = {
-      text: 'SELECT tax_cd, tax_nm FROM tax'
-    }
-    var arrival;
-    var category;
-    var tax;
-    if(!tax_cd || tax_cd === ""){
-      Promise.all([
-        connection.query(getArrivalQuery)
-          .then(function(arrvl){
-            arrival = arrvl;
-          }),
-        connection.query(selectCategoryQuery)
-          .then(function(cat){
-            category = cat;
-          }),
-        connection.query(selectTaxQuery)
-          .then(function(tax_cd){
-            tax = tax_cd;
-          })
-      ])
-      .then(function(){
-        res.render('arrvl_hstry', {
-          title: "arrvl_hstry",
-          arrvlList: arrival,
-          catList: category,
-          taxList: tax
-        });
-        res.end();
+  var selectCategoryQuery = {
+    text: 'SELECT cat_cd, cat_nm FROM category WHERE latest = true'
+  };
+  var arrival;
+  var category;
+  Promise.all([
+    connection.query(getArrivalQuery)
+      .then(function(arrvl){
+        arrival = arrvl;
+      }),
+    connection.query(selectCategoryQuery)
+      .then(function(cat){
+        category = cat;
       })
-      .catch(function(err){
-        console.log(err.error);
-        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-        res.end();
-      });
-    } else {
-      Promise.all([
-        connection.query(getArrivalTaxQuery)
-          .then(function(arrvl){
-            arrival = arrvl;
-          }),
-        connection.query(selectCategoryQuery)
-          .then(function(cat){
-            category = cat;
-          }),
-        connection.query(selectTaxQuery)
-          .then(function(tax_cd){
-            tax = tax_cd;
-          })
-      ])
-      .then(function(){
-        res.render('arrvl_hstry', {
-          title: "arrvl_hstry",
-          arrvlList: arrival,
-          catList: category,
-          taxList: tax
-        });
-        res.end();
-      })
-      .catch(function(err){
-        console.log(err.error);
-        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-        res.end();
-      });
-    };
-
+  ])
+  .then(function(){
+    res.render('arrvl_hstry', {
+      title: "arrvl_hstry",
+      arrvlList: arrival,
+      catList: category
+    });
+    res.end();
+  })
+  .catch(function(err){
+    console.log(err.error);
+    res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+    res.end();
+  });
 });
 
 router.delete('/arrvl_hstry', function(req, res, next) {
@@ -625,12 +543,11 @@ router.get('/sales_reg', function(req, res, next) {
 });
 
 router.post('/sales_reg', function(req, res, next) {
-  var cat_cd = req.body.cat_cd;
   var prdct_id = req.body.prdct_id;
   var trade_num = req.body.trade_num;
   registerSalesQuery = {
-    text: "INSERT INTO sales (cat_cd, prdct_id, trade_num, trade_date) VALUES($1, $2, $3, now())",
-    values: [cat_cd, prdct_id, trade_num],
+    text: "INSERT INTO sales (prdct_id, trade_num, trade_date) VALUES($1, $2, now())",
+    values: [prdct_id, trade_num],
   };
   connection.query(registerSalesQuery)
     .then(function(){
@@ -648,7 +565,7 @@ router.post('/sales_reg', function(req, res, next) {
 router.get('/sales_hstry', function(req, res, next) {
   getSalesQuery = {
     text: "SELECT sales.sales_id" + 
-                ",sales.cat_cd" +
+                ",pm.cat_cd" +
                 ",cat.cat_nm" +
                 ",pm.jan" +
                 ",pm.prdct_nm" + 
@@ -659,7 +576,7 @@ router.get('/sales_hstry', function(req, res, next) {
             "LEFT OUTER JOIN prdct_mst AS pm " +   
              "ON sales.prdct_id = pm.prdct_id " +  
             "LEFT OUTER JOIN category AS cat " +
-             "ON sales.cat_cd = cat.cat_cd " +
+             "ON pm.cat_cd = cat.cat_cd " +
             "ORDER BY sales.trade_date"
   };
   connection.query(getSalesQuery)
@@ -714,10 +631,8 @@ router.post('/settlement', function(req, res, next) {
 //localhost:3000/settlement2
 router.get('/settlement2', function(req, res, next) {
   var getCostQuery = {
-    text: "SELECT SUM(pm.cost * arrvl.trade_num) AS total_cost " +
-            "FROM arrival AS arrvl " +
-            "LEFT OUTER JOIN prdct_mst AS pm " +
-            "ON arrvl.prdct_id = pm.prdct_id " +
+    text: "SELECT SUM(cost * trade_num) AS total_cost " +
+            "FROM arrival " +
             "WHERE checked = false " +
             "GROUP BY checked"
   };
@@ -869,22 +784,26 @@ router.get('/invntry_count', function(req, res, next) {
   var selectQuery = {
     text: 'SELECT pm.prdct_id' + 
           	    ',pm.jan' +
-          	    ',pm.prdct_nm' +
-          	    ',CASE WHEN arrival.arrvl_num IS NULL THEN 0 ELSE arrival.arrvl_num END ' + 
-          	    ' - CASE WHEN sales.sales_num IS NULL THEN 0 ELSE sales.sales_num END AS inventory' +
-          	    ',(CASE WHEN arrival.arrvl_num IS NULL THEN 0 ELSE arrival.arrvl_num END ' +
-          	    ' - CASE WHEN sales.sales_num IS NULL THEN 0 ELSE sales.sales_num END)' +
-          	    ' * pm.price * pm.cost_rate AS stock_value ' +
+                ',pm.prdct_nm' +
+                ',CASE WHEN ic.count_num IS NULL THEN 0 ELSE ic.count_num END ' +
+          	    '+(CASE WHEN arrival.arrvl_num IS NULL THEN 0 ELSE arrival.arrvl_num END ' + 
+          	    ' - CASE WHEN sales.sales_num IS NULL THEN 0 ELSE sales.sales_num END) AS inventory' +
+          	    ',(arrival.arrvl_cost / arrival.arrvl_num) AS avg_cost ' +
           'FROM prdct_mst AS pm ' +
           'LEFT OUTER JOIN ' +
           '( ' +
-          'SELECT arrvl.prdct_id ' +
-              ',SUM(arrvl.trade_num) AS arrvl_num ' +
-              ',SUM(arrvl.trade_num * pm.cost) AS arrvl_cost ' +
-          'FROM arrival AS arrvl ' +
-          'LEFT OUTER JOIN prdct_mst AS pm ' +
-          'ON arrvl.prdct_id = pm.prdct_id ' +
-          'GROUP BY arrvl.prdct_id ' +
+          'SELECT prdct_id, count_num FROM inventory_count ' +
+            'WHERE result_no = (SELECT MAX(result_no) FROM inventory_count) ' +
+          ') AS ic ' +
+          'ON pm.prdct_id = ic.prdct_id ' +
+          'LEFT OUTER JOIN ' +
+          '( ' +
+          'SELECT prdct_id ' +
+              ',SUM(trade_num) AS arrvl_num ' +
+              ',SUM(trade_num * cost) AS arrvl_cost ' +
+          'FROM arrival ' +
+          'WHERE count = false ' +
+          'GROUP BY prdct_id ' +
           ') AS arrival ' +
           'ON pm.prdct_id = arrival.prdct_id ' +
           'LEFT OUTER JOIN ' +
@@ -895,6 +814,7 @@ router.get('/invntry_count', function(req, res, next) {
           'FROM sales ' +
           'LEFT OUTER JOIN prdct_mst AS pm ' +
           'ON sales.prdct_id = pm.prdct_id ' +
+          'WHERE sales.count = false ' +
           'GROUP BY sales.prdct_id ' +
           ') AS sales ' +
           'ON pm.prdct_id = sales.prdct_id ' +
@@ -918,21 +838,7 @@ router.get('/invntry_count', function(req, res, next) {
 router.post('/invntry_count', function(req, res, next) {
   var count_num = req.body.count;
   var prdct_id = req.body.prdct_id;
-  var insertArrivalQuery = {
-    text: 'INSERT INTO arrival (cat_cd, prdct_id, trade_num, trade_date, checked, count) ' +
-          'SELECT pm.cat_cd ' +
-                ',ic.prdct_id ' +
-                ',ic.count_num - ic.invntry_num AS dif ' +
-                ',ic.count_date ' +
-                ',true AS checked ' +
-                ',true AS count ' +
-              'FROM inventory_count AS ic ' +
-              'LEFT OUTER JOIN prdct_mst AS pm ' +
-              'ON ic.prdct_id = pm.prdct_id ' +
-              'WHERE ic.result_no = ' +
-              '(SELECT result_no FROM inventory_count ORDER BY count_date desc limit 1) ' +
-              'AND ic.count_num - ic.invntry_num != 0'
-  };
+  var avg_cost = req.body.avg_cost;
   var updateArrivalQuery = {
     text: 'UPDATE arrival SET count = true'
   };
@@ -946,7 +852,10 @@ router.post('/invntry_count', function(req, res, next) {
     .then(function(result_no) {
       var result = (result_no[0].max === null)?0:result_no[0].max;
       var p = Promise.resolve();
-      prdct_id.forEach(function(prdct, i){
+      for(i=0; i<prdct_id.length; i++){
+        var insertInventoryCountQuery = {}
+      }
+      /*prdct_id.forEach(function(prdct, i){
         var insertInventoryCountQuery = {
           text: 'INSERT INTO inventory_count (prdct_id, invntry_num, count_num, count_date, result_no) ' +
                 'SELECT pm.prdct_id ' +   
@@ -982,11 +891,9 @@ router.post('/invntry_count', function(req, res, next) {
         };
         p = p.then(function() {
           return connection.query(insertInventoryCountQuery);
-        });
+        });*/
       });
       return p;
-    }).then(function() {
-      return connection.query(insertArrivalQuery);
     }).then(function() {
       return connection.query(updateArrivalQuery);
     }).then(function() {

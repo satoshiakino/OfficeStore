@@ -14,3 +14,27 @@ alter table prdct_mst drop column tax_cd
 alter table arrival drop column cat_cd
 
 alter table sales drop column cat_cd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+todo
+消費税等の棚卸時の扱い
