@@ -839,6 +839,8 @@ router.post('/invntry_count', function(req, res, next) {
   var count_num = req.body.count;
   var prdct_id = req.body.prdct_id;
   var avg_cost = req.body.avg_cost;
+  var invntry_num = req.body.invntry_num;
+  console.log(invntry_num);
   var updateArrivalQuery = {
     text: 'UPDATE arrival SET count = true'
   };
@@ -851,9 +853,17 @@ router.post('/invntry_count', function(req, res, next) {
   connection.query(selectResultNoQuery)
     .then(function(result_no) {
       var result = (result_no[0].max === null)?0:result_no[0].max;
+      var result = parseInt(result) + 1;
       var p = Promise.resolve();
       for(i=0; i<prdct_id.length; i++){
-        var insertInventoryCountQuery = {}
+        var insertInventoryCountQuery = {
+          text: 'INSERT INTO inventory_count (prdct_id, invntry_num, count_num, avg_cost, count_date, result_no) ' +
+                'VALUES ($1, $2, $3, $4, now(), $5)',
+          values: [prdct_id[i], invntry_num[i], count_num[i], avg_cost[i], result]
+        };
+        p = p.then(function() {
+          return connection.query(insertInventoryCountQuery);
+        });
       }
       /*prdct_id.forEach(function(prdct, i){
         var insertInventoryCountQuery = {
@@ -891,8 +901,8 @@ router.post('/invntry_count', function(req, res, next) {
         };
         p = p.then(function() {
           return connection.query(insertInventoryCountQuery);
-        });*/
-      });
+        });
+      });*/
       return p;
     }).then(function() {
       return connection.query(updateArrivalQuery);

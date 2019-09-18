@@ -10,7 +10,7 @@
     <script>
       function onChangeCount(){
         var count = document.getElementsByName('count');
-        var inventory = document.getElementsByName('inventory');
+        var inventory = document.getElementsByName('inventory_num');
         for(var i=0; i<count.length; i++){
           var target = document.getElementsByName('dif');
           if(count[i].value == ""){
@@ -50,11 +50,12 @@
             <tr class="main-list__item">
               <td class="jan"><%= prdctItem.jan %></td>
               <td class="prdct_nm"><%= prdctItem.prdct_nm %></td>
-              <td class="invntry_num" name="inventory"><%= prdctItem.inventory %></td>
+              <td class="invntry_num" name="inventory_num"><%= prdctItem.inventory %></td>
               <td>
                 <input type="number" name="count" class="input" value=0 onchange="onChangeCount()" required>
                 <input type="hidden" name="prdct_id" value=<%= prdctItem.prdct_id %>>
                 <input type="hidden" name="avg_cost" value=<%= prdctItem.avg_cost %>>
+                <input type="hidden" name="invntry_num" value=<%= prdctItem.inventory %>>
               </td>
               <td class="dif" name="dif"></td>
             </tr>
