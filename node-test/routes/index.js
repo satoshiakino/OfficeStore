@@ -787,12 +787,15 @@ router.get('/invntry_count', function(req, res, next) {
                 ',pm.prdct_nm' +
                 ',CASE WHEN ic.count_num IS NULL THEN 0 ELSE ic.count_num END ' +
           	    '+(CASE WHEN arrival.arrvl_num IS NULL THEN 0 ELSE arrival.arrvl_num END ' + 
-          	    ' - CASE WHEN sales.sales_num IS NULL THEN 0 ELSE sales.sales_num END) AS inventory' +
-          	    ',(arrival.arrvl_cost / arrival.arrvl_num) AS avg_cost ' +
+                ' - CASE WHEN sales.sales_num IS NULL THEN 0 ELSE sales.sales_num END) AS inventory' +
+                ',CASE WHEN ic.count IS NULL THEN (arrival.arrvl_cost / arrival.arrvl_num) ' +
+                      'WHEN arrival.arrvl_num IS NULL THEN ic.avg_cost ' + 
+                      'WHEN arrival.arrvl_num IS NOT NULL THEN (ic.count * ic.avg_cost + arrival.arrvl_cost)/(ic.count + arrival.arrvl_num) ' +
+          	          'ELSE 0 END AS avg_cost ' +
           'FROM prdct_mst AS pm ' +
           'LEFT OUTER JOIN ' +
           '( ' +
-          'SELECT prdct_id, count_num FROM inventory_count ' +
+          'SELECT prdct_id, count_num, avg_cost FROM inventory_count ' +
             'WHERE result_no = (SELECT MAX(result_no) FROM inventory_count) ' +
           ') AS ic ' +
           'ON pm.prdct_id = ic.prdct_id ' +
@@ -817,7 +820,9 @@ router.get('/invntry_count', function(req, res, next) {
           'WHERE sales.count = false ' +
           'GROUP BY sales.prdct_id ' +
           ') AS sales ' +
-          'ON pm.prdct_id = sales.prdct_id ' +
+          'ON pm.prdct_id = sales.prdct_id ' + 
+          'WHERE pm.cat_cd <> \'00\' ' +
+            'AND pm.cat_cd <> \'99\' ' +
           'ORDER BY pm.prdct_id'
   };
   connection.query(selectQuery)
@@ -840,7 +845,6 @@ router.post('/invntry_count', function(req, res, next) {
   var prdct_id = req.body.prdct_id;
   var avg_cost = req.body.avg_cost;
   var invntry_num = req.body.invntry_num;
-  console.log(invntry_num);
   var updateArrivalQuery = {
     text: 'UPDATE arrival SET count = true'
   };
@@ -853,7 +857,7 @@ router.post('/invntry_count', function(req, res, next) {
   connection.query(selectResultNoQuery)
     .then(function(result_no) {
       var result = (result_no[0].max === null)?0:result_no[0].max;
-      var result = parseInt(result) + 1;
+      result = parseInt(result) + 1;
       var p = Promise.resolve();
       for(i=0; i<prdct_id.length; i++){
         var insertInventoryCountQuery = {
@@ -861,10 +865,8 @@ router.post('/invntry_count', function(req, res, next) {
                 'VALUES ($1, $2, $3, $4, now(), $5)',
           values: [prdct_id[i], invntry_num[i], count_num[i], avg_cost[i], result]
         };
-        p = p.then(function() {
-          return connection.query(insertInventoryCountQuery);
-        });
-      }
+        connection.query(insertInventoryCountQuery);
+      };
       /*prdct_id.forEach(function(prdct, i){
         var insertInventoryCountQuery = {
           text: 'INSERT INTO inventory_count (prdct_id, invntry_num, count_num, count_date, result_no) ' +
@@ -926,7 +928,7 @@ router.get('/invntry_count_result', function(req, res, next) {
 	              ',ic.count_num ' +
 	              ',ic.count_num - ic.invntry_num AS dif ' +
 	              ',TRUNC((ic.count_num - ic.invntry_num) ' +
-                  '* pm.price * pm.cost_rate) AS stock_value ' +
+                  '* ic.avg_cost) AS stock_value ' +
                 ',TO_CHAR(ic.count_date, \'YYYY/MM/DD\') AS count_date ' + 
 	            'FROM inventory_count AS ic ' +
 	            'LEFT OUTER JOIN prdct_mst AS pm ' +
@@ -952,7 +954,7 @@ router.get('/invntry_count_result2', function(req, res, next) {
 	              ',pm.cat_cd ' +
 	              ',cat.cat_nm ' +
 	              ',TRUNC(SUM((ic.count_num - ic.invntry_num) ' + 
-	                '* pm.price * pm.cost_rate)) AS stock_value ' +
+	                '* ic.avg_cost)) AS stock_value ' +
 	              ',TO_CHAR(ic.count_date, \'YYYY/MM/DD\') AS count_date1 ' +
 	          'FROM inventory_count AS ic ' +
 	          'LEFT OUTER JOIN prdct_mst AS pm ' +
