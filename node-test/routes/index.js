@@ -788,9 +788,9 @@ router.get('/invntry_count', function(req, res, next) {
                 ',CASE WHEN ic.count_num IS NULL THEN 0 ELSE ic.count_num END ' +
           	    '+(CASE WHEN arrival.arrvl_num IS NULL THEN 0 ELSE arrival.arrvl_num END ' + 
                 ' - CASE WHEN sales.sales_num IS NULL THEN 0 ELSE sales.sales_num END) AS inventory' +
-                ',CASE WHEN ic.count IS NULL THEN (arrival.arrvl_cost / arrival.arrvl_num) ' +
+                ',CASE WHEN ic.count_num IS NULL THEN (arrival.arrvl_cost / arrival.arrvl_num) ' +
                       'WHEN arrival.arrvl_num IS NULL THEN ic.avg_cost ' + 
-                      'WHEN arrival.arrvl_num IS NOT NULL THEN (ic.count * ic.avg_cost + arrival.arrvl_cost)/(ic.count + arrival.arrvl_num) ' +
+                      'WHEN arrival.arrvl_num IS NOT NULL THEN (ic.count_num * ic.avg_cost + arrival.arrvl_cost)/(ic.count_num + arrival.arrvl_num) ' +
           	          'ELSE 0 END AS avg_cost ' +
           'FROM prdct_mst AS pm ' +
           'LEFT OUTER JOIN ' +
