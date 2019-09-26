@@ -631,18 +631,26 @@ router.post('/settlement', function(req, res, next) {
 //localhost:3000/settlement2
 router.get('/settlement2', function(req, res, next) {
   var getCostQuery = {
-    text: "SELECT SUM(cost * trade_num) AS total_cost " +
-            "FROM arrival " +
-            "WHERE checked = false " +
-            "GROUP BY checked"
+    text: "SELECT COALESCE(SUM(total_cost), 0) AS total_cost " +
+            "FROM " +
+            "( " +
+            "SELECT SUM(cost * trade_num) AS total_cost " + 
+              "FROM arrival " +
+              "WHERE checked = false " + 
+              "GROUP BY checked " +
+            ") AS arrival"
   };
   var getSalesQuery = {
-    text: "SELECT SUM(pm.price * sales.trade_num) AS total_sales " +
-            "FROM sales " +
-            "LEFT OUTER JOIN prdct_mst AS pm " +
-            "ON sales.prdct_id = pm.prdct_id " +
-            "WHERE sales.checked = false " +
-            "GROUP BY sales.checked"
+    text: "SELECT COALESCE(SUM(total_sales), 0) AS total_sales " +
+            "FROM " +
+            "( " +
+            "SELECT SUM(pm.price * sales.trade_num) AS total_sales " +  
+              "FROM sales " +
+              "LEFT OUTER JOIN prdct_mst AS pm " + 
+              "ON sales.prdct_id = pm.prdct_id " +
+              "WHERE sales.checked = false " +
+              "GROUP BY sales.checked " +
+            ") AS sales"
   };
   var getLastCashQuery = {
     text: "SELECT total_cash FROM settlement WHERE latest = true"
@@ -1064,82 +1072,101 @@ router.get('/invntry_count_result2', function(req, res, next) {
 //localhost:3000/invntry_status
 router.get('/invntry_status', function(req, res, next) {
   var selectInventoryQuery = {
-    text: 'SELECT SUM(pm.price * (CASE WHEN sls.s_num IS NULL THEN arrvl.a_num ELSE (arrvl.a_num - sls.s_num) END)) AS stock_value ' +
-            'FROM ' +
-            '( ' +
-              'SELECT prdct_id ' + 
-                    ',SUM(CASE WHEN trade_num IS NULL THEN 0 ELSE trade_num END) AS a_num ' + 
-                'FROM arrival ' +
-                'WHERE EXTRACT(YEAR FROM arrival.trade_date) = EXTRACT(YEAR FROM now()) ' + 
-                  'AND EXTRACT(MONTH FROM arrival.trade_date) = EXTRACT(MONTH FROM now()) - 1 ' + 
-                'GROUP BY prdct_id ' + 
-            ') AS arrvl ' +
-            'LEFT OUTER JOIN ' + 
-            '( ' +
-              'SELECT prdct_id ' +
-                    ',SUM(CASE WHEN trade_num IS NULL THEN 0 ELSE trade_num END) AS s_num ' + 
-                'FROM sales ' +
-                'WHERE EXTRACT(YEAR FROM sales.trade_date) = EXTRACT(YEAR FROM now()) ' +
-                  'AND EXTRACT(MONTH FROM sales.trade_date) = EXTRACT(MONTH FROM now()) - 1 ' + 
-                'GROUP BY prdct_id ' +
-            ') AS sls ' +
-            'ON arrvl.prdct_id = sls.prdct_id ' +
-            'LEFT OUTER JOIN prdct_mst AS pm ' +
-            'ON pm.prdct_id = arrvl.prdct_id'
+    text: 'SELECT CASE WHEN final_inventory IS NULL THEN 0 ELSE final_inventory END AS initial_inventory ' +
+            'FROM inventory_settlement ' +
+            'ORDER BY inventory_date DESC ' +
+            'LIMIT 1'
   };
   var selectArrivalQuery = {
-    text: 'SELECT CASE WHEN SUM(pm.cost * arrival.trade_num) IS NULL THEN 0 ELSE SUM(pm.cost * arrival.trade_num) END AS total_stock_value ' +
+    text: 'SELECT SUM(cost * trade_num) AS purchase_turnover ' +
             'FROM arrival ' +
-            'LEFT OUTER JOIN prdct_mst AS pm ' +
-            'ON arrival.prdct_id = pm.prdct_id ' +
-            'WHERE EXTRACT(YEAR FROM arrival.trade_date) = EXTRACT(YEAR FROM now()) ' +
-            'AND EXTRACT(MONTH FROM arrival.trade_date) = EXTRACT(MONTH FROM now()) '
+            'WHERE count = false'
   };
   var selectPrdctInvntryQuery = {
-    text: 'SELECT pm.prdct_id ' +
-	              ',pm.prdct_nm ' +
-	              ',CASE WHEN sls.s_num IS NULL THEN arrvl.a_num ELSE (arrvl.a_num - sls.s_num) END AS trade_num ' +
-	          'FROM prdct_mst AS pm ' +
-	          'LEFT OUTER JOIN ' +
-	          '( ' +
-	          	'SELECT prdct_id ' +
-	          		    ',SUM(CASE WHEN trade_num IS NULL THEN 0 ELSE trade_num END) AS a_num ' +
-	          		'FROM arrival ' +
-	          		'GROUP BY prdct_id ' +
-	          ') AS arrvl ' +
-	          'ON pm.prdct_id = arrvl.prdct_id ' +
-	          'LEFT OUTER JOIN ' +
-	          '( ' +
-	          	'SELECT prdct_id ' +
-	          		    ',SUM(CASE WHEN trade_num IS NULL THEN 0 ELSE trade_num END) AS s_num ' +
-	          		'FROM sales ' +
-	          		'GROUP BY prdct_id ' +
-	          ') AS sls ' +
-	          'ON pm.prdct_id = sls.prdct_id'
-  };
-  var selectInventoryQuery2 = {
-    text: 'SELECT SUM(pm.price * (CASE WHEN sls.s_num IS NULL THEN arrvl.a_num ELSE (arrvl.a_num - sls.s_num) END)) AS stock_value ' +
+    text: 'SELECT pm.prdct_id' + 
+                ',pm.prdct_nm' +
+                ',CASE WHEN ic.count_num IS NULL THEN 0 ELSE ic.count_num END ' +
+                '+(CASE WHEN arrival.arrvl_num IS NULL THEN 0 ELSE arrival.arrvl_num END ' + 
+                ' - CASE WHEN sales.sales_num IS NULL THEN 0 ELSE sales.sales_num END) AS inventory ' +
             'FROM prdct_mst AS pm ' +
             'LEFT OUTER JOIN ' +
             '( ' +
-              'SELECT prdct_id ' +
-                    ',SUM(CASE WHEN trade_num IS NULL THEN 0 ELSE trade_num END) AS a_num ' +
-                'FROM arrival ' +
-                'WHERE EXTRACT(YEAR FROM arrival.trade_date) = EXTRACT(YEAR FROM now()) ' +
-                  'AND EXTRACT(MONTH FROM arrival.trade_date) = EXTRACT(MONTH FROM now()) ' +
-                'GROUP BY prdct_id ' +
-            ') AS arrvl ' +
-            'ON pm.prdct_id = arrvl.prdct_id ' +
+            'SELECT prdct_id, count_num, avg_cost FROM inventory_count ' +
+            'WHERE result_no = (SELECT MAX(result_no) FROM inventory_count) ' +
+            ') AS ic ' +
+            'ON pm.prdct_id = ic.prdct_id ' +
             'LEFT OUTER JOIN ' +
             '( ' +
-              'SELECT prdct_id ' +
-                    ',SUM(CASE WHEN trade_num IS NULL THEN 0 ELSE trade_num END) AS s_num ' +
-                'FROM sales ' +
-                'WHERE EXTRACT(YEAR FROM sales.trade_date) = EXTRACT(YEAR FROM now()) ' +
-                  'AND EXTRACT(MONTH FROM sales.trade_date) = EXTRACT(MONTH FROM now()) ' +
-                'GROUP BY prdct_id ' +
-            ') AS sls ' +
-            'ON pm.prdct_id = sls.prdct_id'
+            'SELECT prdct_id ' +
+              ',SUM(trade_num) AS arrvl_num ' +
+              ',SUM(trade_num * cost) AS arrvl_cost ' +
+            'FROM arrival ' +
+            'WHERE count = false ' +
+            'GROUP BY prdct_id ' +
+            ') AS arrival ' +
+            'ON pm.prdct_id = arrival.prdct_id ' +
+            'LEFT OUTER JOIN ' +
+            '( ' +
+            'SELECT sales.prdct_id ' +
+              ',SUM(sales.trade_num) AS sales_num ' +
+              ',SUM(sales.trade_num * pm.price) AS total_sales ' +
+            'FROM sales ' +
+            'LEFT OUTER JOIN prdct_mst AS pm ' +
+            'ON sales.prdct_id = pm.prdct_id ' +
+            'WHERE sales.count = false ' +
+            'GROUP BY sales.prdct_id ' +
+            ') AS sales ' +
+            'ON pm.prdct_id = sales.prdct_id ' + 
+            'WHERE pm.cat_cd <> \'00\' ' +
+            'AND pm.cat_cd <> \'99\' ' +
+            'ORDER BY pm.prdct_id'
+  };
+  var selectInventoryQuery2 = {
+    text: 'SELECT SUM(inventory * avg_cost) AS stock_value ' +
+          'FROM ( ' +
+          'SELECT pm.prdct_id' + 
+                ',pm.jan' +
+                ',pm.prdct_nm' +
+                ',CASE WHEN ic.count_num IS NULL THEN 0 ELSE ic.count_num END ' +
+                '+(CASE WHEN arrival.arrvl_num IS NULL THEN 0 ELSE arrival.arrvl_num END ' + 
+                ' - CASE WHEN sales.sales_num IS NULL THEN 0 ELSE sales.sales_num END) AS inventory ' +
+                ',CASE WHEN ic.count_num IS NULL THEN (arrival.arrvl_cost / arrival.arrvl_num) ' +
+                      'WHEN arrival.arrvl_num IS NULL THEN ic.avg_cost ' + 
+                      'WHEN arrival.arrvl_num IS NOT NULL THEN (ic.count_num * ic.avg_cost + arrival.arrvl_cost)/(ic.count_num + arrival.arrvl_num) ' +
+                      'ELSE 0 END AS avg_cost ' +
+            'FROM prdct_mst AS pm ' +
+            'LEFT OUTER JOIN ' +
+            '( ' +
+            'SELECT prdct_id, count_num, avg_cost FROM inventory_count ' +
+            'WHERE result_no = (SELECT MAX(result_no) FROM inventory_count) ' +
+            ') AS ic ' +
+            'ON pm.prdct_id = ic.prdct_id ' +
+            'LEFT OUTER JOIN ' +
+            '( ' +
+            'SELECT prdct_id ' +
+              ',SUM(trade_num) AS arrvl_num ' +
+              ',SUM(trade_num * cost) AS arrvl_cost ' +
+            'FROM arrival ' +
+            'WHERE count = false ' +
+            'GROUP BY prdct_id ' +
+            ') AS arrival ' +
+            'ON pm.prdct_id = arrival.prdct_id ' +
+            'LEFT OUTER JOIN ' +
+            '( ' +
+            'SELECT sales.prdct_id ' +
+              ',SUM(sales.trade_num) AS sales_num ' +
+              ',SUM(sales.trade_num * pm.price) AS total_sales ' +
+            'FROM sales ' +
+            'LEFT OUTER JOIN prdct_mst AS pm ' +
+            'ON sales.prdct_id = pm.prdct_id ' +
+            'WHERE sales.count = false ' +
+            'GROUP BY sales.prdct_id ' +
+            ') AS sales ' +
+            'ON pm.prdct_id = sales.prdct_id ' + 
+            'WHERE pm.cat_cd <> \'00\' ' +
+            'AND pm.cat_cd <> \'99\' ' +
+            'ORDER BY pm.prdct_id ' +
+        ') AS inventory'
   };
   var inventory;
   var inventory2;

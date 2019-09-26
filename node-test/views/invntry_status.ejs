@@ -26,11 +26,11 @@
         <table class="sales_trend" rules="all">
             <tr>
                 <td class="index_horizontal">月初在庫高</td>
-                <td class="invntry_status"><%= inventory[0].stock_value %></td>
+                <td class="invntry_status"><%= inventory[0].initial_inventory %></td>
             </tr>
             <tr>
                 <td class="index_horizontal">仕入高</td>
-                <td class="invntry_status"><%= parseInt(arrival[0].total_stock_value) %></td>
+                <td class="invntry_status"><%= arrival[0].purchase_turnover %></td>
             </tr>
             <tr>
                 <td class="index_horizontal">現在在庫高</td>
@@ -46,7 +46,7 @@
           <% invntryList.forEach(function(invntryItem){ %>
             <tr class="main-list__item">
               <td class="prdct_nm"><%= invntryItem.prdct_nm %></td>
-              <td class="trade_num"><%= invntryItem.trade_num %></td>
+              <td class="trade_num"><%= invntryItem.inventory %></td>
             </tr>
           <% }); %>
         </table>
