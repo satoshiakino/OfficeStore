@@ -906,12 +906,99 @@ router.post('/invntry_count', function(req, res, next) {
         });
       });*/
       return p;
-    }).then(function() {
+    /*}).then(function() {
       return connection.query(updateArrivalQuery);
     }).then(function() {
-      return connection.query(updateSalesQuery);
+      return connection.query(updateSalesQuery);*/
     }).then(function() {
-      res.redirect('/invntry_count');
+      res.redirect('/invntry_count2');
+      res.end();
+    });
+});
+
+//localhost:3000/invntry_count2
+router.get('/invntry_count2', function(req, res, next) {
+  var salesTurnoverQuery = {
+    text: 'SELECT SUM(pm.price * sales.trade_num) AS total_sales ' +
+            'FROM sales ' +
+            'LEFT OUTER JOIN prdct_mst AS pm ' +
+              'ON sales.prdct_id = pm.prdct_id ' +
+            'WHERE sales.count = false'
+  };
+  var initialInventoryQuery = {
+    text: 'SELECT CASE WHEN final_inventory IS NULL THEN 0 ELSE final_inventory END AS final_inventory ' +
+            'FROM inventory_settlement ' +
+            'ORDER BY inventory_date DESC ' +
+            'LIMIT 1'
+  };
+  var finalInventoryQuery = {
+    text: 'SELECT SUM(count_num * avg_cost) AS final_inventory ' +
+            'FROM inventory_count ' +
+            'WHERE result_no = (SELECT MAX(result_no) FROM inventory_count) '
+  };
+  var purchaseTurnoverQuery = {
+    text: 'SELECT SUM(cost * trade_num) AS purchase_turnover ' +
+            'FROM arrival ' +
+            'WHERE count = false'
+  };
+  var total_sales;
+  var initial_invntry;
+  var final_invntry;
+  var purchase;
+  Promise.all([
+    connection.query(salesTurnoverQuery)
+      .then(function(sales){
+        total_sales = sales;
+      }),
+    connection.query(initialInventoryQuery)
+      .then(function(init){
+        initial_invntry = init;
+      }),
+    connection.query(finalInventoryQuery)
+      .then(function(final){
+        final_invntry = final;
+      }),
+    connection.query(purchaseTurnoverQuery)
+      .then(function(arrvl){
+        purchase = arrvl;
+      })
+  ]).then(function(){
+    res.render('invntry_count2', {
+      title: "棚卸確認",
+      sales: total_sales,
+      init: initial_invntry,
+      final: final_invntry,
+      arrival: purchase
+    });
+    res.end();
+  })
+});
+
+router.post('/invntry_count2', function(req, res, next) {
+  var total_sales = req.body.total_sales;
+  var purchase_turnover = req.body.purchase_turnover;
+  var initial_inventory = req.body.initial_inventory;
+  var final_inventory = req.body.final_inventory;
+  var insertQuery = {
+    text: 'INSERT INTO inventory_settlement (inventory_date, sales_turnover, initial_inventory, final_inventory, purchase_turnover) ' +
+            'VALUES (now(), $1, $2, $3, $4)',
+    values: [total_sales, initial_inventory, final_inventory, purchase_turnover]
+  };
+  var updateArrivalQuery = {
+    text: 'UPDATE arrival SET count = true'
+  };
+  var updateSalesQuery = {
+    text: 'UPDATE sales SET count = true'
+  };
+  connection.query(insertQuery)
+    .then(function(){
+      return connection.query(updateArrivalQuery)
+    })
+    .then(function(){
+      return connection.query(updateSalesQuery)
+    })
+    .then(function(){
+      res.redirect('/inventory');
       res.end();
     });
 });

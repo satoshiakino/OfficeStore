@@ -8,3 +8,9 @@
 
 ・invntry_statusにおいて、在庫高を算定する際に、前回棚卸後から算定時点までの総平均法を用いた原価を
 使用して算出するようにSQLを改定する
+
+
+
+問題点
+・inventory_countページのPOSTにおけるinsert文の非同期処理
+・inventory_count2ページにおけるinitialInventoryQueryにおいて、テーブルが空だとNULL判定もできない
