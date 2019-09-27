@@ -829,7 +829,7 @@ router.get('/invntry_count', function(req, res, next) {
           'GROUP BY sales.prdct_id ' +
           ') AS sales ' +
           'ON pm.prdct_id = sales.prdct_id ' + 
-          'WHERE pm.cat_cd <> \'00\' ' +
+          'WHERE pm.cat_cd <> \'98\' ' +
             'AND pm.cat_cd <> \'99\' ' +
           'ORDER BY pm.prdct_id'
   };
@@ -1117,7 +1117,7 @@ router.get('/invntry_status', function(req, res, next) {
             'GROUP BY sales.prdct_id ' +
             ') AS sales ' +
             'ON pm.prdct_id = sales.prdct_id ' + 
-            'WHERE pm.cat_cd <> \'00\' ' +
+            'WHERE pm.cat_cd <> \'98\' ' +
             'AND pm.cat_cd <> \'99\' ' +
             'ORDER BY pm.prdct_id'
   };
@@ -1163,7 +1163,7 @@ router.get('/invntry_status', function(req, res, next) {
             'GROUP BY sales.prdct_id ' +
             ') AS sales ' +
             'ON pm.prdct_id = sales.prdct_id ' + 
-            'WHERE pm.cat_cd <> \'00\' ' +
+            'WHERE pm.cat_cd <> \'98\' ' +
             'AND pm.cat_cd <> \'99\' ' +
             'ORDER BY pm.prdct_id ' +
         ') AS inventory'
