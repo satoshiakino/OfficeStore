@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "set DB_NAME=officestore&&node ./bin/www",
+    "start:dev": "set DB_NAME=officestore_dev&&node ./bin/www"
   },
   "dependencies": {
     "body-parser": "^1.19.0",

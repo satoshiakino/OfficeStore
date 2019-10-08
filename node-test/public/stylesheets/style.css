@@ -207,6 +207,7 @@ border: 1px #ccc solid;
   height: 40px;
   text-decoration: none;
   color: #668b8a;
+  background-color: #fff;
   border: solid 2px #668b8a;
   border-radius: 3px;
   transition: .4s;
@@ -381,6 +382,7 @@ border: 1px #ccc solid;
 }
 .index_horizontal {
   width: 200px;
+  text-align: left;
   color: #fff;
   background: #668b8a;
   border: 1px rgb(65, 65, 65) solid;
@@ -434,6 +436,11 @@ border: 1px #ccc solid;
 }
 .arrvl_reg-form button {
   margin-left: 40px;
+}
+.invntry_settlement {
+  width: 200px;
+  height: 20px;
+  text-align: right;
 }
 #global_navi {
   width: auto;
@@ -513,7 +520,7 @@ border: 1px #ccc solid;
 #search {
   float: left;
   width: 180px;
-  height: 400px;
+  height: 500px;
   margin-left: 40px;
   background-color: rgb(236, 236, 236);
 }

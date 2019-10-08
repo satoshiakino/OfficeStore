@@ -1,0 +1,27 @@
+月初在庫高
+仕入高（今月）
+現在在庫高
+現在利益　＝　月初棚卸高　＋　仕入高（今月）　ー　現在在庫高
+
+売上原価　＝　期首棚卸高　＋　仕入高　-　期末棚卸高
+
+粗利益　＝　売上高　－　売上原価
+
+棚卸テーブルに必要なカラム
+・棚卸日時
+・売上高
+・期首棚卸高
+・仕入高
+・期末棚卸高
+
+棚卸時のavg_costについて
+・初回棚卸
+…arrival.arrvl_cost/arrival.arrvl_num
+・前回には仕入があったが、今回はない場合
+…CASE WHEN arrval.arrvl_num IS NULL THEN ic.avg_cost
+・前回仕入があり、今回もある場合
+…WHEN arrval.arrvl_num IS NOT NULL THEN (ic.count * ic.avg_cost + arrival.cost)/(ic.count + arrival.arrvl_num)
+・マスタには存在するが、前回仕入がなく、今回仕入があった場合
+…WHEN ic.count IS NULL THEN arrival.arrvl_cost/arrival.arrvl_num
+・マスタに存在せず、今回から新規に仕入があった場合
+…WHEN ic.count IS NULL THEN arrival.arrvl_cost/arrival.arrvl_num

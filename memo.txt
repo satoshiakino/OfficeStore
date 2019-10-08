@@ -1,52 +1,42 @@
-router.delete('/prdct_mst', function(req, res, next){
-  var prdct_id = req.body.prdct_id;
-  var deleteQuery = {
-    text: "DELETE FROM prdct_mst WHERE prdct_id = $1",
-    values: [prdct_id],
-  };
-  var selectArrivalQuery = {
-    text: "SELECT * FROM arrival WHERE checked = false AND prdct_id = $1",
-    values: [prdct_id],
-  };
-  var selectSalesQuery = {
-    text: "SELECT * FROM sales WHERE checked = false AND prdct_id = $1",
-    values: [prdct_id]
-  };
-  var arrival_use;
-  var sales_use;
-  Promise.all([
-    connection.query(selectArrivalQuery)
-      .then(function(arrival){
-        arrival_use = arrival.length;
-      }),
-    connection.query(selectSalesQuery)
-      .then(function(sales){
-        sales_use = sales.length;
-      })
-  ])
-  .then(function(){
-    if(arrival_use == 0 && sales_use == 0){
-      console.log("Delete!");
-      /*connection.query(deleteQuery)
-        .then(function(){
-          res.redirect('/prdct_mst');
-          res.end();
-        });*/
-    } else if(arrival_use != 0 || sales_use != 0){
-      res.cookie('prdct_use', 'true', {maxAge:60000, httpOnly:false});
-      res.redirect('/prdct_mst');
-      res.end();
-    }
-  });
-});
+alter table arrival add column cost integer
+
+update arrival
+set cost = prdct_mst.cost
+from prdct_mst
+where arrival.prdct_id = prdct_mst.prdct_id 
+
+alter table prdct_mst drop column cost
+
+alter table prdct_mst drop column cost_rate
+
+alter table prdct_mst drop column tax_cd
+
+alter table arrival drop column cat_cd
+
+alter table sales drop column cat_cd
+
+alter table inventory_count add column avg_cost integer
 
 
-<form action="/category" method="post" class="category-form" name="delete_category">
-        <span class="label">id�F</span>
-        <input type="text" name="cat_id" class="input" required>
-        <input type="hidden" name="_method" value="delete">
-        <br>
-        <br>
-        <button type="submit" class="submit" id="delete_category_button">�폜</button>
-        <br>
-      </form>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+todo
+消費税等の棚卸時の扱い

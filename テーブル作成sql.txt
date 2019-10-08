@@ -32,6 +32,7 @@ CREATE TABLE sales
   checked boolean default false,
   count boolean default false
   )
+alter table sales add column price integer
 
 //カテゴリテーブル
 CREATE TABLE category
@@ -85,6 +86,17 @@ create table inventory_count (
  count_date timestamp,
  result_no integer
 )
+//棚卸による決算テーブル
+create table inventory_settlement(
+settlement_id serial primary key,
+inventory_date timestamp,
+sales_turnover integer, --売上高
+initial_inventory integer, --期首棚卸高
+final_inventory integer, --期末棚卸高
+purchase_turnover integer) --仕入高
+
+insert into inventory_settlement (inventory_date, sales_turnover, initial_inventory, final_inventory, purchase_turnover)
+values(now(), 0,0,0,0)
 
 //カレンダーマスタ
 create table calendar_mst (

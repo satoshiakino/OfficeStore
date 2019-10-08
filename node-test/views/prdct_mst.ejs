@@ -37,19 +37,6 @@
                 </select>
               </td>
             </tr>
-            <tr>
-                <td class="search_item">税表示:</td>
-              </tr>
-              <tr>
-                <td>
-                  <select name="tax_cd" class="search_select">
-                    <option value="">税表示形式を選んでください</option>
-                    <% taxList.forEach(function(taxItem){ %>
-                      <option value=<%= taxItem.tax_cd %>><%= taxItem.tax_nm %></option>
-                    <% }); %>
-                  </select>
-                </td>
-              </tr>
           </table>
           <button type="submit" class="submit">検索</button>
         </form>
@@ -63,7 +50,6 @@
           <th>JAN</th>
           <th>商品名</th>
           <th>売価</th>
-          <th>原価</th>
         </tr>
         <% prdctList.forEach(function(prdctItem){ %>
           <tr class="main-list__item">
@@ -73,7 +59,6 @@
             <td class="jan"><%= prdctItem.jan %></td>
             <td class="prdct_nm"><%= prdctItem.prdct_nm %></td>
             <td class="price"><%= prdctItem.price %></td>
-            <td class="cost"><%= prdctItem.cost %></td>
           </tr>
         <% }); %>
       </table>
