@@ -430,10 +430,9 @@ router.get('/arrvl_hstry', function(req, res, next) {
      var date = new Date();
      var year = date.getFullYear();
      var month = date.getMonth() + 1;
-     var day = date.getDate();
+     var day = date.getDate() + 1;
      a_date = year + "/" + month + "/" + day;
   };
-  console.log(a_date);
   getArrivalQuery = {
     text: "SELECT  arrvl.arrvl_id" +    
                  ",pm.cat_cd" +   
@@ -585,6 +584,22 @@ router.post('/sales_reg', function(req, res, next) {
 
 //localhost:3000/sales_hstry
 router.get('/sales_hstry', function(req, res, next) {
+  var cat_cd = req.query.cat_cd;
+  var min_cost = req.query.min_cost;
+  var max_cost = req.query.max_cost;
+  var p_date = req.query.p_date; 
+  var a_date = req.query.a_date;
+  if(!cat_cd){ cat_cd = "0"; };
+  if(!min_cost){ min_cost = 0; };
+  if(!max_cost){ max_cost = 1000; };
+  if(!p_date){ p_date = "1900/01/01" };
+  if(!a_date){
+     var date = new Date();
+     var year = date.getFullYear();
+     var month = date.getMonth() + 1;
+     var day = date.getDate();
+     a_date = year + "/" + month + "/" + day;
+  };
   getSalesQuery = {
     text: "SELECT sales.sales_id" + 
                 ",pm.cat_cd" +
@@ -599,13 +614,34 @@ router.get('/sales_hstry', function(req, res, next) {
              "ON sales.prdct_id = pm.prdct_id " +  
             "LEFT OUTER JOIN category AS cat " +
              "ON pm.cat_cd = cat.cat_cd " +
-            "ORDER BY sales.trade_date"
+            "WHERE CASE WHEN $1 = '0' THEN 1 = 1 ELSE pm.cat_cd = $1 END " +
+             "AND sales.price >= $2 " +
+             "AND sales.price < $3 " + 
+             "AND sales.trade_date >= $4 " +
+             "AND sales.trade_date < $5 " +
+           "ORDER BY sales.trade_date",
+     values: [cat_cd, min_cost, max_cost, p_date, a_date]
   };
-  connection.query(getSalesQuery)
-    .then(function(sales){
+  var selectCategoryQuery = {
+    text: 'SELECT cat_cd, cat_nm FROM category WHERE latest = true'
+  };
+  var sales;
+  var category;
+  Promise.all([
+    connection.query(selectCategoryQuery)
+    .then(function(cat){
+      category = cat;
+    }),
+    connection.query(getSalesQuery)
+    .then(function(sale){
+      sales = sale;
+    })
+  ])
+    .then(function(){
       res.render('sales_hstry', {
         title: "sales_hstry",
-        salesList: sales
+        salesList: sales,
+        catList: category
       });
       res.end();
     })
