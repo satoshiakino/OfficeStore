@@ -520,7 +520,7 @@ border: 1px #ccc solid;
 #search {
   float: left;
   width: 180px;
-  height: 500px;
+  height: 800px;
   margin-left: 40px;
   background-color: rgb(236, 236, 236);
 }
@@ -566,6 +566,7 @@ border: 1px #ccc solid;
 }
 #delete_reg {
   margin-top: 20px;
+  margin-left: 30px;
 }
 #delete_label {
   margin-left: 30px;
