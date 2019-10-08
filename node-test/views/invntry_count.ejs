@@ -61,6 +61,8 @@
             </tr>
           <% }); %>
         </table>
+        <input type="hidden" name="tax" value=<%= tax[0].total_tax %>>
+        <input type="hidden" name="tax_trade" value=<%= tax[0].total_trade %>>
         <br>
         <button type="submit" class="submit">登録</button>
     </form>

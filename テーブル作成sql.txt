@@ -32,6 +32,7 @@ CREATE TABLE sales
   checked boolean default false,
   count boolean default false
   )
+alter table sales add column price integer
 
 //カテゴリテーブル
 CREATE TABLE category

@@ -420,9 +420,20 @@ router.get('/arrvl_hstry', function(req, res, next) {
   var cat_cd = req.query.cat_cd;
   var min_cost = req.query.min_cost;
   var max_cost = req.query.max_cost;
+  var p_date = req.query.p_date; 
+  var a_date = req.query.a_date;
   if(!cat_cd){ cat_cd = "0"; };
   if(!min_cost){ min_cost = 0; };
   if(!max_cost){ max_cost = 1000; };
+  if(!p_date){ p_date = "1900/01/01" };
+  if(!a_date){
+     var date = new Date();
+     var year = date.getFullYear();
+     var month = date.getMonth() + 1;
+     var day = date.getDate();
+     a_date = year + "/" + month + "/" + day;
+  };
+  console.log(a_date);
   getArrivalQuery = {
     text: "SELECT  arrvl.arrvl_id" +    
                  ",pm.cat_cd" +   
@@ -440,8 +451,10 @@ router.get('/arrvl_hstry', function(req, res, next) {
           "WHERE CASE WHEN $1 = '0' THEN 1 = 1 ELSE pm.cat_cd = $1 END " +
             "AND arrvl.cost >= $2 " +
             "AND arrvl.cost < $3 " + 
+            "AND arrvl.trade_date >= $4 " +
+            "AND arrvl.trade_date < $5 " +
           "ORDER BY arrvl.trade_date",
-    values: [cat_cd, min_cost, max_cost]
+    values: [cat_cd, min_cost, max_cost, p_date, a_date]
   };
   var selectCategoryQuery = {
     text: 'SELECT cat_cd, cat_nm FROM category WHERE latest = true'
@@ -549,7 +562,16 @@ router.post('/sales_reg', function(req, res, next) {
     text: "INSERT INTO sales (prdct_id, trade_num, trade_date) VALUES($1, $2, now())",
     values: [prdct_id, trade_num],
   };
+  updateSalesQuery = {
+    text: "UPDATE sales SET price = pm.price " +
+            "FROM prdct_mst pm " +
+            "WHERE sales.prdct_id = pm.prdct_id " +
+            "AND sales.price is null"
+  };
   connection.query(registerSalesQuery)
+    .then(function(){
+      return connection.query(updateSalesQuery)
+    })
     .then(function(){
       res.redirect('/sales_hstry');
       res.end();
@@ -569,9 +591,9 @@ router.get('/sales_hstry', function(req, res, next) {
                 ",cat.cat_nm" +
                 ",pm.jan" +
                 ",pm.prdct_nm" + 
-                ",pm.price" +
+                ",sales.price" +
                 ",sales.trade_num" +
-                ",TO_CHAR(sales.trade_date, \'yyyy/mm/dd hh24:mi:ss\') AS trade_date " +
+                ",TO_CHAR(sales.trade_date, \'yyyy/mm/dd\') AS trade_date " +
             "FROM sales " +   
             "LEFT OUTER JOIN prdct_mst AS pm " +   
              "ON sales.prdct_id = pm.prdct_id " +  
@@ -644,12 +666,10 @@ router.get('/settlement2', function(req, res, next) {
     text: "SELECT COALESCE(SUM(total_sales), 0) AS total_sales " +
             "FROM " +
             "( " +
-            "SELECT SUM(pm.price * sales.trade_num) AS total_sales " +  
+            "SELECT SUM(price * trade_num) AS total_sales " +  
               "FROM sales " +
-              "LEFT OUTER JOIN prdct_mst AS pm " + 
-              "ON sales.prdct_id = pm.prdct_id " +
-              "WHERE sales.checked = false " +
-              "GROUP BY sales.checked " +
+              "WHERE checked = false " +
+              "GROUP BY checked " +
             ") AS sales"
   };
   var getLastCashQuery = {
@@ -819,25 +839,46 @@ router.get('/invntry_count', function(req, res, next) {
           'ON pm.prdct_id = arrival.prdct_id ' +
           'LEFT OUTER JOIN ' +
           '( ' +
-          'SELECT sales.prdct_id ' +
-              ',SUM(sales.trade_num) AS sales_num ' +
-              ',SUM(sales.trade_num * pm.price) AS total_sales ' +
+          'SELECT prdct_id ' +
+              ',SUM(trade_num) AS sales_num ' +
+              ',SUM(trade_num * price) AS total_sales ' +
           'FROM sales ' +
-          'LEFT OUTER JOIN prdct_mst AS pm ' +
-          'ON sales.prdct_id = pm.prdct_id ' +
-          'WHERE sales.count = false ' +
-          'GROUP BY sales.prdct_id ' +
+          'WHERE count = false ' +
+          'GROUP BY prdct_id ' +
           ') AS sales ' +
           'ON pm.prdct_id = sales.prdct_id ' + 
           'WHERE pm.cat_cd <> \'98\' ' +
             'AND pm.cat_cd <> \'99\' ' +
+            'AND pm.cat_cd <> \'00\' ' +
           'ORDER BY pm.prdct_id'
   };
-  connection.query(selectQuery)
+  var totalTaxQuery = {
+    text: 'SELECT COALESCE(SUM(total_cost), 0) AS total_tax ' +
+                ',COALESCE(SUM(total_trade), 0) AS total_trade ' +
+            'FROM ' +
+            '( ' + 
+              'SELECT SUM(cost * trade_num) AS total_cost, SUM(trade_num) AS total_trade  ' + 
+                'FROM arrival ' + 
+                'LEFT OUTER JOIN prdct_mst AS pm ' +
+                'ON arrival.prdct_id = pm.prdct_id ' +
+                'WHERE count = false ' +
+                  'AND pm.cat_cd = \'00\' ' +
+                'GROUP BY count ' +
+            ') AS arr_tax'
+  }
+  var total_tax;
+  connection.query(totalTaxQuery)
+    .then(function(tax){
+      total_tax = tax;
+    })
+    .then(function(){
+       return connection.query(selectQuery)
+    })
     .then(function(prdct){
       res.render('invntry_count', {
         title: "棚卸",
-        prdctList: prdct
+        prdctList: prdct,
+        tax: total_tax
       });
       res.end();
     })
@@ -853,15 +894,16 @@ router.post('/invntry_count', function(req, res, next) {
   var prdct_id = req.body.prdct_id;
   var avg_cost = req.body.avg_cost;
   var invntry_num = req.body.invntry_num;
-  var updateArrivalQuery = {
-    text: 'UPDATE arrival SET count = true'
-  };
-  var updateSalesQuery = {
-    text: 'UPDATE sales SET count = true'
-  };
+  var total_tax = -1 * parseInt(req.body.tax);
+  var tax_trade = req.body.tax_trade;
   var selectResultNoQuery = {
     text: 'SELECT MAX(result_no) FROM inventory_count'
   };
+  var insertTaxQuery = {
+    text: 'INSERT INTO sales ( prdct_id, trade_num, trade_date, price) ' +
+            'VALUES (\'34\', $1, now(), $2) ',
+    values: [tax_trade, total_tax]
+  }
   connection.query(selectResultNoQuery)
     .then(function(result_no) {
       var result = (result_no[0].max === null)?0:result_no[0].max;
@@ -914,10 +956,8 @@ router.post('/invntry_count', function(req, res, next) {
         });
       });*/
       return p;
-    /*}).then(function() {
-      return connection.query(updateArrivalQuery);
     }).then(function() {
-      return connection.query(updateSalesQuery);*/
+      return connection.query(insertTaxQuery);
     }).then(function() {
       res.redirect('/invntry_count2');
       res.end();
@@ -927,11 +967,9 @@ router.post('/invntry_count', function(req, res, next) {
 //localhost:3000/invntry_count2
 router.get('/invntry_count2', function(req, res, next) {
   var salesTurnoverQuery = {
-    text: 'SELECT SUM(pm.price * sales.trade_num) AS total_sales ' +
+    text: 'SELECT SUM(price * trade_num) AS total_sales ' +
             'FROM sales ' +
-            'LEFT OUTER JOIN prdct_mst AS pm ' +
-              'ON sales.prdct_id = pm.prdct_id ' +
-            'WHERE sales.count = false'
+            'WHERE count = false'
   };
   var initialInventoryQuery = {
     text: 'SELECT CASE WHEN final_inventory IS NULL THEN 0 ELSE final_inventory END AS final_inventory ' +
@@ -1107,18 +1145,17 @@ router.get('/invntry_status', function(req, res, next) {
             'ON pm.prdct_id = arrival.prdct_id ' +
             'LEFT OUTER JOIN ' +
             '( ' +
-            'SELECT sales.prdct_id ' +
-              ',SUM(sales.trade_num) AS sales_num ' +
-              ',SUM(sales.trade_num * pm.price) AS total_sales ' +
+            'SELECT prdct_id ' +
+              ',SUM(trade_num) AS sales_num ' +
+              ',SUM(trade_num * price) AS total_sales ' +
             'FROM sales ' +
-            'LEFT OUTER JOIN prdct_mst AS pm ' +
-            'ON sales.prdct_id = pm.prdct_id ' +
-            'WHERE sales.count = false ' +
-            'GROUP BY sales.prdct_id ' +
+            'WHERE count = false ' +
+            'GROUP BY prdct_id ' +
             ') AS sales ' +
             'ON pm.prdct_id = sales.prdct_id ' + 
             'WHERE pm.cat_cd <> \'98\' ' +
             'AND pm.cat_cd <> \'99\' ' +
+            'AND pm.cat_cd <> \'00\' ' +
             'ORDER BY pm.prdct_id'
   };
   var selectInventoryQuery2 = {
@@ -1153,14 +1190,12 @@ router.get('/invntry_status', function(req, res, next) {
             'ON pm.prdct_id = arrival.prdct_id ' +
             'LEFT OUTER JOIN ' +
             '( ' +
-            'SELECT sales.prdct_id ' +
-              ',SUM(sales.trade_num) AS sales_num ' +
-              ',SUM(sales.trade_num * pm.price) AS total_sales ' +
+            'SELECT prdct_id ' +
+              ',SUM(trade_num) AS sales_num ' +
+              ',SUM(trade_num * price) AS total_sales ' +
             'FROM sales ' +
-            'LEFT OUTER JOIN prdct_mst AS pm ' +
-            'ON sales.prdct_id = pm.prdct_id ' +
-            'WHERE sales.count = false ' +
-            'GROUP BY sales.prdct_id ' +
+            'WHERE count = false ' +
+            'GROUP BY prdct_id ' +
             ') AS sales ' +
             'ON pm.prdct_id = sales.prdct_id ' + 
             'WHERE pm.cat_cd <> \'98\' ' +
@@ -1227,13 +1262,11 @@ router.get('/sales_day', function(req, res, next) {
             'FROM ' +
             '( ' +
             'SELECT TO_CHAR(cm.days, \'DD\') AS days1 ' +
-                  ',CASE WHEN SUM(pm.price * sales.trade_num) IS NULL THEN 0 ELSE SUM(pm.price * sales.trade_num) END AS sales_day1 ' + 
+                  ',CASE WHEN SUM(sales.price * sales.trade_num) IS NULL THEN 0 ELSE SUM(sales.price * sales.trade_num) END AS sales_day1 ' + 
             			',cm.day ' +
               'FROM calendar_mst AS cm ' + 
               'LEFT OUTER JOIN sales ' +
                 'ON cm.days = sales.trade_date::date ' +
-              'LEFT OUTER JOIN prdct_mst AS pm ' +
-                'ON sales.prdct_id = pm.prdct_id ' + 
               'WHERE cm.year = ' + year +
                 'AND cm.month = ' + month +
             		'AND cm.day < 17 ' +
@@ -1242,13 +1275,11 @@ router.get('/sales_day', function(req, res, next) {
             'LEFT OUTER JOIN ' +
             '( ' +
             'SELECT TO_CHAR(cm.days, \'DD\') AS days2 ' +
-                  ',CASE WHEN SUM(pm.price * sales.trade_num) IS NULL THEN 0 ELSE SUM(pm.price * sales.trade_num) END AS sales_day2 ' +
+                  ',CASE WHEN SUM(sales.price * sales.trade_num) IS NULL THEN 0 ELSE SUM(sales.price * sales.trade_num) END AS sales_day2 ' +
             			',cm.day ' +
               'FROM calendar_mst AS cm ' +
               'LEFT OUTER JOIN sales ' +
                 'ON cm.days = sales.trade_date::date ' +
-              'LEFT OUTER JOIN prdct_mst AS pm ' +
-                'ON sales.prdct_id = pm.prdct_id ' +
               'WHERE cm.year = ' + year +
                 'AND cm.month = ' + month +
             		'AND cm.day > 16 ' +
@@ -1290,13 +1321,11 @@ router.get('/sales_week', function(req, res, next) {
 	          'FROM ' +
 	          '( ' +
 	            'SELECT cm.days ' +
-                    ',CASE WHEN pm.price * sales.trade_num IS NULL THEN 0 ELSE pm.price * sales.trade_num END AS sale_data ' +
+                    ',CASE WHEN sales.price * sales.trade_num IS NULL THEN 0 ELSE sales.price * sales.trade_num END AS sale_data ' +
 	                  ',CAST(EXTRACT(dow FROM cm.days) AS INT ) AS day_of_the_week ' +
                 'FROM calendar_mst AS cm ' +
                 'LEFT OUTER JOIN sales ' +
                   'ON cm.days = sales.trade_date::date ' +
-	              'LEFT OUTER JOIN prdct_mst AS pm ' + 
-                  'ON sales.prdct_id = pm.prdct_id ' +
                 'WHERE cm.year = ' + year + ' ' + 
                   'AND cm.month = ' + month + ' ' +
             ') AS s1 ' +
@@ -1330,12 +1359,10 @@ router.get('/sales_month', function(req, res, next) {
   last_year.add(-1, 'Y');
   var selectSalesQuery = {
     text: 'SELECT TO_CHAR(cm.days, \'yyyy/mm\') AS trade_month ' +
-                ',CASE WHEN SUM(pm.price * sales.trade_num) IS NULL THEN 0 ELSE SUM(pm.price * sales.trade_num) END AS sales_month ' +
+                ',CASE WHEN SUM(sales.price * sales.trade_num) IS NULL THEN 0 ELSE SUM(sales.price * sales.trade_num) END AS sales_month ' +
             'FROM calendar_mst AS cm ' +
             'LEFT OUTER JOIN sales ' +
               'ON cm.days = sales.trade_date::date ' +
-            'LEFT OUTER JOIN prdct_mst AS pm ' + 
-              'ON sales.prdct_id = pm.prdct_id ' +
             'WHERE cm.year = ' + year + ' ' +
             'GROUP BY trade_month ' +
             'ORDER BY trade_month'
@@ -1357,12 +1384,10 @@ router.get('/sales_month', function(req, res, next) {
 router.get('/sales_year', function(req, res, next) {
   var selectSalesQuery = {
     text: 'SELECT TO_CHAR(cm.days, \'yyyy\') AS trade_year ' + 
-                ',CASE WHEN SUM(pm.price * sales.trade_num) IS NULL THEN 0 ELSE SUM(pm.price * sales.trade_num) END AS sales_year ' + 
+                ',CASE WHEN SUM(sales.price * sales.trade_num) IS NULL THEN 0 ELSE SUM(sales.price * sales.trade_num) END AS sales_year ' + 
             'FROM calendar_mst AS cm ' +
             'LEFT OUTER JOIN sales ' +
             'ON cm.days = sales.trade_date::date ' + 
-            'LEFT OUTER JOIN prdct_mst AS pm ' +
-            '  ON sales.prdct_id = pm.prdct_id ' +
             'WHERE cm.days > now() - interval \'10year\' ' +
               'AND cm.days < now() ' +
             'GROUP BY trade_year ' + 
@@ -1653,7 +1678,7 @@ router.get('/sales_trend_category_daily', function(req, res, next) {
 	          	'LEFT OUTER JOIN prdct_mst AS pm ' + 
                 'ON sales.prdct_id = pm.prdct_id ' +
               'LEFT OUTER JOIN category AS cat ' +
-                'ON sales.cat_cd = cat.cat_cd ' +
+                'ON pm.cat_cd = cat.cat_cd ' +
 	          ') AS s1 ' +
 	          'GROUP BY s1.cat_cd,s1.cat_nm ' +
 	          'ORDER BY s1.cat_cd'
@@ -1788,13 +1813,15 @@ router.get('/sales_trend_category_monthly', function(req, res, next) {
 	              select_date +
             'FROM ' +
             '( ' +
-              'SELECT sales.cat_cd ' + 
+              'SELECT pm.cat_cd ' + 
                     ',cat.cat_nm ' +
                     ',sales.trade_num ' + 
                     ',trade_date ' +
                 'FROM sales ' +
+                'LEFT OUTER JOIN prdct_mst AS pm ' +
+                  'ON sales.prdct_id = pm.prdct_id ' +
                 'LEFT OUTER JOIN category AS cat ' +
-                  'ON sales.cat_cd = cat.cat_cd ' +
+                  'ON pm.cat_cd = cat.cat_cd ' +
             ') AS s1 ' +
             'GROUP BY s1.cat_cd,s1.cat_nm ' + 
             'ORDER BY s1.cat_cd'
@@ -1838,7 +1865,7 @@ router.get('/sales_trend_category_yearly', function(req, res, next) {
 	              select_date +
             'FROM ' +
             '( ' +
-              'SELECT sales.cat_cd ' + 
+              'SELECT pm.cat_cd ' + 
                     ',cat.cat_nm ' +
                     ',sales.prdct_id ' +
                     ',pm.prdct_nm ' +
@@ -1848,7 +1875,7 @@ router.get('/sales_trend_category_yearly', function(req, res, next) {
                 'LEFT OUTER JOIN prdct_mst AS pm ' + 
                   'ON sales.prdct_id = pm.prdct_id ' +
                 'LEFT OUTER JOIN category AS cat ' +
-                  'ON sales.cat_cd = cat.cat_cd' +
+                  'ON pm.cat_cd = cat.cat_cd' +
             ') AS s1 ' +
             'GROUP BY s1.cat_cd,s1.cat_nm ' + 
             'ORDER BY s1.cat_cd'
