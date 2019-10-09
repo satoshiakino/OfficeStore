@@ -8,7 +8,6 @@
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
     <script>
-
     </script>
   </head>
   <body>
@@ -43,6 +42,36 @@
         <button type="submit" class="submit">
             <input type="hidden" name="month" value=<%= nextMonth %>>次月
         </button>
+      </form>
+      <form action='sales_trend_prdct_daily' method='get' class='search_trend'>
+        <table id="search_table" rules="all">
+          <tr>
+            <td class="index_trend_search">カテゴリ</td>
+            <td class="index_trend_search">価格（以上）</td>
+            <td class="index_trend_search">（未満）</td>
+            <td class="index_trend_search"></td>
+          </tr>
+          <tr>
+            <td>
+              <select name="cat_cd" class="search_select">
+                <option value="">カテゴリを選んでください</option>
+                <% catList.forEach(function(catItem){ %>
+                  <option value=<%= catItem.cat_cd %>><%= catItem.cat_nm %></option>
+                <% }); %>
+              </select>
+            </td>
+            <td>
+              <input type="number" class="search_input" name="min_price">円
+            </td>
+            <td>
+              <input type="number" class="search_input" name="max_price">円
+            </td>
+            <td>
+              <input type="hidden" name="month" value=<%= current_date %>>
+              <button type="submit" class="submit">検索</button>
+            </td>
+          </tr>
+        </table>
       </form>
       <div id="sales">
       <table class="sales_trend" rules="all">

@@ -442,6 +442,15 @@ border: 1px #ccc solid;
   height: 20px;
   text-align: right;
 }
+.search_trend {
+  text-align: center;
+}
+.index_trend_search {
+  text-align: center;
+  color: #fff;
+  background: #668b8a;
+  border: 1px rgb(65, 65, 65) solid;
+}
 #global_navi {
   width: auto;
   clear: both;
@@ -570,4 +579,7 @@ border: 1px #ccc solid;
 }
 #delete_label {
   margin-left: 30px;
+}
+#search_table {
+  display: inline-block;
 }
