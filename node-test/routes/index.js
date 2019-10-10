@@ -386,7 +386,6 @@ router.post('/arrvl_reg', function(req, res, next) {
   var trade_num = req.body.trade_num;
   var cost = req.body.unit_price;
   var tax_cd = req.body.tax;
-  if(tax_cd==="false"){ cost = Math.floor(cost*1.08) };
   if(Array.isArray(cat_cd)){
     for(var i=0; i<cat_cd.length; i++){
       var registerArrivalQuery = {
