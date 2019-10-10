@@ -18,7 +18,7 @@
             span.style.display = 'none';
           }
         })
-      }
+      };
       function onChangeCategory(self) {
         var tr = self.parentNode.parentNode;
         var row_index = tr.sectionRowIndex;
@@ -39,7 +39,7 @@
           if(trade_num[i].value && tax_cd==="true") {
             cost[i].innerText = parseInt(trade_num[i].value) * parseInt(unit_price[i].value);
           } else if(trade_num[i].value && tax_cd==="false"){
-            cost[i].innerText = Math.floor(parseInt(trade_num[i].value) * parseInt(unit_price[i].value) * 1.08);
+            cost[i].innerText = parseInt(trade_num[i].value) * parseInt(unit_price[i].value);
           };
           if(isNaN(cost[i].innerText)){
             cost[i].innerText = 0;

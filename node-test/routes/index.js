@@ -95,31 +95,24 @@ router.get('/prdct_mst', function(req, res, next) {
   });
 });
 
-router.post('/prdct_mst', function(req, res, next){
-  var prdct_id = req.body.id;
-  res.cookie('prdct_id', prdct_id, {maxAge:600000, httpOnly:false});
-  res.redirect('/prdct_update');
-  res.end();
-});
-
 //localhost:3000/prdct_reg
 router.get('/prdct_reg', function(req, res, next) {
   var selectCategoryQuery = {
     text: 'SELECT cat_cd, cat_nm FROM category WHERE latest = true'
   };
-    connection.query(selectCategoryQuery)
-      .then(function(cat){
-        res.render('prdct_reg', {
-          title: "商品マスタ登録",
-          catList: cat
-        });
-        res.end();
-      })
-      .catch(function(err){
-        console.log(err.error);
-        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack } });
-        res.end();
+  connection.query(selectCategoryQuery)
+    .then(function(cat){
+      res.render('prdct_reg', {
+        title: "商品マスタ登録",
+        catList: cat
       });
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack } });
+      res.end();
+    });
 });
 
 router.post('/prdct_reg', function(req, res, next) {
@@ -145,7 +138,7 @@ router.post('/prdct_reg', function(req, res, next) {
 
 //localhost:3000/prdct_update
 router.get('/prdct_update', function(req, res, next){
-  var prdct_id = req.cookies.prdct_id;
+  var prdct_id = req.query.id;
   var selectQuery = {
     text: "SELECT * FROM prdct_mst WHERE prdct_id = $1",
     values: [prdct_id]
@@ -154,7 +147,8 @@ router.get('/prdct_update', function(req, res, next){
     .then(function(prdct){
       res.render('prdct_update', {
         title: "商品マスタ修正",
-        prdctList: prdct
+        prdctList: prdct,
+        prdct_id: prdct_id
       });
       res.end();
     })
@@ -170,40 +164,58 @@ router.post('/prdct_update', function(req, res, next) {
   var cat_cd = req.body.cat_cd;
   var prdct_nm = req.body.prdct_nm;
   var price = req.body.price;
+  var prdct_id = req.body.prdct_id;
+  var p_jan = req.body.p_jan;
   var registerQuery = {
     text: 'INSERT INTO prdct_mst (cat_cd, jan, prdct_nm, price) VALUES($1, $2, $3, $4)',
     values: [cat_cd, jan, prdct_nm, price],
   };
-  var prdct_id = req.cookies.prdct_id;
   var updateQuery = {
     text: 'UPDATE prdct_mst SET latest = false WHERE prdct_id = $1',
     values: [prdct_id]
   };
-  Promise.all([
-    connection.query(updateQuery)
-      .then(function(){})
-      .catch(function(err){
-        console.log(err.error);
-        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack } });
-        res.end();
-      }),
-    connection.query(registerQuery)
-      .then(function(){})
-      .catch(function(err){
-        console.log(err.error);
-        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack } });
+  var updateProductQuery = {
+    text: 'UPDATE prdct_mst SET jan = $1, cat_cd = $2, prdct_nm = $3, price = $4 WHERE prdct_id = $5 ',
+    values: [jan, cat_cd, prdct_nm, price, prdct_id]
+  };
+  if(jan == p_jan){
+    connection.query(updateProductQuery)
+      .then(function(){
+        res.redirect('/prdct_mst');
         res.end();
       })
-  ])
-  .then(function(){
-    res.redirect('/prdct_mst');
-    res.end();
-  })
-  .catch(function(err){
-    console.log(err.error);
-    res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-    res.end();
-  });
+      .catch(function(err){
+        console.log(err.error);
+        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+        res.end();
+      });
+  } else {
+    Promise.all([
+      connection.query(updateQuery)
+        .then(function(){})
+        .catch(function(err){
+          console.log(err.error);
+          res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack } });
+          res.end();
+        }),
+      connection.query(registerQuery)
+        .then(function(){})
+        .catch(function(err){
+          console.log(err.error);
+          res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack } });
+          res.end();
+        })
+    ])
+    .then(function(){
+      res.redirect('/prdct_mst');
+      res.end();
+    })
+    .catch(function(err){
+      console.log(err.error);
+      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+      res.end();
+    });
+  };
 });
 
 //localhost:3000/category
@@ -232,24 +244,6 @@ router.post('/category', function(req, res, next){
   res.redirect('/cat_update');
   res.end();
 });
-
-/*router.delete('/category', function(req, res, next){
-  var cat_id = req.body.cat_id;
-  var deleteQuery = {
-    text: "DELETE FROM category WHERE cat_id = $1",
-    values: [cat_id],
-  };
-  connection.query(deleteQuery)
-    .then(function(){
-      res.redirect('/category');
-      res.end();
-    })
-    .catch(function(err){
-      console.log(err.error);
-      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
-      res.end();
-    });
-});*/
 
 //localhost:3000/cat_reg
 router.get('/cat_reg', function(req, res, next) {
@@ -392,7 +386,6 @@ router.post('/arrvl_reg', function(req, res, next) {
   var trade_num = req.body.trade_num;
   var cost = req.body.unit_price;
   var tax_cd = req.body.tax;
-  if(tax_cd==="false"){ cost = Math.floor(cost*1.08) };
   if(Array.isArray(cat_cd)){
     for(var i=0; i<cat_cd.length; i++){
       var registerArrivalQuery = {
@@ -541,7 +534,7 @@ router.get('/sales_reg', function(req, res, next) {
   ])
   .then(function(){
     res.render('sales_reg', {
-      title: "仕入登録",
+      title: "売上登録",
       catList: category,
       prdctList: product
     });

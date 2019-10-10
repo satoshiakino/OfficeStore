@@ -7,7 +7,6 @@
     <meta name="format-detection" content="telephone=no">
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
-    <script type="text/javascript" src="/javascript/prdct_use.js"></script>
   </head>
   <body>
     <header>
@@ -34,6 +33,8 @@
           <br>
           <span class="label">売価</span><input type="number" name="price" class="input" value=<%= prdctItem.price %> required><br>
           <br>
+          <input type="hidden" name="prdct_id" value=<%= prdct_id %>>
+          <input type="hidden" name="p_jan" value=<%= prdctItem.jan %>>
           <br>
           <button type="submit" class="submit">登録</button>
           <br>
