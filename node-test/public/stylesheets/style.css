@@ -563,14 +563,14 @@ border: 1px #ccc solid;
 #arrival {
   margin-left: 40px;
 }
-#arrvl_total_cost {
+#total_amount {
   width: 200px;
   text-align: right;
   line-height: 50px;
   border: 1px #ccc solid;
   background-color: #fff;
 }
-#arrvl_total {
+#total_label {
   margin-left: 190px;
 }
 #delete_reg {
@@ -582,4 +582,7 @@ border: 1px #ccc solid;
 }
 #search_table {
   display: inline-block;
+}
+#sales_reg-form {
+  margin-left: 40px;
 }

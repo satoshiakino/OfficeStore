@@ -504,14 +504,20 @@ router.get('/sales_menu', function(req, res, next) {
 
 //localhost:3000/sales_reg
 router.get('/sales_reg', function(req, res, next) {
+  var tax_cd = (req.query.tax_cd=="true") ? false : true;
   var selectCategoryQuery = {
     text: 'SELECT cat_cd, cat_nm FROM category WHERE latest = true'
   };
   var selectPrdctQuery = {
     text: 'SELECT prdct_id, prdct_nm, cat_cd FROM prdct_mst WHERE latest = true'
   };
+  var selectTaxQuery = {
+    text: 'SELECT tax_cd, tax_nm FROM tax WHERE tax_cd = $1',
+    values: [tax_cd]
+  };
   var category;
   var product;
+  var tax;
   Promise.all([
     connection.query(selectCategoryQuery)
       .then(function(cat){
@@ -530,13 +536,23 @@ router.get('/sales_reg', function(req, res, next) {
         console.log(err.error);
         res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
         res.end();
+      }),
+    connection.query(selectTaxQuery)
+      .then(function(tax_code){
+        tax = tax_code;
+      })
+      .catch(function(err){
+        console.log(err.error);
+        res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack} });
+        res.end();
       })
   ])
   .then(function(){
     res.render('sales_reg', {
       title: "売上登録",
       catList: category,
-      prdctList: product
+      prdctList: product,
+      taxList: tax
     });
     res.end();
   })
@@ -548,31 +564,31 @@ router.get('/sales_reg', function(req, res, next) {
 });
 
 router.post('/sales_reg', function(req, res, next) {
+  var cat_cd = req.body.cat_cd;
   var prdct_id = req.body.prdct_id;
   var trade_num = req.body.trade_num;
-  registerSalesQuery = {
-    text: "INSERT INTO sales (prdct_id, trade_num, trade_date) VALUES($1, $2, now())",
-    values: [prdct_id, trade_num],
-  };
-  updateSalesQuery = {
-    text: "UPDATE sales SET price = pm.price " +
-            "FROM prdct_mst pm " +
-            "WHERE sales.prdct_id = pm.prdct_id " +
-            "AND sales.price is null"
-  };
-  connection.query(registerSalesQuery)
-    .then(function(){
-      return connection.query(updateSalesQuery)
-    })
-    .then(function(){
-      res.redirect('/sales_hstry');
-      res.end();
-    })
-    .catch(function(err){
-      console.log(err.error);
-      res.render('error', { message: 'Error', error: { status: err.code, stack: err.stack } });
-      res.end();
-    });
+  var cost = req.body.unit_price;
+  var tax_cd = req.body.tax;
+  if(Array.isArray(cat_cd)){
+    for(var i=0; i<cat_cd.length; i++){
+      var registerArrivalQuery = {
+        text: "INSERT INTO arrival (prdct_id, trade_num, cost, trade_date) VALUES($1, $2, $3, now())",
+        values: [prdct_id[i], trade_num[i], cost[i]],
+      };
+      connection.query(registerArrivalQuery)
+        .then(function(){});
+    }
+  } else if(Array.isArray(cat_cd)==false){
+    var registerArrivalQuery2 = {
+      text: "INSERT INTO arrival (prdct_id, trade_num, cost, trade_date) VALUES($1, $2, $3, now())",
+      values: [prdct_id, trade_num, cost],
+    };
+    connection.query(registerArrivalQuery2)
+      .then(function(){});
+  }
+  
+  res.redirect('/arrvl_hstry');
+  res.end();
 });
 
 //localhost:3000/sales_hstry

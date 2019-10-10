@@ -114,7 +114,7 @@
         <% }); %>
       </select>
       <button type="submit" class="submit">切替</button>
-      <span id="arrvl_total" class="label">合計金額</span><span id="arrvl_total_cost">0</span>
+      <span id="total_label" class="label">合計金額</span><span id="total_amount">0</span>
     </form>
     <form action="/arrvl_reg" method="post" class="arrvl_reg-form">
       <input type="hidden" name="tax" value=<%= taxList[0].tax_cd %>>
