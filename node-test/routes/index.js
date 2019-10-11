@@ -509,7 +509,7 @@ router.get('/sales_reg', function(req, res, next) {
     text: 'SELECT cat_cd, cat_nm FROM category WHERE latest = true'
   };
   var selectPrdctQuery = {
-    text: 'SELECT prdct_id, prdct_nm, cat_cd FROM prdct_mst WHERE latest = true'
+    text: 'SELECT prdct_id, prdct_nm, cat_cd, price FROM prdct_mst WHERE latest = true'
   };
   var selectTaxQuery = {
     text: 'SELECT tax_cd, tax_nm FROM tax WHERE tax_cd = $1',
@@ -567,27 +567,26 @@ router.post('/sales_reg', function(req, res, next) {
   var cat_cd = req.body.cat_cd;
   var prdct_id = req.body.prdct_id;
   var trade_num = req.body.trade_num;
-  var cost = req.body.unit_price;
-  var tax_cd = req.body.tax;
+  var unit_price = req.body.unit_price;
+  var trade_date = req.body.sales_date;
   if(Array.isArray(cat_cd)){
     for(var i=0; i<cat_cd.length; i++){
-      var registerArrivalQuery = {
-        text: "INSERT INTO arrival (prdct_id, trade_num, cost, trade_date) VALUES($1, $2, $3, now())",
-        values: [prdct_id[i], trade_num[i], cost[i]],
+      var registerSalesQuery = {
+        text: "INSERT INTO sales (prdct_id, trade_num, trade_date, price) VALUES($1, $2, $3, $4)",
+        values: [prdct_id[i], trade_num[i], trade_date, unit_price[i]],
       };
-      connection.query(registerArrivalQuery)
+      connection.query(registerSalesQuery)
         .then(function(){});
     }
   } else if(Array.isArray(cat_cd)==false){
-    var registerArrivalQuery2 = {
-      text: "INSERT INTO arrival (prdct_id, trade_num, cost, trade_date) VALUES($1, $2, $3, now())",
-      values: [prdct_id, trade_num, cost],
+    var registerSalesQuery2 = {
+      text: "INSERT INTO sales (prdct_id, trade_num, trade_date, price) VALUES($1, $2, $3, $4)",
+      values: [prdct_id, trade_num, trade_date, unit_price],
     };
-    connection.query(registerArrivalQuery2)
+    connection.query(registerSalesQuery2)
       .then(function(){});
   }
-  
-  res.redirect('/arrvl_hstry');
+  res.redirect('/sales_hstry');
   res.end();
 });
 

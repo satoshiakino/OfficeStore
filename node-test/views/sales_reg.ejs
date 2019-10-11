@@ -11,13 +11,12 @@
       function onChangeProduct(self) {
         var tr = self.parentNode.parentNode;
         var row_index = tr.sectionRowIndex;
-        document.querySelectorAll("#unit_price" + row_index + ">span").forEach(function(span) {
-          if(span.getAttribute("prdct_id") === self.value) {
-            span.style.display = 'block';
+        document.querySelectorAll("#unit_price" + row_index + ">option").forEach(function(option) {
+          if(option.getAttribute("prdct_id") === self.value) {
+            option.style.display = 'block';
           } else {
-            span.style.display = 'none';
-          };
-          console.log(span.getAttribute("prdct_id"));
+            option.style.display = 'none';
+          }
         })
       };
       function onChangeCategory(self) {
@@ -74,7 +73,11 @@
                               '<% }); %> ' +
                             '</select>';
         trade_num.innerHTML = '<input id="trade_num'+ row_length +'" type="number" name="trade_num" class="input" value=0 onchange="onChangeTradeNum()" required>';
-        unit_price.innerHTML = '<input id="unit_price'+ row_length +'" type="number" name="unit_price" class="unit_price" value=0 onchange="onChangeTradeNum()" required> ';
+        unit_price.innerHTML = '<select id="unit_price' + row_length + '" name="unit_price" class="select" repuired>' +
+                                '<% prdctList.forEach(function(prdctItem){ %> ' +
+                                  '<option value=<%= prdctItem.price %> prdct_id=<%= prdctItem.prdct_id %> style="display:none;"><%= prdctItem.price %></option> ' +
+                                '<% }); %> ' +
+                               '</select>';
         cost.innerHTML = '<div class="arrvl_cost" name="cost"></div>';
         delete_button.innerHTML = '<button class="submit" onclick="deleteRow(this)">削除</button>'
       }
